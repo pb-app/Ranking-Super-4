@@ -312,8 +312,8 @@
                     </select>
                 </div>
 
-                <div class="form-group">
-                    <label>🏆 Distribuição de Pontos para o Ranking (Chave Ouro)</label>
+                <div class="form-group" id="pontos-ouro">
+                    <label>🏆 Distribuição de Pontos - Ouro (e Padrão)</label>
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; background: #0b0c0f; padding: 15px; border-radius: 10px; border: 1px solid var(--border); margin-top: 5px;">
                         <div>
                             <label style="font-size: 0.75rem; color: var(--gray); margin-bottom: 2px;">🥇 Campeão</label>
@@ -343,8 +343,41 @@
                             <label style="font-size: 0.75rem; color: var(--gray); margin-bottom: 2px;">🎾 Participação</label>
                             <input type="number" id="ptsGrupos" class="form-control" value="15" style="padding: 0.5rem; text-align: center;" required>
                         </div>
+                        <div>
+                            <label style="font-size: 0.75rem; color: #ffd700; margin-bottom: 2px; font-weight: bold;">⭐ 1º do Grupo</label>
+                            <input type="number" id="ptsPrimeiroGrupo" class="form-control" value="10" style="padding: 0.5rem; text-align: center; border-color: #ffd700;" required>
+                        </div>
                     </div>
-                    <p style="font-size: 0.8rem; color: var(--gray); margin-top: 5px;">* Na Chave Prata (Super 4), os pontos serão calculados automaticamente como 60% do valor da Chave Ouro.</p>
+                </div>
+
+                <div class="form-group" id="pontos-prata" style="display: none;">
+                    <label>🥈 Distribuição de Pontos - Prata (Exclusivo Super 4)</label>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; background: #0b0c0f; padding: 15px; border-radius: 10px; border: 1px solid var(--border); margin-top: 5px;">
+                        <div>
+                            <label style="font-size: 0.75rem; color: var(--gray); margin-bottom: 2px;">🥇 Campeão Prata</label>
+                            <input type="number" id="ptsCampeaoPrata" class="form-control" value="60" style="padding: 0.5rem; text-align: center;">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.75rem; color: var(--gray); margin-bottom: 2px;">🥈 Vice Prata</label>
+                            <input type="number" id="ptsVicePrata" class="form-control" value="40" style="padding: 0.5rem; text-align: center;">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.75rem; color: var(--gray); margin-bottom: 2px;">🥉 3º Prata</label>
+                            <input type="number" id="ptsTerceiroPrata" class="form-control" value="30" style="padding: 0.5rem; text-align: center;">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.75rem; color: var(--gray); margin-bottom: 2px;">🏅 Semi Prata</label>
+                            <input type="number" id="ptsSemiPrata" class="form-control" value="20" style="padding: 0.5rem; text-align: center;">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.75rem; color: var(--gray); margin-bottom: 2px;">🏅 Quartas Prata</label>
+                            <input type="number" id="ptsQuartasPrata" class="form-control" value="10" style="padding: 0.5rem; text-align: center;">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.75rem; color: var(--gray); margin-bottom: 2px;">🏅 Oitavas Prata</label>
+                            <input type="number" id="ptsOitavasPrata" class="form-control" value="5" style="padding: 0.5rem; text-align: center;">
+                        </div>
+                    </div>
                 </div>
                 
                 <button type="submit" class="btn">Salvar Campeonato</button>
@@ -1418,6 +1451,18 @@ if (formatoAberto.includes("Super 4")) {
             setTimeout(() => { avancarVencedorMataMata(); }, 600);
         });
 
+        const radiosFormato = document.querySelectorAll('input[name="formato"]');
+        const divPrata = document.getElementById('pontos-prata');
+        radiosFormato.forEach(r => {
+            r.addEventListener('change', (e) => {
+                if (e.target.value === 'super-4') {
+                    divPrata.style.display = 'block';
+                } else {
+                    divPrata.style.display = 'none';
+                }
+            });
+        });
+
         form.addEventListener('submit', async (e) => {
             e.preventDefault(); const b = form.querySelector('button[type="submit"]'); b.disabled = true;
             try {
@@ -1433,7 +1478,15 @@ if (formatoAberto.includes("Super 4")) {
                         semi: parseInt(document.getElementById('ptsSemi').value) || 50,
                         quartas: parseInt(document.getElementById('ptsQuartas').value) || 40,
                         oitavas: parseInt(document.getElementById('ptsOitavas').value) || 30,
-                        participacao: parseInt(document.getElementById('ptsGrupos').value) || 15
+                        participacao: parseInt(document.getElementById('ptsGrupos').value) || 15,
+                        primeiroGrupo: parseInt(document.getElementById('ptsPrimeiroGrupo').value) || 10,
+                        
+                        campeaoPrata: parseInt(document.getElementById('ptsCampeaoPrata').value) || 60,
+                        vicePrata: parseInt(document.getElementById('ptsVicePrata').value) || 40,
+                        terceiroPrata: parseInt(document.getElementById('ptsTerceiroPrata').value) || 30,
+                        semiPrata: parseInt(document.getElementById('ptsSemiPrata').value) || 20,
+                        quartasPrata: parseInt(document.getElementById('ptsQuartasPrata').value) || 10,
+                        oitavasPrata: parseInt(document.getElementById('ptsOitavasPrata').value) || 5
                     },
                     dataCriacao: serverTimestamp()
                 });
@@ -1588,17 +1641,35 @@ if (formatoAberto.includes("Super 4")) {
             btn.textContent = "Calculando e Enviando Pontos..."; btn.disabled = true;
 
             let rankingNome = torneioAbertoData.ranking; 
-            let pontuacaoTimes = {};
-            let ptsConfig = torneioAbertoData.pontosConfig || { campeao: 100, vice: 80, terceiro: 60, semi: 50, quartas: 40, oitavas: 30, participacao: 15 };
+            let ptsConfig = torneioAbertoData.pontosConfig || { 
+                campeao: 100, vice: 80, terceiro: 60, semi: 50, quartas: 40, oitavas: 30, participacao: 15, primeiroGrupo: 10,
+                campeaoPrata: 60, vicePrata: 40, terceiroPrata: 30, semiPrata: 20, quartasPrata: 10, oitavasPrata: 5 
+            };
 
+            let statsIndividuais = {};
+
+            // 1. ENTREGA OS PONTOS DE PARTICIPAÇÃO PARA TODOS
             inscritosAtuais.forEach(insc => {
-                let nomeTime = insc.jogador2 ? `${insc.jogador1} & ${insc.jogador2}` : insc.jogador1;
-                pontuacaoTimes[nomeTime] = ptsConfig.participacao;
+                if (insc.jogador1) statsIndividuais[insc.jogador1] = { pontos: ptsConfig.participacao, titulos: 0, vitorias: 0, jogos: 0 };
+                if (insc.jogador2) statsIndividuais[insc.jogador2] = { pontos: ptsConfig.participacao, titulos: 0, vitorias: 0, jogos: 0 };
             });
 
+            // 2. ENTREGA O BÓNUS PARA O 1º LUGAR DE CADA GRUPO
+            document.querySelectorAll('#chavesGeradasUI .standings-table tbody').forEach(tb => {
+                let trs = tb.querySelectorAll('tr');
+                if (trs.length > 0) {
+                    let nome1st = trs[0].cells[0].innerText.replace(/[🥇🥈🥉]/g, '').trim();
+                    let jogadores1st = nome1st.split('&').map(j => j.trim());
+                    jogadores1st.forEach(j => {
+                        if (statsIndividuais[j]) statsIndividuais[j].pontos += (ptsConfig.primeiroGrupo || 0);
+                    });
+                }
+            });
+
+            // 3. CALCULA O PONTO MÁXIMO ATINGIDO NO MATA-MATA (OURO E PRATA)
             function processarPontosDeChave(fasesArray, chave) {
-                if (!fasesArray) return;
-                let redutor = chave === 'Prata' ? 0.6 : 1.0;
+                if (!fasesArray || fasesArray.length === 0) return;
+                let maxPontosEquipe = {};
 
                 fasesArray.forEach((faseData, index) => {
                     let jogos = faseData.jogos ? faseData.jogos : faseData;
@@ -1616,47 +1687,54 @@ if (formatoAberto.includes("Super 4")) {
                             let vencedor = salvo.vencedor;
                             let perdedor = (vencedor === jogo.timeA) ? jogo.timeB : jogo.timeA;
 
-                            if (isOitavas) { if(pontuacaoTimes[perdedor] < ptsConfig.oitavas * redutor) pontuacaoTimes[perdedor] = Math.round(ptsConfig.oitavas * redutor); }
-                            if (isQuartas) { if(pontuacaoTimes[perdedor] < ptsConfig.quartas * redutor) pontuacaoTimes[perdedor] = Math.round(ptsConfig.quartas * redutor); }
-                            if (isSemi) { if(pontuacaoTimes[perdedor] < ptsConfig.semi * redutor) pontuacaoTimes[perdedor] = Math.round(ptsConfig.semi * redutor); }
+                            let ptsOitavas = chave === 'Prata' ? (ptsConfig.oitavasPrata || 0) : (ptsConfig.oitavas || 0);
+                            let ptsQuartas = chave === 'Prata' ? (ptsConfig.quartasPrata || 0) : (ptsConfig.quartas || 0);
+                            let ptsSemi = chave === 'Prata' ? (ptsConfig.semiPrata || 0) : (ptsConfig.semi || 0);
+                            let ptsVice = chave === 'Prata' ? (ptsConfig.vicePrata || 0) : (ptsConfig.vice || 0);
+                            let ptsCampeao = chave === 'Prata' ? (ptsConfig.campeaoPrata || 0) : (ptsConfig.campeao || 0);
+                            let ptsTerceiro = chave === 'Prata' ? (ptsConfig.terceiroPrata || 0) : (ptsConfig.terceiro || 0);
+
+                            if (isOitavas) maxPontosEquipe[perdedor] = Math.max(maxPontosEquipe[perdedor]||0, ptsOitavas);
+                            if (isQuartas) maxPontosEquipe[perdedor] = Math.max(maxPontosEquipe[perdedor]||0, ptsQuartas);
+                            if (isSemi) maxPontosEquipe[perdedor] = Math.max(maxPontosEquipe[perdedor]||0, ptsSemi);
                             
                             if (isFinal) {
-                                pontuacaoTimes[vencedor] = Math.round(ptsConfig.campeao * redutor);
-                                pontuacaoTimes[perdedor] = Math.round(ptsConfig.vice * redutor);
+                                maxPontosEquipe[vencedor] = Math.max(maxPontosEquipe[vencedor]||0, ptsCampeao);
+                                maxPontosEquipe[perdedor] = Math.max(maxPontosEquipe[perdedor]||0, ptsVice);
                                 
                                 if (fasesArray.length >= 2) {
                                     let semiJogos = fasesArray[fasesArray.length - 2].jogos || fasesArray[fasesArray.length - 2];
                                     let jogoDoCampeao = semiJogos.find(j => j.timeA === vencedor || j.timeB === vencedor);
                                     if (jogoDoCampeao) {
                                         let terceiro = (jogoDoCampeao.timeA === vencedor) ? jogoDoCampeao.timeB : jogoDoCampeao.timeA;
-                                        pontuacaoTimes[terceiro] = Math.round(ptsConfig.terceiro * redutor);
+                                        maxPontosEquipe[terceiro] = Math.max(maxPontosEquipe[terceiro]||0, ptsTerceiro);
                                     }
                                 }
                             }
                         }
                     });
                 });
+
+                // Aplica os pontos máximos aos jogadores individuais
+                for (let equipe in maxPontosEquipe) {
+                    let pontosMataMata = maxPontosEquipe[equipe];
+                    let jogadores = equipe.split('&').map(j => j.trim());
+                    jogadores.forEach(j => {
+                        if (statsIndividuais[j]) {
+                            statsIndividuais[j].pontos += pontosMataMata;
+                            
+                            // Conta título apenas se for o Campeão (Ouro ou Prata)
+                            if (chave === 'Ouro' && pontosMataMata === ptsConfig.campeao) statsIndividuais[j].titulos = 1;
+                            if (chave === 'Prata' && pontosMataMata === ptsConfig.campeaoPrata) statsIndividuais[j].titulos = 1;
+                        }
+                    });
+                }
             }
 
             processarPontosDeChave(window.fasesMataMata, 'Ouro');
             processarPontosDeChave(window.fasesPrata, 'Prata');
 
-            let statsIndividuais = {};
-            for (let time in pontuacaoTimes) {
-                let jogadores = time.split('&').map(j => j.trim());
-                jogadores.forEach(jogador => {
-                    if (jogador && !jogador.includes("BYE") && !jogador.includes("Aguardando")) {
-                        if (!statsIndividuais[jogador]) {
-                            statsIndividuais[jogador] = { 
-                                pontos: pontuacaoTimes[time], 
-                                titulos: (pontuacaoTimes[time] === ptsConfig.campeao) ? 1 : 0, // Titulo só para Campeão Ouro
-                                vitorias: 0, jogos: 0
-                            };
-                        }
-                    }
-                });
-            }
-
+            // 4. CALCULA JOGOS E VITÓRIAS GERAIS PARA AS ESTATÍSTICAS
             for (let id in jogosSalvos) {
                 let j = jogosSalvos[id];
                 if (!j.vencedor || j.timeA.includes("BYE") || j.timeB.includes("BYE")) continue;
@@ -1670,6 +1748,7 @@ if (formatoAberto.includes("Super 4")) {
                 vencedores.forEach(p => { if(statsIndividuais[p]) statsIndividuais[p].vitorias++; });
             }
 
+            // 5. SALVA TUDO NO FIREBASE
             try {
                 for (let jogador in statsIndividuais) {
                     let stats = statsIndividuais[jogador];
