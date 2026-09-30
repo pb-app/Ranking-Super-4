@@ -400,18 +400,22 @@
                 <div class="panel-card" id="painel-inscritos">
                     <h3>👥 Inscritos</h3>
                     <div class="form-group" id="area-add-inscritos" style="margin-top: 10px;">
-                        <input type="text" id="nomeJogador1" list="sugestoesJogadores" class="form-control" placeholder="Nome do Jogador 1 (Obrigatório)" style="margin-bottom: 8px;">
-                        <input type="text" id="nomeJogador2" list="sugestoesJogadores" class="form-control" placeholder="Nome do Jogador 2 (Deixe em branco se for Simples)">
+    <input type="text" id="nomeJogador1" list="sugestoesJogadores" class="form-control" placeholder="Nome do Jogador 1 (Obrigatório)" style="margin-bottom: 8px;">
+    <input type="text" id="nomeJogador2" list="sugestoesJogadores" class="form-control" placeholder="Nome do Jogador 2 (Deixe em branco se for Simples)" style="margin-bottom: 8px;">
 
-                        <div style="display: flex; align-items: center; gap: 10px; margin: 15px 0 5px 0;">
-                            <input type="checkbox" id="isCabecaDeChave" style="width: 18px; height: 18px; accent-color: #ffd700;">
-                            <label for="isCabecaDeChave" style="margin: 0; color: #ffd700; font-weight: bold; font-size: 0.9rem;">⭐ Cabeça de Chave (Separar no sorteio)</label>
-                        </div>
-                        
-                        <datalist id="sugestoesJogadores"></datalist>
-                        
-                        <button id="btnAddInscrito" class="btn" style="margin-top: 10px; width: 100%;">Adicionar Inscrição</button>
-                    </div>
+    <div style="margin: 15px 0 10px 0;">
+        <label style="color: var(--gray); font-size: 0.85rem; margin-bottom: 5px;">Classificação do Jogador no Sorteio:</label>
+        <select id="tipoJogador" class="form-control" style="border-color: var(--border);">
+            <option value="0">👤 Jogador Normal (Sorteio Aleatório)</option>
+            <option value="1">⭐ Cabeça de Chave 1</option>
+            <option value="2">🌟 Cabeça de Chave 2</option>
+        </select>
+    </div>
+    
+    <datalist id="sugestoesJogadores"></datalist>
+    
+    <button id="btnAddInscrito" class="btn" style="margin-top: 10px; width: 100%;">Adicionar Inscrição</button>
+</div>
                     <ul class="lista-inscritos" id="listaInscritosUI"></ul>
                 </div>
 
@@ -536,6 +540,12 @@
             torneioAbertoData = camp;
             formatoAberto = camp.formato; 
             setsAberto = camp.sets || ""; 
+
+            if (camp.formato.includes("Super 4")) {
+        document.getElementById('nomeJogador2').classList.add('hidden');
+    } else {
+        document.getElementById('nomeJogador2').classList.remove('hidden');
+    }
             
             document.getElementById('detalhe-nome-torneio').textContent = camp.nome;
             document.getElementById('detalhe-formato-torneio').textContent = `Formato: ${camp.formato}`;
@@ -588,6 +598,8 @@
             });
         }
 
+        
+
         document.getElementById('btnMostrarInscritos').addEventListener('click', () => {
             document.getElementById('painel-inscritos').classList.remove('hidden');
             document.getElementById('painel-grid').classList.remove('grid-expandido');
@@ -623,7 +635,10 @@
                     const li = document.createElement('li');
                     li.style.cssText = "display: flex; justify-content: space-between; align-items: center;";
                     
-                    let star = dados.isSeed ? ' ⭐' : '';
+                    let star = '';
+if (dados.nivelSeed === 1) star = ' <span style="color:#ffd700">⭐ C1</span>';
+else if (dados.nivelSeed === 2) star = ' <span style="color:#c0c0c0">🌟 C2</span>';
+else if (dados.isSeed) star = ' ⭐'; // Para compatibilidade com torneios antigos
                     let nomes = dados.jogador2 ? `🎾 <strong>${dados.jogador1}</strong> e <strong>${dados.jogador2}</strong>${star}` : `🎾 <strong>${dados.jogador1}</strong>${star}`;
                     
                     let btnExcluir = isLogged ? `<button onclick="deletarInscrito('${idInscrito}')" class="btn btn-outline" style="padding: 2px 8px; font-size: 0.8rem; border-color: #e74c3c; color: #e74c3c;">🗑️ Excluir</button>` : '';
@@ -673,11 +688,11 @@
 
             document.getElementById('btnAddInscrito').disabled = true;
             try {
-                let isSeed = document.getElementById('isCabecaDeChave').checked;
-                await addDoc(collection(db, "campeonatos", torneioAbertoId, "inscritos"), { jogador1: j1, jogador2: j2, isSeed: isSeed, dataCriacao: serverTimestamp() });
-                
-                document.getElementById('nomeJogador1').value = ''; document.getElementById('nomeJogador2').value = '';
-                document.getElementById('isCabecaDeChave').checked = false;
+                let nivelSeed = parseInt(document.getElementById('tipoJogador').value) || 0;
+await addDoc(collection(db, "campeonatos", torneioAbertoId, "inscritos"), { jogador1: j1, jogador2: j2, nivelSeed: nivelSeed, dataCriacao: serverTimestamp() });
+
+document.getElementById('nomeJogador1').value = ''; document.getElementById('nomeJogador2').value = '';
+document.getElementById('tipoJogador').value = '0'; // Volta ao padrão
                 document.getElementById('nomeJogador1').focus(); 
             } catch (error) { alert("Erro ao inscrever."); } 
             finally { document.getElementById('btnAddInscrito').disabled = false; }
@@ -913,9 +928,50 @@
                 if (!confirm("O torneio já foi sorteado! Gerar novamente vai APAGAR e misturar o chaveamento. Tem certeza?")) return;
             }
 
-            let seeds = inscritosAtuais.filter(i => i.isSeed).sort(() => Math.random() - 0.5);
-            let normais = inscritosAtuais.filter(i => !i.isSeed).sort(() => Math.random() - 0.5);
-            const sorteados = [...seeds, ...normais];
+            let sorteados = [];
+
+if (formatoAberto.includes("Super 4")) {
+    // 1. Separa os jogadores em 3 potes distintos
+    let seeds1 = inscritosAtuais.filter(i => i.nivelSeed === 1).sort(() => Math.random() - 0.5);
+    let seeds2 = inscritosAtuais.filter(i => i.nivelSeed === 2).sort(() => Math.random() - 0.5);
+    let normais = inscritosAtuais.filter(i => i.nivelSeed !== 1 && i.nivelSeed !== 2).sort(() => Math.random() - 0.5);
+    
+    // 2. Define o número de grupos (a basear em 4 jogadores por grupo)
+    let numGrupos = Math.max(1, Math.floor(inscritosAtuais.length / 4));
+    let gruposTemporarios = Array.from({ length: numGrupos }, () => []);
+    
+    // 3. Distribui 1 Cabeça de Chave 1 por grupo
+    for(let i=0; i<numGrupos; i++) {
+        if(seeds1.length > 0) gruposTemporarios[i].push(seeds1.pop());
+    }
+    // 4. Distribui 1 Cabeça de Chave 2 por grupo
+    for(let i=0; i<numGrupos; i++) {
+        if(seeds2.length > 0) gruposTemporarios[i].push(seeds2.pop());
+    }
+    
+    // 5. Preenche os lugares restantes com os jogadores normais
+    let todosRestantes = [...seeds1, ...seeds2, ...normais].sort(() => Math.random() - 0.5);
+    let idx = 0;
+    while(todosRestantes.length > 0) {
+        gruposTemporarios[idx % numGrupos].push(todosRestantes.pop());
+        idx++;
+    }
+    
+    // 6. Formata a lista para o sistema de renderização original
+    sorteados = new Array(inscritosAtuais.length);
+    for (let g = 0; g < numGrupos; g++) {
+        for (let j = 0; j < gruposTemporarios[g].length; j++) {
+            sorteados[g + j * numGrupos] = gruposTemporarios[g][j];
+        }
+    }
+    sorteados = sorteados.filter(item => item !== undefined);
+
+} else {
+    // Mantém a lógica antiga para os formatos de duplas regulares
+    let seeds = inscritosAtuais.filter(i => i.isSeed || i.nivelSeed === 1 || i.nivelSeed === 2).sort(() => Math.random() - 0.5);
+    let normais = inscritosAtuais.filter(i => !i.isSeed && i.nivelSeed !== 1 && i.nivelSeed !== 2).sort(() => Math.random() - 0.5);
+    sorteados = [...seeds, ...normais];
+}
             
             document.getElementById('btnGerarChaves').textContent = "Gerando e Salvando...";
             
