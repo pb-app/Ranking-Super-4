@@ -802,14 +802,13 @@ document.getElementById('tipoJogador').value = '0'; // Volta ao padrão
         window.atualizarTabelaDoGrupo = function(container) {
             const tabelaContainer = container.querySelector('.tabela-container');
             const jogosBox = container.querySelectorAll('.match-box');
+            let isSuper4 = formatoAberto.includes("Super 4");
             
             let stats = {};
             jogosBox.forEach(box => {
                 const tA = box.querySelector('strong:first-of-type').textContent;
                 const tB = box.querySelector('strong:last-of-type').textContent;
-                if (!stats[tA]) stats[tA] = { nome: tA, j:0, v:0, ss:0, sg:0 };
-                if (!stats[tB]) stats[tB] = { nome: tB, j:0, v:0, ss:0, sg:0 };
-
+                
                 let iA = box.querySelectorAll('.p-timeA'), iB = box.querySelectorAll('.p-timeB');
                 let gA = 0, gB = 0, sA = 0, sB = 0, jogou = false;
 
@@ -819,16 +818,46 @@ document.getElementById('tipoJogador').value = '0'; // Volta ao padrão
                 }
 
                 if(jogou) {
-                    stats[tA].j++; stats[tB].j++;
-                    stats[tA].sg += (gA-gB); stats[tB].sg += (gB-gA);
-                    stats[tA].ss += (sA-sB); stats[tB].ss += (sB-sA);
-                    if (sA>sB || (sA===sB && gA>gB)) stats[tA].v++; else if(sB>sA || (sB===sA && gB>gA)) stats[tB].v++;
+                    let winA = (sA>sB || (sA===sB && gA>gB));
+                    let winB = (sB>sA || (sB===sA && gB>gA));
+
+                    if (isSuper4) {
+                        let jA = tA.split('&').map(n => n.trim());
+                        let jB = tB.split('&').map(n => n.trim());
+                        
+                        jA.forEach(nome => {
+                            if(!stats[nome]) stats[nome] = { nome: nome, j:0, v:0, ss:0, sg:0 };
+                            stats[nome].j++; stats[nome].sg += (gA-gB); stats[nome].ss += (sA-sB);
+                            if(winA) stats[nome].v++;
+                        });
+                        jB.forEach(nome => {
+                            if(!stats[nome]) stats[nome] = { nome: nome, j:0, v:0, ss:0, sg:0 };
+                            stats[nome].j++; stats[nome].sg += (gB-gA); stats[nome].ss += (sB-sA);
+                            if(winB) stats[nome].v++;
+                        });
+                    } else {
+                        if (!stats[tA]) stats[tA] = { nome: tA, j:0, v:0, ss:0, sg:0 };
+                        if (!stats[tB]) stats[tB] = { nome: tB, j:0, v:0, ss:0, sg:0 };
+                        
+                        stats[tA].j++; stats[tB].j++;
+                        stats[tA].sg += (gA-gB); stats[tB].sg += (gB-gA);
+                        stats[tA].ss += (sA-sB); stats[tB].ss += (sB-sA);
+                        if (winA) stats[tA].v++; else if(winB) stats[tB].v++;
+                    }
+                } else if (!isSuper4) {
+                    if (!stats[tA]) stats[tA] = { nome: tA, j:0, v:0, ss:0, sg:0 };
+                    if (!stats[tB]) stats[tB] = { nome: tB, j:0, v:0, ss:0, sg:0 };
+                } else if (isSuper4) {
+                    let jA = tA.split('&').map(n => n.trim());
+                    let jB = tB.split('&').map(n => n.trim());
+                    jA.forEach(nome => { if(!stats[nome]) stats[nome] = { nome: nome, j:0, v:0, ss:0, sg:0 }; });
+                    jB.forEach(nome => { if(!stats[nome]) stats[nome] = { nome: nome, j:0, v:0, ss:0, sg:0 }; });
                 }
             });
 
             let classif = Object.values(stats).sort((a,b) => b.v !== a.v ? b.v - a.v : (b.ss !== a.ss ? b.ss - a.ss : b.sg - a.sg));
             
-            let htmlTab = `<table class="standings-table" style="margin-top: 20px;"><thead><tr><th>Dupla</th><th>J</th><th>V</th><th>SS</th><th>SG</th></tr></thead><tbody>`;
+            let htmlTab = `<table class="standings-table" style="margin-top: 20px;"><thead><tr><th>Jogador(a)</th><th>J</th><th>V</th><th>SS</th><th>SG</th></tr></thead><tbody>`;
             classif.forEach((t, i) => {
                 let icone = i === 0 ? '🥇 ' : (i === 1 ? '🥈 ' : (i === 2 ? '🥉 ' : ''));
                 htmlTab += `<tr><td>${icone}${t.nome}</td><td>${t.j}</td><td><strong>${t.v}</strong></td><td>${t.ss}</td><td>${t.sg}</td></tr>`;
@@ -872,18 +901,42 @@ document.getElementById('tipoJogador').value = '0'; // Volta ao padrão
                     html += `<div class="grupo-container" style="margin-bottom: 30px; background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
                                 <h5 style="background: var(--dark); color: #fff; padding: 10px; border-radius: 8px 8px 0 0; text-align: center; margin-bottom: 15px;">🏆 Grupo ${letra}</h5>`;
                     
-                    for (let i = 0; i < grupo.length; i++) {
-                        for (let j = i + 1; j < grupo.length; j++) {
-                            let tA = grupo[i].jogador2 ? `${grupo[i].jogador1} & ${grupo[i].jogador2}` : grupo[i].jogador1;
-                            let tB = grupo[j].jogador2 ? `${grupo[j].jogador1} & ${grupo[j].jogador2}` : grupo[j].jogador1;
-                            let matchId = tA.replace(/\s+/g, '') + "_vs_" + tB.replace(/\s+/g, '');
-                            
+                    if (formatoAberto.includes("Super 4")) {
+                        // Garante que o grupo tem 4 posições
+                        let p = grupo.map(g => g.jogador1);
+                        while (p.length < 4) p.push("Vaga " + (p.length + 1));
+
+                        // Cria as 3 partidas de rotação fixa do Super 4
+                        let combinacoes = [
+                            { tA: `${p[0]} & ${p[1]}`, tB: `${p[2]} & ${p[3]}` },
+                            { tA: `${p[0]} & ${p[2]}`, tB: `${p[1]} & ${p[3]}` },
+                            { tA: `${p[0]} & ${p[3]}`, tB: `${p[1]} & ${p[2]}` }
+                        ];
+                        
+                        combinacoes.forEach(comb => {
+                            let matchId = comb.tA.replace(/\s+/g, '') + "_vs_" + comb.tB.replace(/\s+/g, '');
                             let isResolvido = jogosSalvos[matchId] ? 'resolvido' : '';
                             let btnStyle = jogosSalvos[matchId] ? 'background: var(--primary); color: #fff; border: none;' : 'background: transparent; color: var(--primary); border: 1px solid var(--primary);';
                             let btnText = jogosSalvos[matchId] ? '✅ Salvo!' : '💾 Salvar Placar';
-                            let hideSave = isLogged ? '' : 'hidden'; 
+                            let hideSave = isLogged ? '' : 'hidden';
+                            
+                            html += `<div class="match-box ${isResolvido}"><strong class="t-a" style="color: var(--primary-dark);">${comb.tA}</strong>${gerarInputsPlacar(setsAberto, matchId)}<strong class="t-b" style="color: var(--dark);">${comb.tB}</strong><br><button onclick="salvarPlacar(this)" data-matchid="${matchId}" class="btn ${hideSave}" style="${btnStyle}; margin-top: 10px;">${btnText}</button></div>`;
+                        });
+                    } else {
+                        // Lógica normal para Duplas fixas ou Simples
+                        for (let i = 0; i < grupo.length; i++) {
+                            for (let j = i + 1; j < grupo.length; j++) {
+                                let tA = grupo[i].jogador2 ? `${grupo[i].jogador1} & ${grupo[i].jogador2}` : grupo[i].jogador1;
+                                let tB = grupo[j].jogador2 ? `${grupo[j].jogador1} & ${grupo[j].jogador2}` : grupo[j].jogador1;
+                                let matchId = tA.replace(/\s+/g, '') + "_vs_" + tB.replace(/\s+/g, '');
+                                
+                                let isResolvido = jogosSalvos[matchId] ? 'resolvido' : '';
+                                let btnStyle = jogosSalvos[matchId] ? 'background: var(--primary); color: #fff; border: none;' : 'background: transparent; color: var(--primary); border: 1px solid var(--primary);';
+                                let btnText = jogosSalvos[matchId] ? '✅ Salvo!' : '💾 Salvar Placar';
+                                let hideSave = isLogged ? '' : 'hidden'; 
 
-                            html += `<div class="match-box ${isResolvido}"><strong class="t-a" style="color: var(--primary-dark);">${tA}</strong>${gerarInputsPlacar(setsAberto, matchId)}<strong class="t-b" style="color: var(--dark);">${tB}</strong><br><button onclick="salvarPlacar(this)" data-matchid="${matchId}" class="btn ${hideSave}" style="${btnStyle}; margin-top: 10px;">${btnText}</button></div>`;
+                                html += `<div class="match-box ${isResolvido}"><strong class="t-a" style="color: var(--primary-dark);">${tA}</strong>${gerarInputsPlacar(setsAberto, matchId)}<strong class="t-b" style="color: var(--dark);">${tB}</strong><br><button onclick="salvarPlacar(this)" data-matchid="${matchId}" class="btn ${hideSave}" style="${btnStyle}; margin-top: 10px;">${btnText}</button></div>`;
+                            }
                         }
                     }
                     html += `<div class="tabela-container"></div></div>`;
@@ -1263,20 +1316,41 @@ if (formatoAberto.includes("Super 4")) {
 
             document.querySelectorAll('#chavesGeradasUI .standings-table tbody').forEach(tb => {
                 let trs = tb.querySelectorAll('tr');
-                let qtdTimesNoGrupo = trs.length;
-                let limiteOuro = isSuper4 ? 2 : (qtdTimesNoGrupo >= 4 ? 3 : 2);
+                
+                if (isSuper4 && trs.length >= 4) {
+                    // Puxa o nome dos 4 indivíduos e agrupa em Duplas
+                    let n1 = trs[0].cells[0].innerText.replace(/[🥇🥈🥉]/g, '').trim();
+                    let n2 = trs[1].cells[0].innerText.replace(/[🥇🥈🥉]/g, '').trim();
+                    let n3 = trs[2].cells[0].innerText.replace(/[🥇🥈🥉]/g, '').trim();
+                    let n4 = trs[3].cells[0].innerText.replace(/[🥇🥈🥉]/g, '').trim();
 
-                for (let i = 0; i < trs.length; i++) {
-                    let linha = trs[i];
-                    let nome = linha.cells[0].innerText.replace(/[🥇🥈🥉]/g, '').trim();
-                    let v = parseInt(linha.cells[2].innerText) || 0;
-                    let ss = parseInt(linha.cells[3].innerText) || 0;
-                    let sg = parseInt(linha.cells[4].innerText) || 0;
+                    // Soma estatísticas de desempate para a Dupla Ouro
+                    let vO = (parseInt(trs[0].cells[2].innerText)||0) + (parseInt(trs[1].cells[2].innerText)||0);
+                    let ssO = (parseInt(trs[0].cells[3].innerText)||0) + (parseInt(trs[1].cells[3].innerText)||0);
+                    let sgO = (parseInt(trs[0].cells[4].innerText)||0) + (parseInt(trs[1].cells[4].innerText)||0);
+
+                    // Soma estatísticas de desempate para a Dupla Prata
+                    let vP = (parseInt(trs[2].cells[2].innerText)||0) + (parseInt(trs[3].cells[2].innerText)||0);
+                    let ssP = (parseInt(trs[2].cells[3].innerText)||0) + (parseInt(trs[3].cells[3].innerText)||0);
+                    let sgP = (parseInt(trs[2].cells[4].innerText)||0) + (parseInt(trs[3].cells[4].innerText)||0);
                     
-                    if (i < limiteOuro) {
-                        timesOuro.push({ nome, v, ss, sg });
-                    } else if (isSuper4 && i >= 2 && i < 4) {
-                        timesPrata.push({ nome, v, ss, sg });
+                    timesOuro.push({ nome: `${n1} & ${n2}`, v: vO, ss: ssO, sg: sgO });
+                    timesPrata.push({ nome: `${n3} & ${n4}`, v: vP, ss: ssP, sg: sgP });
+                    
+                } else {
+                    let qtdTimesNoGrupo = trs.length;
+                    let limiteOuro = qtdTimesNoGrupo >= 4 ? 3 : 2;
+
+                    for (let i = 0; i < trs.length; i++) {
+                        let linha = trs[i];
+                        let nome = linha.cells[0].innerText.replace(/[🥇🥈🥉]/g, '').trim();
+                        let v = parseInt(linha.cells[2].innerText) || 0;
+                        let ss = parseInt(linha.cells[3].innerText) || 0;
+                        let sg = parseInt(linha.cells[4].innerText) || 0;
+                        
+                        if (i < limiteOuro) {
+                            timesOuro.push({ nome, v, ss, sg });
+                        }
                     }
                 }
             });
