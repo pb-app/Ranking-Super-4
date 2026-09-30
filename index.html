@@ -887,7 +887,11 @@ document.getElementById('tipoJogador').value = '0'; // Volta ao padrão
 
             if (isGrupos) {
                 let numGrupos = 1;
-                if (sorteados.length >= 6) {
+                
+                // Nova matemática: Divide por 4 no Super 4, e por 3 nas categorias normais
+                if (formatoAberto.includes("Super 4")) {
+                    numGrupos = Math.max(1, Math.floor(sorteados.length / 4));
+                } else if (sorteados.length >= 6) {
                     numGrupos = Math.floor(sorteados.length / 3);
                 }
                 
