@@ -425,7 +425,7 @@
         <section id="details-section" class="hidden">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 10px;">
                 <button id="btnVoltar" class="btn btn-outline" style="border: none; padding-left: 0; color: var(--blue-link) !important; font-weight: 600;">← Voltar</button>
-                <button id="btnExcluirTorneio" class="btn hidden" style="background: #ef4444; color: white;">🗑️ Excluir Torneio</button>
+                <button id="btnExcluirTorneio" class="btn hidden" style="background: #ef4444; color: white;">🗑️️ Excluir Torneio</button>
             </div>
             
             <h2 class="section-title" id="detalhe-nome-torneio" style="margin-bottom: 0.2rem; font-size: 1.6rem;">Nome do Torneio</h2>
@@ -978,7 +978,7 @@
                     </div>`;
                 });
                 if (isLogged) document.getElementById('btnMontarMataMata').classList.remove('hidden');
-            } else { html += '<h4 style="text-align: center; padding: 20px; color:var(--gray);">⚔️ Apenas Eliminatórias</h4>'; }
+            } else { html += '<h4 style="text-align: center; padding: 20px; color:var(--gray);">⚔️️ Apenas Eliminatórias</h4>'; }
             
             chavesUI.innerHTML = html;
 
@@ -1051,21 +1051,17 @@
 
             // 5. LÓGICA DE PREENCHIMENTO INTELIGENTE (AUTO-SEED)
             if (isGrupos) {
-                // Ordena os restantes do maior para o menor ranking
                 restantes.sort((a, b) => b.totalPontos - a.totalPontos);
                 
-                // Preenche Cabeça de Chave 1 até completar 1 por grupo
                 while (seeds1.length < numGrupos && restantes.length > 0) {
                     seeds1.push(restantes.shift());
                 }
                 
-                // Preenche Cabeça de Chave 2 até completar 1 por grupo
                 while (seeds2.length < numGrupos && restantes.length > 0) {
                     seeds2.push(restantes.shift());
                 }
             }
 
-            // 6. EMBARALHA DENTRO DOS SEUS POTES PARA ALEATORIEDADE
             seeds1.sort(() => Math.random() - 0.5);
             seeds2.sort(() => Math.random() - 0.5);
             let normais = restantes.sort(() => Math.random() - 0.5);
@@ -1085,16 +1081,13 @@
                 }
                 sorteados = sorteados.filter(item => item !== undefined);
             } else if (isGrupos) {
-                // Para grupos normais (Liga/Aberto), basta alinhar as arrays. O script de renderizar separa certinho!
                 sorteados = [...seeds1, ...seeds2, ...normais];
             } else {
-                // Mata-Mata direto
                 let mSeeds = inscritosComPontos.filter(i => i.isSeed || i.nivelSeed === 1 || i.nivelSeed === 2).sort(() => Math.random() - 0.5);
                 let mNormais = inscritosComPontos.filter(i => !i.isSeed && i.nivelSeed !== 1 && i.nivelSeed !== 2).sort(() => Math.random() - 0.5);
                 sorteados = [...mSeeds, ...mNormais];
             }
 
-            // Limpa as variáveis extras que usamos no Auto-Seed antes de enviar ao Banco de Dados
             sorteados = sorteados.map(s => {
                 let { totalPontos, ...rest } = s;
                 return rest;
@@ -1324,27 +1317,22 @@
             let playerStatsMap = {};
 
             document.querySelectorAll('#chavesGeradasUI .standings-table tbody').forEach(tb => {
-                tb.querySelectorAll('tr').forEach(tr => {
+                let trs = tb.querySelectorAll('tr');
+                let jogadoresGrupo = [];
+                trs.forEach(tr => {
                     let tdElement = tr.cells[0];
-                    let nomeT = tdElement.getAttribute('data-name') || tdElement.innerText.replace(/👤/g, '').replace(/[🥇🥈🥉]/g, '').trim();
-                    let v = parseInt(tr.cells[2].innerText) || 0; let ss = parseInt(tr.cells[3].innerText) || 0; let sg = parseInt(tr.cells[4].innerText) || 0;
-                    playerStatsMap[nomeT] = { v, ss, sg };
-                });
-            });
-
-            if (isSuper4 && super4Modo === 'sortudo') {
-                let gruposData = [];
-                document.querySelectorAll('#chavesGeradasUI .standings-table tbody').forEach(tb => {
-                    let trs = tb.querySelectorAll('tr'); let gJogadores = [];
-                    trs.forEach(tr => { let n = tr.cells[0].getAttribute('data-name') || tr.cells[0].innerText.replace(/👤/g, '').replace(/[🥇🥈🥉]/g, '').trim(); gJogadores.push(n); });
-                    gruposData.push(gJogadores);
+                    if (tdElement) {
+                        let nomeT = tdElement.getAttribute('data-name') || tdElement.innerText.replace(/👤/g, '').replace(/[🥇🥈🥉]/g, '').trim();
+                        let v = parseInt(tr.cells[2]?.innerText) || 0; 
+                        let ss = parseInt(tr.cells[3]?.innerText) || 0; 
+                        let sg = parseInt(tr.cells[4]?.innerText) || 0;
+                        playerStatsMap[nomeT] = { v, ss, sg };
+                        jogadoresGrupo.push({ nome: nomeT, v, ss, sg });
+                    }
                 });
 
-                let segundosPool = gruposData.map(g => g[1] || '').filter(Boolean).sort(() => Math.random() - 0.5);
-                let quartosPool = gruposData.map(g => g[3] || '').filter(Boolean).sort(() => Math.random() - 0.5);
-
-                gruposData.forEach((g, i) => {
-                    let p1 = g[0]; let p2 = segundosPool[i] || g[1]; let p3 = g[2]; let p4 = quartosPool[i] || g[3];
+                if (isSuper4 && super4Modo === 'sortudo') {
+                    let p1 = jogadoresGrupo[0]?.nome; let p2 = jogadoresGrupo[1]?.nome; let p3 = jogadoresGrupo[2]?.nome; let p4 = jogadoresGrupo[3]?.nome;
                     if (p1 && p2) {
                         let s1 = playerStatsMap[p1] || {v:0, ss:0, sg:0}; let s2 = playerStatsMap[p2] || {v:0, ss:0, sg:0};
                         timesOuro.push({ nome: `${p1} & ${p2}`, v: s1.v+s2.v, ss: s1.ss+s2.ss, sg: s1.sg+s2.sg });
@@ -1353,26 +1341,43 @@
                         let s3 = playerStatsMap[p3] || {v:0, ss:0, sg:0}; let s4 = playerStatsMap[p4] || {v:0, ss:0, sg:0};
                         timesPrata.push({ nome: `${p3} & ${p4}`, v: s3.v+s4.v, ss: s3.ss+s4.ss, sg: s3.sg+s4.sg });
                     }
-                });
-            } else {
-                document.querySelectorAll('#chavesGeradasUI .standings-table tbody').forEach(tb => {
-                    let trs = tb.querySelectorAll('tr');
-                    if (isSuper4 && trs.length >= 4) {
-                        let n1 = trs[0].cells[0].getAttribute('data-name'); let n2 = trs[1].cells[0].getAttribute('data-name');
-                        let n3 = trs[2].cells[0].getAttribute('data-name'); let n4 = trs[3].cells[0].getAttribute('data-name');
-                        let vO = (parseInt(trs[0].cells[2].innerText)||0) + (parseInt(trs[1].cells[2].innerText)||0);
-                        let vP = (parseInt(trs[2].cells[2].innerText)||0) + (parseInt(trs[3].cells[2].innerText)||0);
-                        timesOuro.push({ nome: `${n1} & ${n2}`, v: vO, ss: 0, sg: 0 }); timesPrata.push({ nome: `${n3} & ${n4}`, v: vP, ss: 0, sg: 0 });
-                    } else {
-                        let limiteOuro = trs.length >= 4 ? 3 : 2;
-                        for (let i = 0; i < trs.length; i++) {
-                            let n = trs[i].cells[0].getAttribute('data-name') || trs[i].cells[0].innerText.replace(/👤/g, '').replace(/[🥇🥈🥉]/g, '').trim();
-                            let v = parseInt(trs[i].cells[2].innerText) || 0;
-                            if (i < limiteOuro) { timesOuro.push({ nome: n, v, ss:0, sg:0 }); }
+                } else if (isSuper4) {
+                    let metade = Math.ceil(jogadoresGrupo.length / 2);
+                    let ouroJogadores = jogadoresGrupo.slice(0, metade);
+                    let prataJogadores = jogadoresGrupo.slice(metade);
+
+                    for (let i = 0; i < ouroJogadores.length; i += 2) {
+                        let p1 = ouroJogadores[i]?.nome;
+                        let p2 = ouroJogadores[i+1]?.nome || ouroJogadores[0]?.nome;
+                        if (p1 && p2 && p1 !== p2) {
+                            let s1 = playerStatsMap[p1] || {v:0, ss:0, sg:0}; 
+                            let s2 = playerStatsMap[p2] || {v:0, ss:0, sg:0};
+                            timesOuro.push({ nome: `${p1} & ${p2}`, v: s1.v+s2.v, ss: s1.ss+s2.ss, sg: s1.sg+s2.sg });
+                        } else if (p1) {
+                            timesOuro.push({ nome: p1, v: playerStatsMap[p1].v, ss: 0, sg: 0 });
                         }
                     }
-                });
-            }
+
+                    for (let i = 0; i < prataJogadores.length; i += 2) {
+                        let p1 = prataJogadores[i]?.nome;
+                        let p2 = prataJogadores[i+1]?.nome || prataJogadores[0]?.nome;
+                        if (p1 && p2 && p1 !== p2) {
+                            let s1 = playerStatsMap[p1] || {v:0, ss:0, sg:0}; 
+                            let s2 = playerStatsMap[p2] || {v:0, ss:0, sg:0};
+                            timesPrata.push({ nome: `${p1} & ${p2}`, v: s1.v+s2.v, ss: s1.ss+s2.ss, sg: s1.sg+s2.sg });
+                        } else if (p1) {
+                            timesPrata.push({ nome: p1, v: playerStatsMap[p1].v, ss: 0, sg: 0 });
+                        }
+                    }
+                } else {
+                    let limiteOuro = trs.length >= 4 ? 3 : 2;
+                    for (let i = 0; i < trs.length; i++) {
+                        let n = trs[i].cells[0].getAttribute('data-name') || trs[i].cells[0].innerText.replace(/👤/g, '').replace(/[🥇🥈🥉]/g, '').trim();
+                        let v = parseInt(trs[i].cells[2].innerText) || 0;
+                        if (i < limiteOuro) { timesOuro.push({ nome: n, v, ss:0, sg:0 }); }
+                    }
+                }
+            });
 
             if (timesOuro.length < 2) { alert("Sem dados suficientes das tabelas!"); return; }
 
