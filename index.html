@@ -227,7 +227,11 @@
                     </div>
                 </div>
                 
-                <button type="submit" class="btn" style="width: 100%;">Salvar Alterações</button>
+                <!-- BOTÃO DE EXCLUIR ADICIONADO AQUI -->
+                <div style="display: flex; gap: 10px;">
+                    <button type="submit" class="btn" style="flex: 2;">Salvar Alterações</button>
+                    <button type="button" onclick="excluirJogadorRanking()" class="btn btn-outline" style="flex: 1; border-color: #ef4444; color: #ef4444 !important;" title="Excluir Jogador Definitivamente">🗑️ Excluir</button>
+                </div>
             </form>
         </div>
     </div>
@@ -1687,6 +1691,24 @@
                 document.getElementById('modalEditPlayer').classList.add('hidden'); carregarRanking();
             } catch (err) { alert("Erro ao editar."); } finally { btn.textContent = "Salvar Alterações"; btn.disabled = false; }
         });
+        
+        // FUNÇÃO PARA EXCLUIR O JOGADOR DEFINITIVAMENTE DO RANKING
+        window.excluirJogadorRanking = async function() {
+            const id = document.getElementById('editPlayerId').value;
+            const categoria = document.getElementById('editPlayerCategoria').value;
+            const nome = document.getElementById('editNomeTitle').textContent;
+            
+            if (confirm(`🚨 AÇÃO DEFINITIVA!\n\nTem certeza que deseja EXCLUIR DEFINITIVAMENTE o jogador "${nome}" do ranking ${categoria}?\nTodos os pontos serão perdidos.`)) {
+                try {
+                    await deleteDoc(doc(db, "rankings", categoria, "jogadores", id));
+                    document.getElementById('modalEditPlayer').classList.add('hidden');
+                    alert("Jogador excluído com sucesso!");
+                    carregarRanking();
+                } catch (error) {
+                    alert("Erro ao excluir jogador: " + error.message);
+                }
+            }
+        };
 
         document.getElementById('btnZerarRanking').addEventListener('click', () => {
             let rankingNome = filtroRanking.options[filtroRanking.selectedIndex]?.text;
