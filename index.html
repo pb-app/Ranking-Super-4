@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ranking Confra & Play</title>
+    <title>Liga Corja de BT</title>
     
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#0b0c0f">
+    <meta name="theme-color" content="#ffffff">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Liga BT">
     
     <link rel="apple-touch-icon" href="icon-192.png">
@@ -18,214 +18,245 @@
 
     <style>
         /* Importando a Fonte Moderna do Google */
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Poppins:wght@400;500;600;700&display=swap');
 
-        /* Variáveis de Cores - MODO ESCURO PREMIUM */
+        /* Variáveis de Cores - TEMA LETZPLAY (CLEAN / LIGHT MODE) */
         :root {
-            /* O Verde Neon Tecnológico */
-            --primary: #0ce87e; 
-            --primary-dark: #00b35e;
-            --primary-glow: rgba(12, 232, 126, 0.35);
+            --primary: #ff6b00;       /* Laranja LetzPlay (Marca/Botões Principais) */
+            --primary-dark: #e65c00;
+            --secondary: #1a73e8;     /* Azul LetzPlay (Links, Abas ativas, Botões secundários) */
+            --secondary-hover: #1557b0;
             
-            /* A Mágica do Dark Mode (Invertemos os papéis!) */
-            --dark: #f8f9fa;       /* Textos agora são brancos/claros */
-            --light: #0b0c0f;      /* Fundo da página agora é quase preto */
-            --white: #16191f;      /* Cards agora são cinza chumbo escuro */
-            --gray: #8a919e;       /* Cinza para textos secundários */
-            --border: #272c36;     /* Bordas sutis dos cartões */
+            --dark: #202124;          /* Textos Principais */
+            --light: #f0f2f5;         /* Fundo do App (Cinza super claro) */
+            --white: #ffffff;         /* Cards e Painéis */
+            --gray: #5f6368;          /* Textos secundários / Legendas */
+            --border: #e4e6eb;        /* Bordas limpas e suaves */
+            
+            --font-main: 'Roboto', sans-serif;
+            --font-heading: 'Poppins', sans-serif;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: var(--font-main); }
         
         body { 
             background-color: var(--light); 
             color: var(--dark); 
             max-width: 100vw; 
             overflow-x: hidden; 
-            -webkit-font-smoothing: antialiased; /* Deixa a fonte mais suave nas telas */
+            -webkit-font-smoothing: antialiased; 
         }
 
-        /* Navbar com Efeito Glassmorphism (Vidro Desfocado) */
+        /* Navbar Clean */
         header { 
-            background-color: rgba(22, 25, 31, 0.85); 
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            background-color: var(--white); 
             border-bottom: 1px solid var(--border); 
-            padding: 1.2rem 5%; 
+            padding: 1rem 5%; 
             display: flex; justify-content: space-between; align-items: center; 
             position: sticky; top: 0; z-index: 100;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
         }
-        header h1 { color: var(--primary); font-size: 1.7rem; font-weight: 700; text-shadow: 0 0 15px var(--primary-glow); letter-spacing: -0.5px;}
+        header h1 { 
+            color: var(--primary); 
+            font-family: var(--font-heading);
+            font-size: 1.5rem; 
+            font-weight: 700; 
+            letter-spacing: -0.5px;
+        }
         
-        /* Botões Modernos */
+        /* Botões Estilo App */
         .btn { 
-            background-color: var(--primary); color: #000 !important; border: none; 
-            padding: 0.7rem 1.2rem; border-radius: 10px; font-weight: 600; cursor: pointer; 
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
-            font-family: 'Poppins', sans-serif;
-            text-transform: uppercase; font-size: 0.85rem; letter-spacing: 0.5px;
+            background-color: var(--primary); color: #ffffff !important; border: none; 
+            padding: 0.7rem 1.2rem; border-radius: 8px; font-weight: 500; cursor: pointer; 
+            transition: all 0.2s ease; 
+            font-family: var(--font-heading);
+            font-size: 0.85rem; letter-spacing: 0.3px;
         }
         .btn:hover:not(:disabled) { 
-            background-color: var(--primary); transform: translateY(-3px); 
-            box-shadow: 0 8px 25px var(--primary-glow); 
+            background-color: var(--primary-dark); transform: translateY(-1px); 
+            box-shadow: 0 4px 12px rgba(255, 107, 0, 0.2); 
         }
         .btn:disabled { opacity: 0.5; cursor: not-allowed; }
         
-        .btn-outline { background-color: transparent !important; color: var(--primary) !important; border: 1.5px solid var(--primary); }
-        .btn-outline:hover:not(:disabled) { background-color: rgba(12, 232, 126, 0.1) !important; color: var(--primary) !important; }
+        .btn-outline { 
+            background-color: transparent !important; 
+            color: var(--secondary) !important; 
+            border: 1px solid var(--secondary); 
+        }
+        .btn-outline:hover:not(:disabled) { 
+            background-color: rgba(26, 115, 232, 0.05) !important; 
+        }
 
         /* Estrutura Principal */
-        main { padding: 3rem 5%; max-width: 1200px; margin: 0 auto; }
-        .section-title { margin-bottom: 2.5rem; font-size: 2rem; font-weight: 700; display: inline-block; position: relative; letter-spacing: -0.5px; }
-        .section-title::after { content: ''; position: absolute; left: 0; bottom: -8px; width: 50px; height: 4px; background: var(--primary); border-radius: 4px; box-shadow: 0 0 10px var(--primary-glow); }
+        main { padding: 2rem 5%; max-width: 1200px; margin: 0 auto; }
+        .section-title { 
+            margin-bottom: 2rem; font-size: 1.6rem; font-weight: 600; 
+            font-family: var(--font-heading); color: var(--dark);
+        }
         .hidden { display: none !important; }
 
         /* Inputs e Formulários */
         .form-control { 
-            width: 100%; padding: 1rem 1.2rem; background-color: #0b0c0f; 
-            border: 1.5px solid var(--border); border-radius: 10px; color: var(--dark); 
-            font-size: 0.95rem; transition: all 0.3s; font-family: 'Poppins', sans-serif;
+            width: 100%; padding: 0.9rem 1rem; background-color: var(--white); 
+            border: 1px solid #ced4da; border-radius: 8px; color: var(--dark); 
+            font-size: 0.95rem; transition: all 0.2s; 
         }
-        .form-control:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px var(--primary-glow); background-color: #12141a;}
-        .form-control::placeholder { color: #5c6370; }
-        .form-group { margin-bottom: 1.5rem; }
-        .form-group label { display: block; margin-bottom: 0.7rem; font-weight: 600; font-size: 0.95rem; color: var(--gray); }
+        .form-control:focus { outline: none; border-color: var(--secondary); box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.15); }
+        .form-control::placeholder { color: #adb5bd; }
+        .form-group { margin-bottom: 1.2rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem; color: var(--dark); }
         .radio-group { display: flex; flex-wrap: wrap; gap: 1.5rem; margin-top: 0.5rem; }
 
         /* Cards Principais (Torneios e Painéis) */
-        #create-section, #details-section { background-color: var(--white); padding: 2.5rem; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); border: 1px solid var(--border); }
-        .tournaments-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 2rem; }
-        .tournament-card { 
-            background-color: var(--white); border-radius: 16px; padding: 1.8rem; 
-            box-shadow: 0 8px 24px rgba(0,0,0,0.2); border: 1px solid var(--border); 
-            cursor: pointer; transition: all 0.3s; position: relative; overflow: hidden;
-            border-top: 4px solid var(--border);
+        #create-section, #details-section { 
+            background-color: var(--white); padding: 2rem; border-radius: 12px; 
+            box-shadow: 0 2px 15px rgba(0,0,0,0.04); border: 1px solid var(--border); 
         }
-        .tournament-card:hover { transform: translateY(-6px); box-shadow: 0 12px 32px rgba(0,0,0,0.4); border-top-color: var(--primary); }
-        .tournament-card h3 { margin-bottom: 0.8rem; font-size: 1.4rem; font-weight: 600; }
-        .tournament-card p { color: var(--gray); font-size: 0.95rem; margin-bottom: 0.5rem; }
-        .badge { display: inline-block; background-color: #2c323d; padding: 0.4rem 0.8rem; border-radius: 6px; font-size: 0.85rem; margin-top: 1rem; font-weight: 600; color: var(--primary); letter-spacing: 0.5px; }
+        .tournaments-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
+        .tournament-card { 
+            background-color: var(--white); border-radius: 12px; padding: 1.5rem; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04); border: 1px solid var(--border); 
+            cursor: pointer; transition: all 0.2s; position: relative;
+            border-left: 4px solid var(--primary);
+        }
+        .tournament-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.08); }
+        .tournament-card h3 { margin-bottom: 0.5rem; font-size: 1.2rem; font-weight: 600; font-family: var(--font-heading);}
+        .tournament-card p { color: var(--gray); font-size: 0.9rem; margin-bottom: 0.5rem; }
+        .badge { display: inline-block; background-color: #f8f9fa; padding: 0.3rem 0.6rem; border-radius: 4px; font-size: 0.8rem; margin-top: 0.5rem; font-weight: 500; color: var(--secondary); border: 1px solid var(--border); }
 
         /* Grade do Painel Interno */
-        .panel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; margin-top: 1.5rem; transition: all 0.3s ease; }
-        .panel-card { background-color: #12141a; padding: 1.8rem; border-radius: 16px; border: 1px solid var(--border); min-width: 0; overflow-x: hidden; }
+        .panel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 1.5rem; transition: all 0.3s ease; }
+        .panel-card { background-color: var(--white); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border); min-width: 0; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
+        
         .lista-inscritos { list-style: none; margin-top: 1.5rem; }
         .lista-inscritos li { 
-            background: var(--white); padding: 1rem 1.2rem; margin-bottom: 0.8rem; 
-            border-radius: 10px; border-left: 4px solid var(--primary); 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-top: 1px solid var(--border); border-right: 1px solid var(--border); border-bottom: 1px solid var(--border);
+            background: #f8f9fa; padding: 0.8rem 1rem; margin-bottom: 0.5rem; 
+            border-radius: 8px; border-left: 3px solid var(--secondary); 
+            border-top: 1px solid var(--border); border-right: 1px solid var(--border); border-bottom: 1px solid var(--border);
+            font-size: 0.9rem;
         }
         .grid-expandido { grid-template-columns: 1fr !important; }
 
         /* Responsividade Profissional para Celular */
         @media (max-width: 768px) { 
-            main { padding: 2rem 5px; } 
-            #create-section, #details-section { padding: 1.5rem 10px; border-radius: 12px; }
-            .panel-card { padding: 1.2rem 10px; }
+            main { padding: 1.5rem 10px; } 
+            #create-section, #details-section { padding: 1.2rem 10px; border-radius: 10px; }
+            .panel-card { padding: 1rem 10px; border: none; box-shadow: none; border-top: 1px solid var(--border); border-radius: 0;}
             #navegadorFases { padding: 10px 5px !important; }
-            .panel-grid { grid-template-columns: 1fr !important; } 
+            .panel-grid { grid-template-columns: 1fr !important; gap: 0; } 
             header { flex-direction: column; padding: 1rem; gap: 15px; }
             #nav-menu { margin-left: 0 !important; margin-right: 0 !important; width: 100%; justify-content: center; flex-wrap: wrap; }
             #auth-area { width: 100%; display: flex; justify-content: center; }
             #user-menu { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; }
-            #user-menu span { margin-right: 0 !important; font-size: 0.9rem; }
-            #ranking-section > div:last-child { padding: 10px !important; overflow-x: auto !important; -webkit-overflow-scrolling: touch; }
+            #user-menu span { margin-right: 0 !important; font-size: 0.9rem; color: var(--gray); }
+            #ranking-section > div:last-child { padding: 5px !important; overflow-x: auto !important; -webkit-overflow-scrolling: touch; border: none; box-shadow: none; }
             .standings-table { min-width: 420px; }
             .standings-table th, .standings-table td { padding: 10px 8px !important; font-size: 0.85rem !important; }
         }
 
         /* Tabelas de Classificação */
         .tabela-container { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-        .standings-table { width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 15px; margin-bottom: 25px; background-color: var(--white); border-radius: 12px; overflow: hidden; box-shadow: 0 6px 20px rgba(0,0,0,0.15); border: 1px solid var(--border); }
-        .standings-table th, .standings-table td { padding: 14px 15px; text-align: center; border-bottom: 1px solid var(--border); }
-        .standings-table th { background-color: #0b0c0f; color: var(--gray); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+        .standings-table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 20px; background-color: var(--white); border-radius: 8px; overflow: hidden; font-size: 0.9rem; }
+        .standings-table th, .standings-table td { padding: 12px 10px; text-align: center; border-bottom: 1px solid var(--border); }
+        .standings-table th { background-color: #f8f9fa; color: var(--gray); font-size: 0.75rem; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; border-bottom: 2px solid var(--border); }
         .standings-table tr:last-child td { border-bottom: none; }
-        .standings-table tr:nth-child(1) td, .standings-table tr:nth-child(2) td { background-color: rgba(12, 232, 126, 0.05); }
-        .standings-table td:first-child { text-align: left; font-weight: 600; }
+        .standings-table td:first-child { text-align: left; font-weight: 500; color: var(--dark); }
 
         /* Placares e Chaves */
         .match-box, .bracket-match { 
-            background-color: var(--white); padding: 18px; margin: 12px 0; border-radius: 12px; 
-            text-align: center; border: 1px solid var(--border); border-left: 4px solid #3a414e; transition: all 0.3s; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            background-color: #f8f9fa; padding: 15px; margin: 10px 0; border-radius: 8px; 
+            text-align: center; border: 1px solid var(--border); transition: all 0.2s; 
         }
-        .match-box.resolvido, .bracket-match.resolvido { border-left-color: var(--primary); }
-        .match-score { display: flex; align-items: center; justify-content: center; gap: 15px; margin: 15px 0; }
+        .match-box.resolvido, .bracket-match.resolvido { background-color: var(--white); border-left: 3px solid var(--secondary); }
+        .match-score { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 12px 0; }
         .score-input { 
-            width: 55px; height: 50px; background: #0b0c0f; color: var(--dark); text-align: center; 
-            font-size: 1.4rem; border: 1.5px solid var(--border); border-radius: 8px; font-weight: 700; transition: all 0.3s; font-family: 'Poppins', sans-serif;
+            width: 45px; height: 45px; background: var(--white); color: var(--dark); text-align: center; 
+            font-size: 1.2rem; border: 1px solid #ced4da; border-radius: 6px; font-weight: 600; transition: all 0.2s;
         }
-        .score-input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 10px var(--primary-glow); }
-        .score-input:disabled { opacity: 0.6; cursor: not-allowed; }
+        .score-input:focus { border-color: var(--secondary); outline: none; box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.15); }
+        .score-input:disabled { opacity: 0.6; cursor: not-allowed; background: #e9ecef; }
 
         /* Layout Abas/Fases LetzPlay */
         #mataMataUI { width: 100%; padding-bottom: 15px; }
         .bracket-container { display: block; margin-top: 10px; padding: 0; border-top: none; width: 100%; }
-        .bracket-round { display: none; flex-direction: column; width: 100%; gap: 15px; animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        .bracket-round { display: none; flex-direction: column; width: 100%; gap: 10px; animation: fadeIn 0.3s ease; }
         .bracket-round.fase-ativa { display: flex; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         /* Modals */
-        .modal-content { background: var(--white) !important; color: var(--dark) !important; border: 1px solid var(--border); box-shadow: 0 25px 50px rgba(0,0,0,0.5); }
+        .modal-content { background: var(--white) !important; color: var(--dark) !important; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
 
-        #nav-menu .btn { border-radius: 8px !important; border: 1.5px solid transparent !important; }
-        #btnAbaCampeonatos[style*="background: var(--white)"], #btnAbaRankings[style*="background: var(--white)"] { background: var(--primary) !important; color: #000 !important; box-shadow: 0 0 15px var(--primary-glow); }
-        #btnAbaCampeonatos[style*="background: transparent"], #btnAbaRankings[style*="background: transparent"] { background: transparent !important; color: var(--gray) !important; border-color: var(--border) !important; box-shadow: none; }
+        /* TRUQUES PARA SUBSTITUIR OS INLINES DO JS */
+        #nav-menu .btn { border-radius: 20px !important; border: 1px solid transparent !important; font-size: 0.8rem; padding: 0.5rem 1rem;}
         
-        [style*="color: var(--white); border-color: var(--white)"] { color: var(--dark) !important; border-color: var(--border) !important; }
+        /* Abas Ativas do Header (Simulando LetzPlay) */
+        #btnAbaCampeonatos[style*="background: var(--white)"], #btnAbaRankings[style*="background: var(--white)"] { 
+            background: rgba(26, 115, 232, 0.1) !important; color: var(--secondary) !important; font-weight: 600; box-shadow: none !important;
+        }
+        #btnAbaCampeonatos[style*="background: transparent"], #btnAbaRankings[style*="background: transparent"] { 
+            background: transparent !important; color: var(--gray) !important; border-color: transparent !important; font-weight: 400;
+        }
         
-        #navegadorFases { background: var(--white) !important; border: 1px solid var(--border); box-shadow: 0 8px 20px rgba(0,0,0,0.2) !important; border-radius: 12px !important;}
-        #tituloFaseAtual { color: var(--primary) !important; text-shadow: 0 0 10px var(--primary-glow) !important; }
+        /* Ajuste dos Botões Login/Organizador no Header */
+        [style*="color: var(--white); border-color: var(--white)"] { color: var(--gray) !important; border-color: var(--border) !important; }
+        [style*="color: var(--white)"] { color: var(--dark) !important; }
+        
+        /* Navegador de Fases (Abas Ouro/Prata) */
+        #navegadorFases { background: var(--white) !important; border: 1px solid var(--border); box-shadow: 0 2px 8px rgba(0,0,0,0.03) !important; border-radius: 8px !important;}
+        #tituloFaseAtual { color: var(--dark) !important; text-shadow: none !important; font-family: var(--font-heading); font-weight: 600;}
+        #btnFaseAnterior, #btnFaseProxima { color: var(--secondary) !important; border-color: var(--border) !important; background: #f8f9fa !important; }
 
-        #chavesGeradasUI > div { background: var(--white) !important; border: 1px solid var(--border); box-shadow: 0 8px 24px rgba(0,0,0,0.2) !important; border-radius: 16px !important; }
-        #chavesGeradasUI > div > h5 { background: #0b0c0f !important; color: var(--dark) !important; border-bottom: 1px solid var(--border); border-radius: 14px 14px 0 0 !important; font-weight: 600; font-size: 1.1rem; }
+        #chavesGeradasUI > div { background: var(--white) !important; border: 1px solid var(--border); box-shadow: 0 2px 5px rgba(0,0,0,0.02) !important; border-radius: 12px !important; }
+        
+        /* Estilos dos Textos (Times e Nomes) */
+        .t-a, .t-b { color: var(--dark) !important; font-weight: 500; font-size: 0.95rem; }
+        [style*="color: var(--primary-dark)"] { color: var(--secondary) !important; text-shadow: none !important; } /* Nomes dos times em Azul LetzPlay */
 
-        .t-a, .t-b { color: var(--dark) !important; font-weight: 600; font-size: 1.05rem; }
-        [style*="color: var(--primary-dark)"] { color: var(--primary) !important; text-shadow: 0 0 8px var(--primary-glow); }
+        /* Botões de Ação Especiais */
+        [style*="background-color: #e74c3c"] { background: #dc3545 !important; box-shadow: none !important; color: #fff !important; }
+        [style*="background-color: #ff9800"] { background: var(--primary) !important; box-shadow: none !important; color: #fff !important; }
+        [style*="background-color: #25D366"] { background: #25D366 !important; box-shadow: none !important; color: #fff !important;}
 
-        [style*="background-color: #e74c3c"] { background: linear-gradient(135deg, #e74c3c, #c0392b) !important; box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3) !important; }
-        [style*="background-color: #ff9800"] { background: linear-gradient(135deg, #ff9800, #e67e22) !important; box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3) !important; color: #000 !important; }
-        [style*="background-color: #25D366"] { background: linear-gradient(135deg, #25D366, #1da851) !important; box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3) !important; color: #000 !important;}
+        /* Modal do Perfil e Pódio */
+        [style*="background: #0b0c0f"] { background: #f8f9fa !important; border-color: var(--border) !important; }
+        [style*="color: #fff"] { color: var(--dark) !important; }
+        [style*="rgba(0,0,0,0.7)"] { background: rgba(0,0,0,0.4) !important; backdrop-filter: blur(2px); }
 
-        #podioUI > div { background: linear-gradient(145deg, #1c212a, #0b0c0f) !important; border: 1px solid var(--border); border-top: 4px solid #ffd700 !important; box-shadow: 0 12px 35px rgba(0,0,0,0.4) !important; border-radius: 16px !important; }
-        [style*="background: var(--light)"] { background: #0b0c0f !important; border-color: var(--border) !important; }
-        [style*="background: rgba(0,0,0,0.7)"] { backdrop-filter: blur(8px); } 
     </style>
 </head>
 <body>
 
-    <div id="modalPerfilJogador" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(5px);">
-        <div style="background: var(--white); padding: 2rem; border-radius: 16px; width: 90%; max-width: 400px; text-align: center; position: relative; border: 1px solid var(--border); box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
+    <div id="modalPerfilJogador" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 1000; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(2px);">
+        <div style="background: var(--white); padding: 2rem; border-radius: 12px; width: 90%; max-width: 400px; text-align: center; position: relative; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
             <button type="button" id="btnFecharPerfilTop" style="position: absolute; top: 10px; right: 15px; background: transparent; border: none; font-size: 1.5rem; cursor: pointer; color: var(--gray);">&times;</button>
-            <div style="font-size: 3.5rem; margin-bottom: 5px; text-shadow: 0 4px 10px rgba(0,0,0,0.2);">👤</div>
-            <h2 id="perfilNome" style="color: var(--dark); margin-bottom: 5px;">Nome do Jogador</h2>
-            <p style="color: var(--gray); margin-bottom: 20px; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px;">Estatísticas Oficiais</p>
+            <div style="font-size: 3rem; margin-bottom: 5px;">👤</div>
+            <h2 id="perfilNome" style="color: var(--dark); margin-bottom: 5px; font-family: var(--font-heading); font-size: 1.3rem;">Nome do Jogador</h2>
+            <p style="color: var(--gray); margin-bottom: 20px; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px;">Estatísticas Oficiais</p>
             
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; background: #0b0c0f; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--border);">
-                <div style="background: var(--white); padding: 10px; border-radius: 8px; border-bottom: 3px solid var(--primary);">
-                    <div style="font-size: 1.8rem; font-weight: bold; color: var(--primary);" id="perfilPontos">0</div>
-                    <div style="font-size: 0.75rem; color: var(--gray); text-transform: uppercase; font-weight: 600;">Pontos</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid var(--border);">
+                <div style="background: var(--white); padding: 10px; border-radius: 6px; border: 1px solid var(--border);">
+                    <div style="font-size: 1.5rem; font-weight: bold; color: var(--primary);" id="perfilPontos">0</div>
+                    <div style="font-size: 0.7rem; color: var(--gray); text-transform: uppercase; font-weight: 500;">Pontos</div>
                 </div>
-                <div style="background: var(--white); padding: 10px; border-radius: 8px; border-bottom: 3px solid #3498db;">
-                    <div style="font-size: 1.8rem; font-weight: bold; color: #3498db;" id="perfilTorneios">0</div>
-                    <div style="font-size: 0.75rem; color: var(--gray); text-transform: uppercase; font-weight: 600;">Torneios</div>
+                <div style="background: var(--white); padding: 10px; border-radius: 6px; border: 1px solid var(--border);">
+                    <div style="font-size: 1.5rem; font-weight: bold; color: var(--secondary);" id="perfilTorneios">0</div>
+                    <div style="font-size: 0.7rem; color: var(--gray); text-transform: uppercase; font-weight: 500;">Torneios</div>
                 </div>
-                <div style="background: var(--white); padding: 10px; border-radius: 8px; border-bottom: 3px solid #ffd700;">
-                    <div style="font-size: 1.8rem; font-weight: bold; color: #ffd700;" id="perfilTitulos">0</div>
-                    <div style="font-size: 0.75rem; color: var(--gray); text-transform: uppercase; font-weight: 600;">Títulos 🥇</div>
+                <div style="background: var(--white); padding: 10px; border-radius: 6px; border: 1px solid var(--border);">
+                    <div style="font-size: 1.5rem; font-weight: bold; color: #d4af37;" id="perfilTitulos">0</div>
+                    <div style="font-size: 0.7rem; color: var(--gray); text-transform: uppercase; font-weight: 500;">Títulos 🥇</div>
                 </div>
-                <div style="background: var(--white); padding: 10px; border-radius: 8px; border-bottom: 3px solid #9b59b6;">
-                    <div style="font-size: 1.8rem; font-weight: bold; color: #9b59b6;" id="perfilAproveitamento">0%</div>
-                    <div style="font-size: 0.75rem; color: var(--gray); text-transform: uppercase; font-weight: 600;">Desempenho</div>
+                <div style="background: var(--white); padding: 10px; border-radius: 6px; border: 1px solid var(--border);">
+                    <div style="font-size: 1.5rem; font-weight: bold; color: #6f42c1;" id="perfilAproveitamento">0%</div>
+                    <div style="font-size: 0.7rem; color: var(--gray); text-transform: uppercase; font-weight: 500;">Desempenho</div>
                 </div>
-                <div style="background: var(--white); padding: 10px; border-radius: 8px; border-bottom: 3px solid #2ecc71;">
-                    <div style="font-size: 1.8rem; font-weight: bold; color: #2ecc71;" id="perfilVitorias">0</div>
-                    <div style="font-size: 0.75rem; color: var(--gray); text-transform: uppercase; font-weight: 600;">Vitórias ✅</div>
+                <div style="background: var(--white); padding: 10px; border-radius: 6px; border: 1px solid var(--border);">
+                    <div style="font-size: 1.5rem; font-weight: bold; color: #198754;" id="perfilVitorias">0</div>
+                    <div style="font-size: 0.7rem; color: var(--gray); text-transform: uppercase; font-weight: 500;">Vitórias ✅</div>
                 </div>
-                <div style="background: var(--white); padding: 10px; border-radius: 8px; border-bottom: 3px solid #e74c3c;">
-                    <div style="font-size: 1.8rem; font-weight: bold; color: #e74c3c;" id="perfilDerrotas">0</div>
-                    <div style="font-size: 0.75rem; color: var(--gray); text-transform: uppercase; font-weight: 600;">Derrotas ❌</div>
+                <div style="background: var(--white); padding: 10px; border-radius: 6px; border: 1px solid var(--border);">
+                    <div style="font-size: 1.5rem; font-weight: bold; color: #dc3545;" id="perfilDerrotas">0</div>
+                    <div style="font-size: 0.7rem; color: var(--gray); text-transform: uppercase; font-weight: 500;">Derrotas ❌</div>
                 </div>
             </div>
             
@@ -233,9 +264,9 @@
         </div>
     </div>
 
-    <div id="modalRankings" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; display: flex; justify-content: center; align-items: center;">
-        <div style="background: var(--white); padding: 2rem; border-radius: 10px; width: 90%; max-width: 400px;">
-            <h3 style="margin-bottom: 1rem; color: var(--dark);">Gerenciar Categorias</h3>
+    <div id="modalRankings" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 1000; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(2px);">
+        <div style="background: var(--white); padding: 2rem; border-radius: 12px; width: 90%; max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+            <h3 style="margin-bottom: 1rem; color: var(--dark); font-family: var(--font-heading);">Gerenciar Categorias</h3>
             <div style="display: flex; gap: 10px; margin-bottom: 15px;">
                 <input type="text" id="novaCategoriaInput" class="form-control" placeholder="Ex: Categoria C">
                 <button id="btnAdicionarCategoria" class="btn" style="padding: 0 15px; font-size: 1.5rem;">+</button>
@@ -245,48 +276,48 @@
         </div>
     </div>
     
-    <div id="loginModal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; display: flex; justify-content: center; align-items: center;">
-        <div style="background: var(--white); padding: 2rem; border-radius: 10px; width: 90%; max-width: 400px; text-align: center;">
-            <h2 style="margin-bottom: 1.5rem; color: var(--dark);">Acesso do Organizador</h2>
+    <div id="loginModal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 1000; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(2px);">
+        <div style="background: var(--white); padding: 2rem; border-radius: 12px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+            <h2 style="margin-bottom: 1.5rem; color: var(--dark); font-family: var(--font-heading);">Acesso Restrito</h2>
             <form id="loginForm">
                 <input type="email" id="emailInput" class="form-control" placeholder="E-mail" required style="margin-bottom: 1rem;">
                 <input type="password" id="senhaInput" class="form-control" placeholder="Senha" required style="margin-bottom: 1.5rem;">
                 <button type="submit" class="btn" style="width: 100%; margin-bottom: 10px;">Entrar</button>
                 <button type="button" id="btnFecharLogin" class="btn btn-outline" style="width: 100%;">Cancelar</button>
-                <p id="loginErro" style="color: red; margin-top: 10px; display: none;">E-mail ou senha incorretos.</p>
+                <p id="loginErro" style="color: #dc3545; margin-top: 10px; display: none; font-size: 0.9rem;">E-mail ou senha incorretos.</p>
             </form>
         </div>
     </div>
 
     <header>
-        <h1>Ranking Confra & Play</h1>
+        <h1>LA LIGA DA CORJA</h1>
         
-        <div id="nav-menu" style="display:flex; gap: 15px; margin-left: 30px; margin-right: auto;">
-            <button id="btnAbaCampeonatos" class="btn" style="background: var(--white); color: var(--dark);">Campeonatos</button>
-            <button id="btnAbaRankings" class="btn btn-outline" style="color: var(--white); border-color: var(--white);">🏆 Ver Ranking</button>
+        <div id="nav-menu" style="display:flex; gap: 10px; margin-left: 30px; margin-right: auto;">
+            <button id="btnAbaCampeonatos" class="btn btn-outline" style="background: rgba(26, 115, 232, 0.1) !important; color: var(--secondary) !important; font-weight: 600; border: none !important;">Campeonatos</button>
+            <button id="btnAbaRankings" class="btn btn-outline" style="border: none !important; color: var(--gray) !important;">🏆 Rankings</button>
             
-            <button id="btnInstalarApp" class="btn hidden" style="background: linear-gradient(135deg, #0ce87e, #00b35e); color: #000; box-shadow: 0 0 15px rgba(12, 232, 126, 0.4);">
-                📲 Instalar App
+            <button id="btnInstalarApp" class="btn hidden" style="background: var(--primary); color: #fff;">
+                📲 App
             </button>
         </div>
 
         <div id="auth-area">
-            <button id="btnLogin" class="btn btn-outline" style="color: var(--white); border-color: var(--white);">Fazer Login</button>
+            <button id="btnLogin" class="btn btn-outline" style="border: none !important; color: var(--gray) !important;">Entrar</button>
             <div id="user-menu" class="hidden">
-                <span style="margin-right: 15px;">Olá, Organizador</span>
-                <button id="btnNewTournament" class="btn" style="background: var(--white); color: var(--dark);">Novo Torneio</button>
-                <button id="btnLogout" class="btn btn-outline" style="margin-left: 10px; color: var(--white); border-color: var(--white);">Sair</button>
+                <span style="margin-right: 15px; color: var(--gray); font-size: 0.9rem;">Organizador</span>
+                <button id="btnNewTournament" class="btn btn-outline" style="background: rgba(26, 115, 232, 0.1) !important; color: var(--secondary) !important; border: none !important;">+ Novo</button>
+                <button id="btnLogout" class="btn btn-outline" style="margin-left: 10px; border: none !important; color: var(--gray) !important;">Sair</button>
             </div>
         </div>
     </header>
 
     <main>
-        <section id="create-section">
+        <section id="create-section" style="display: none;">
             <h2 class="section-title">Criar Novo Campeonato</h2>
             <form id="tournament-form">
                 <div class="form-group">
                     <label for="nomeTorneio">Nome do Campeonato</label>
-                    <input type="text" id="nomeTorneio" class="form-control" placeholder="Ex: Liga Premier - Etapa 1" required>
+                    <input type="text" id="nomeTorneio" class="form-control" placeholder="Ex: Etapa Lake Sport Club" required>
                 </div>
                 <div class="form-group">
                     <label for="rankingVinculado">Vincular a qual Ranking?</label>
@@ -298,12 +329,12 @@
                     <label>Formato de Disputa</label>
                     <div class="radio-group">
                         <label><input type="radio" name="formato" value="mata-mata" required> Apenas Mata-Mata</label>
-                        <label><input type="radio" name="formato" value="grupos-mata" required> Fase de Grupos + Mata-Mata</label>
+                        <label><input type="radio" name="formato" value="grupos-mata" required> Grupos + Mata-Mata</label>
                         <label><input type="radio" name="formato" value="super-4" required> Super 4 (Ouro e Prata)</label>
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="qtdSets">Quantidade de Sets (Formato das Partidas)</label>
+                    <label for="qtdSets">Formato das Partidas</label>
                     <select id="qtdSets" class="form-control" required>
                         <option value="1-set-6">1 Set (até 6 games)</option>
                         <option value="1-set-8">1 Set Pro (até 8 games)</option>
@@ -313,8 +344,8 @@
                 </div>
 
                 <div class="form-group" id="pontos-ouro">
-                    <label>🏆 Distribuição de Pontos - Ouro (e Padrão)</label>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; background: #0b0c0f; padding: 15px; border-radius: 10px; border: 1px solid var(--border); margin-top: 5px;">
+                    <label style="color: var(--secondary); font-weight: 600;">🏆 Distribuição de Pontos - Ouro (e Padrão)</label>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid var(--border); margin-top: 5px;">
                         <div>
                             <label style="font-size: 0.75rem; color: var(--gray); margin-bottom: 2px;">🥇 Campeão</label>
                             <input type="number" id="ptsCampeao" class="form-control" value="100" style="padding: 0.5rem; text-align: center;" required>
@@ -328,7 +359,7 @@
                             <input type="number" id="ptsTerceiro" class="form-control" value="60" style="padding: 0.5rem; text-align: center;" required>
                         </div>
                         <div>
-                            <label style="font-size: 0.75rem; color: var(--gray); margin-bottom: 2px;">🏅 Semifinal (4º)</label>
+                            <label style="font-size: 0.75rem; color: var(--gray); margin-bottom: 2px;">🏅 Semifinal</label>
                             <input type="number" id="ptsSemi" class="form-control" value="50" style="padding: 0.5rem; text-align: center;" required>
                         </div>
                         <div>
@@ -344,15 +375,15 @@
                             <input type="number" id="ptsGrupos" class="form-control" value="15" style="padding: 0.5rem; text-align: center;" required>
                         </div>
                         <div>
-                            <label style="font-size: 0.75rem; color: #ffd700; margin-bottom: 2px; font-weight: bold;">⭐ 1º do Grupo</label>
-                            <input type="number" id="ptsPrimeiroGrupo" class="form-control" value="10" style="padding: 0.5rem; text-align: center; border-color: #ffd700;" required>
+                            <label style="font-size: 0.75rem; color: var(--primary); margin-bottom: 2px; font-weight: 600;">⭐ 1º do Grupo</label>
+                            <input type="number" id="ptsPrimeiroGrupo" class="form-control" value="10" style="padding: 0.5rem; text-align: center; border-color: var(--primary);" required>
                         </div>
                     </div>
                 </div>
 
                 <div class="form-group" id="pontos-prata" style="display: none;">
-                    <label>🥈 Distribuição de Pontos - Prata (Exclusivo Super 4)</label>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; background: #0b0c0f; padding: 15px; border-radius: 10px; border: 1px solid var(--border); margin-top: 5px;">
+                    <label style="color: #6c757d; font-weight: 600;">🥈 Distribuição de Pontos - Prata (Exclusivo Super 4)</label>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px dashed #ced4da; margin-top: 5px;">
                         <div>
                             <label style="font-size: 0.75rem; color: var(--gray); margin-bottom: 2px;">🥇 Campeão Prata</label>
                             <input type="number" id="ptsCampeaoPrata" class="form-control" value="60" style="padding: 0.5rem; text-align: center;">
@@ -380,8 +411,8 @@
                     </div>
                 </div>
                 
-                <button type="submit" class="btn">Salvar Campeonato</button>
-                <button type="button" id="btnCancelCreate" class="btn btn-outline" style="margin-left: 10px;">Cancelar</button>
+                <button type="submit" class="btn" style="margin-top: 10px;">Salvar Campeonato</button>
+                <button type="button" id="btnCancelCreate" class="btn btn-outline" style="margin-left: 10px; margin-top: 10px;">Cancelar</button>
             </form>
         </section>
 
@@ -399,10 +430,10 @@
                         <option value="">Carregando...</option>
                     </select>
                 </div>
-                <button id="btnGerenciarRankings" class="btn btn-outline hidden" style="height: 44px;">⚙️ Gerenciar</button>
+                <button id="btnGerenciarRankings" class="btn btn-outline hidden" style="height: 42px;">⚙️ Gerenciar</button>
             </div>
             
-            <div style="background: var(--white); border-radius: 10px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+            <div style="background: var(--white); border-radius: 8px; padding: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.03); border: 1px solid var(--border);">
                 <table class="standings-table" style="margin: 0;">
                     <thead>
                         <tr>
@@ -413,78 +444,80 @@
                         </tr>
                     </thead>
                     <tbody id="rankingTabelaBody">
-                        <tr><td colspan="4" style="padding: 20px;">Selecione um ranking para carregar...</td></tr>
+                        <tr><td colspan="4" style="padding: 20px; color: var(--gray);">Selecione um ranking para carregar...</td></tr>
                     </tbody>
                 </table>
             </div>
         </section>
 
         <section id="details-section" class="hidden">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                <button id="btnVoltar" class="btn btn-outline">⬅ Voltar para a Lista</button>
-                <button id="btnExcluirTorneio" class="btn hidden" style="background-color: #e74c3c; color: white; border: none;">🗑️ Excluir Campeonato</button>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <button id="btnVoltar" class="btn btn-outline" style="font-size: 0.8rem; padding: 0.5rem 1rem;">⬅ Voltar para a Lista</button>
+                <button id="btnExcluirTorneio" class="btn hidden" style="background-color: #dc3545; color: white !important; font-size: 0.8rem; padding: 0.5rem 1rem;">🗑️ Excluir</button>
             </div>
             
-            <h2 class="section-title" id="detalhe-nome-torneio">Nome do Torneio</h2>
-            <p><strong id="detalhe-formato-torneio">Formato: </strong></p>
+            <h2 class="section-title" id="detalhe-nome-torneio" style="margin-bottom: 0.5rem;">Nome do Torneio</h2>
+            <p style="color: var(--gray); font-size: 0.9rem; margin-bottom: 2rem;"><strong id="detalhe-formato-torneio" style="color: var(--dark);">Formato: </strong></p>
 
             <div class="panel-grid" id="painel-grid">
                 
                 <div class="panel-card" id="painel-inscritos">
-                    <h3>👥 Inscritos</h3>
-                    <div class="form-group" id="area-add-inscritos" style="margin-top: 10px;">
-    <input type="text" id="nomeJogador1" list="sugestoesJogadores" class="form-control" placeholder="Nome do Jogador 1 (Obrigatório)" style="margin-bottom: 8px;">
-    <input type="text" id="nomeJogador2" list="sugestoesJogadores" class="form-control" placeholder="Nome do Jogador 2 (Deixe em branco se for Simples)" style="margin-bottom: 8px;">
+                    <h3 style="font-family: var(--font-heading); font-size: 1.1rem; color: var(--dark); margin-bottom: 1rem;">👥 Inscritos</h3>
+                    <div class="form-group" id="area-add-inscritos">
+                        <input type="text" id="nomeJogador1" list="sugestoesJogadores" class="form-control" placeholder="Nome do Jogador 1 (Obrigatório)" style="margin-bottom: 8px;">
+                        <input type="text" id="nomeJogador2" list="sugestoesJogadores" class="form-control" placeholder="Nome do Jogador 2 (Deixe em branco se for Simples)" style="margin-bottom: 8px;">
 
-    <div style="margin: 15px 0 10px 0;">
-        <label style="color: var(--gray); font-size: 0.85rem; margin-bottom: 5px;">Classificação do Jogador no Sorteio:</label>
-        <select id="tipoJogador" class="form-control" style="border-color: var(--border);">
-            <option value="0">👤 Jogador Normal (Sorteio Aleatório)</option>
-            <option value="1">⭐ Cabeça de Chave 1</option>
-            <option value="2">🌟 Cabeça de Chave 2</option>
-        </select>
-    </div>
-    
-    <datalist id="sugestoesJogadores"></datalist>
-    
-    <button id="btnAddInscrito" class="btn" style="margin-top: 10px; width: 100%;">Adicionar Inscrição</button>
-</div>
+                        <div style="margin: 10px 0;">
+                            <label style="color: var(--gray); font-size: 0.8rem; margin-bottom: 5px;">Classificação no Sorteio:</label>
+                            <select id="tipoJogador" class="form-control" style="font-size: 0.9rem; padding: 0.7rem;">
+                                <option value="0">👤 Jogador Normal</option>
+                                <option value="1">⭐ Cabeça de Chave 1</option>
+                                <option value="2">🌟 Cabeça de Chave 2</option>
+                            </select>
+                        </div>
+                        <datalist id="sugestoesJogadores"></datalist>
+                        
+                        <button id="btnAddInscrito" class="btn" style="margin-top: 5px; width: 100%;">Adicionar</button>
+                    </div>
                     <ul class="lista-inscritos" id="listaInscritosUI"></ul>
                 </div>
 
                 <div class="panel-card" id="painel-chaves">
                     <button id="btnMostrarInscritos" class="btn btn-outline hidden" style="margin-bottom: 15px; width: 100%;">👀 Ver/Editar Lista de Inscritos</button>
 
-                    <h3>🏆 Chaves e Grupos</h3>
-                    <p id="avisoChaves" style="color: var(--gray); margin-bottom: 15px; font-size: 0.9rem;">
-                     Adicione os jogadores primeiro para depois gerar os confrontos.
-                    </p>
-                    <button id="btnGerarChaves" class="btn" style="width: 100%; background-color: var(--dark); color: var(--white);">
-                        ⚙️ Gerar Chaves / Grupos
+                    <div id="avisoChaves">
+                        <h3 style="font-family: var(--font-heading); font-size: 1.1rem; color: var(--dark); margin-bottom: 0.5rem;">🏆 Grupos e Chaves</h3>
+                        <p style="color: var(--gray); margin-bottom: 15px; font-size: 0.85rem;">
+                         Adicione os jogadores na lista ao lado e depois clique em gerar.
+                        </p>
+                    </div>
+                    
+                    <button id="btnGerarChaves" class="btn" style="width: 100%; background-color: var(--secondary); color: var(--white) !important; margin-bottom: 15px;">
+                        ⚙️️ Gerar Chaves / Grupos
                     </button>
 
-                    <div id="navegadorFases" class="hidden" style="display: flex; justify-content: space-between; align-items: center; margin: 20px 0; background: var(--dark); color: var(--white); padding: 10px 15px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                        <button id="btnFaseAnterior" class="btn btn-outline" style="color: var(--white); border-color: var(--white); padding: 5px 15px; font-size: 1.2rem;">⬅</button>
+                    <div id="navegadorFases" class="hidden" style="display: flex; justify-content: space-between; align-items: center; margin: 10px 0 20px 0; background: var(--white); padding: 10px; border-radius: 8px;">
+                        <button id="btnFaseAnterior" class="btn btn-outline" style="padding: 4px 12px; font-size: 1rem;">⬅</button>
                         <div style="text-align: center;">
-                            <div style="font-size: 0.7rem; color: #ccc; text-transform: uppercase; letter-spacing: 1px;">Fase Atual</div>
-                            <h3 id="tituloFaseAtual" style="margin: 0; font-size: 1.2rem; color: #ffd700;">Grupos</h3>
+                            <div style="font-size: 0.65rem; color: var(--gray); text-transform: uppercase; letter-spacing: 1px;">Fase Atual</div>
+                            <h3 id="tituloFaseAtual" style="margin: 0; font-size: 1rem; color: var(--dark);">Grupos</h3>
                         </div>
-                        <button id="btnFaseProxima" class="btn btn-outline" style="color: var(--white); border-color: var(--white); padding: 5px 15px; font-size: 1.2rem;">➡</button>
+                        <button id="btnFaseProxima" class="btn btn-outline" style="padding: 4px 12px; font-size: 1rem;">➡</button>
                     </div>
 
-                    <div id="painelTrocaGrupos" class="hidden" style="background: #12141a; padding: 15px; border-radius: 8px; border: 1px dashed var(--primary); margin-top: 15px; margin-bottom: 20px;">
-                        <h4 style="color: var(--primary); margin-bottom: 10px; font-size: 1rem;">🔄 Troca Manual (Mão de Deus)</h4>
-                        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-                            <select id="trocaTime1" class="form-control" style="flex: 1; min-width: 130px;"></select>
-                            <span style="color: var(--gray);">com</span>
-                            <select id="trocaTime2" class="form-control" style="flex: 1; min-width: 130px;"></select>
-                            <button id="btnEfetuarTroca" class="btn" style="padding: 10px 20px;">Trocar de Grupo</button>
+                    <div id="painelTrocaGrupos" class="hidden" style="background: #f8f9fa; padding: 12px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 20px;">
+                        <h4 style="color: var(--gray); margin-bottom: 10px; font-size: 0.85rem; text-transform: uppercase;">🔄 Troca Manual (Mão de Deus)</h4>
+                        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                            <select id="trocaTime1" class="form-control" style="flex: 1; min-width: 120px; font-size: 0.85rem; padding: 0.5rem;"></select>
+                            <span style="color: var(--gray); font-size: 0.8rem;">com</span>
+                            <select id="trocaTime2" class="form-control" style="flex: 1; min-width: 120px; font-size: 0.85rem; padding: 0.5rem;"></select>
+                            <button id="btnEfetuarTroca" class="btn btn-outline" style="padding: 0.5rem 1rem; font-size: 0.8rem;">Trocar</button>
                         </div>
                     </div>
 
-                    <div id="chavesGeradasUI" style="margin-top: 15px;"></div>
+                    <div id="chavesGeradasUI"></div>
 
-                    <button id="btnMontarMataMata" class="btn hidden" style="width: 100%; margin-top: 20px; background-color: #ff9800; color: #fff;">
+                    <button id="btnMontarMataMata" class="btn hidden" style="width: 100%; margin-top: 20px; background-color: var(--primary); color: #fff !important;">
                         ⚔️ Avançar para o Mata-Mata
                     </button>
 
@@ -492,20 +525,20 @@
                     
                     <div id="podioUI" class="hidden"></div>
                     
-                    <button id="btnEncerrarTorneio" class="btn hidden" style="width: 100%; margin-top: 20px; background-color: #e74c3c; color: #fff; font-size: 1.1rem; padding: 15px;">
-                        🎯 Encerrar Torneio e Enviar Pontos p/ Ranking
+                    <button id="btnEncerrarTorneio" class="btn hidden" style="width: 100%; margin-top: 25px; background-color: #198754; color: #fff !important; font-size: 1rem; padding: 12px;">
+                        🎯 Encerrar Torneio e Enviar Pontos
                     </button>
                 </div>
             </div>
         </section>
     </main>
 
-    <div id="iosInstallPopup" class="hidden" style="position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: var(--white); border: 2px solid var(--primary); padding: 18px; border-radius: 16px; box-shadow: 0 15px 35px rgba(0,0,0,0.6); z-index: 9999; width: 90%; max-width: 350px; text-align: center; animation: fadeIn 0.5s ease-out;">
-        <h4 style="color: var(--dark); margin-bottom: 10px; font-size: 1.1rem;">📲 Instale o nosso App!</h4>
-        <p style="font-size: 0.9rem; color: var(--gray); margin-bottom: 15px; line-height: 1.4;">
-            Para instalar no seu iPhone, toque no botão <strong>Compartilhar</strong> <span style="font-size: 1.2rem;">📤</span> na barra do seu navegador e selecione <br><strong style="color: var(--primary);">"Adicionar à Tela de Início" ➕</strong>.
+    <div id="iosInstallPopup" class="hidden" style="position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: var(--white); border: 1px solid var(--border); padding: 18px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); z-index: 9999; width: 90%; max-width: 320px; text-align: center; animation: fadeIn 0.4s ease-out;">
+        <h4 style="color: var(--dark); margin-bottom: 10px; font-size: 1rem; font-family: var(--font-heading);">📲 Instale o nosso App!</h4>
+        <p style="font-size: 0.85rem; color: var(--gray); margin-bottom: 15px; line-height: 1.4;">
+            Para instalar no seu iPhone, toque no botão <strong>Compartilhar</strong> <span style="font-size: 1.1rem;">📤</span> na barra do navegador e selecione <br><strong style="color: var(--secondary);">"Adicionar à Tela de Início" ➕</strong>.
         </p>
-        <button id="btnFecharIosPopup" class="btn" style="width: 100%; background: var(--dark); color: var(--white);">Entendi</button>
+        <button id="btnFecharIosPopup" class="btn btn-outline" style="width: 100%;">Entendi</button>
     </div>
 
     <script type="module">
@@ -514,13 +547,14 @@
         import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
         const firebaseConfig = {
-  apiKey: "AIzaSyAzEUIZwc8vUgphMe4bpOkfOKTZIQlNsFs",
-  authDomain: "super-4-clube.firebaseapp.com",
-  projectId: "super-4-clube",
-  storageBucket: "super-4-clube.firebasestorage.app",
-  messagingSenderId: "831325355212",
-  appId: "1:831325355212:web:3edbfca9005fb0be20d669"
-};
+            apiKey: "AIzaSyAzEUIZwc8vUgphMe4bpOkfOKTZIQlNsFs",
+            authDomain: "super-4-clube.firebaseapp.com",
+            projectId: "super-4-clube",
+            storageBucket: "super-4-clube.firebasestorage.app",
+            messagingSenderId: "831325355212",
+            appId: "1:831325355212:web:3edbfca9005fb0be20d669"
+        };
+        
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
@@ -533,7 +567,7 @@
         let inscritosUnsubscribe = null; 
         let inscritosAtuais = []; 
         window.fasesMataMata = []; 
-        window.fasesPrata = []; // Variável Nova para Super 4
+        window.fasesPrata = []; 
         let jogosSalvos = {}; 
 
         const btnLogin = document.getElementById('btnLogin');
@@ -546,6 +580,15 @@
         const listSection = document.getElementById('list-section');
         const detailsSection = document.getElementById('details-section');
 
+        const radiosFormato = document.querySelectorAll('input[name="formato"]');
+        const divPrata = document.getElementById('pontos-prata');
+        radiosFormato.forEach(r => {
+            r.addEventListener('change', (e) => {
+                if (e.target.value === 'super-4') divPrata.style.display = 'block';
+                else divPrata.style.display = 'none';
+            });
+        });
+
         function updateAuthUI() {
             if (isLogged) {
                 btnLogin.classList.add('hidden'); userMenu.classList.remove('hidden');
@@ -557,7 +600,7 @@
         const q = query(collection(db, "campeonatos"), orderBy("dataCriacao", "desc"));
         onSnapshot(q, (snapshot) => {
             tournamentsContainer.innerHTML = ''; 
-            if (snapshot.empty) { tournamentsContainer.innerHTML = '<p>Nenhum campeonato aberto.</p>'; return; }
+            if (snapshot.empty) { tournamentsContainer.innerHTML = '<p style="color: var(--gray); font-size: 0.9rem;">Nenhum campeonato aberto.</p>'; return; }
             snapshot.forEach((docSnap) => {
                 const camp = docSnap.data();
                 const card = document.createElement('div');
@@ -575,13 +618,13 @@
             setsAberto = camp.sets || ""; 
 
             if (camp.formato.includes("Super 4")) {
-        document.getElementById('nomeJogador2').classList.add('hidden');
-    } else {
-        document.getElementById('nomeJogador2').classList.remove('hidden');
-    }
+                document.getElementById('nomeJogador2').classList.add('hidden');
+            } else {
+                document.getElementById('nomeJogador2').classList.remove('hidden');
+            }
             
             document.getElementById('detalhe-nome-torneio').textContent = camp.nome;
-            document.getElementById('detalhe-formato-torneio').textContent = `Formato: ${camp.formato}`;
+            document.getElementById('detalhe-formato-torneio').innerHTML = `Formato: <span style="font-weight: 400;">${camp.formato}</span>`;
             listSection.classList.add('hidden'); createSection.style.display = 'none'; detailsSection.classList.remove('hidden');
             
             document.getElementById('painel-inscritos').classList.remove('hidden');
@@ -597,7 +640,7 @@
             document.getElementById('podioUI').innerHTML = '';
             document.getElementById('btnEncerrarTorneio').classList.add('hidden');
             window.fasesMataMata = [];
-            window.fasesPrata = []; // Reset Prata
+            window.fasesPrata = []; 
             jogosSalvos = {};
             
             carregarInscritos(id);
@@ -631,8 +674,6 @@
             });
         }
 
-        
-
         document.getElementById('btnMostrarInscritos').addEventListener('click', () => {
             document.getElementById('painel-inscritos').classList.remove('hidden');
             document.getElementById('painel-grid').classList.remove('grid-expandido');
@@ -654,11 +695,11 @@
 
         function carregarInscritos(torneioId) {
             const listaUI = document.getElementById('listaInscritosUI');
-            listaUI.innerHTML = 'Carregando...';
+            listaUI.innerHTML = '<li style="border: none; background: transparent; color: var(--gray);">Carregando...</li>';
             const qInscritos = query(collection(db, "campeonatos", torneioId, "inscritos"), orderBy("dataCriacao", "asc"));
             inscritosUnsubscribe = onSnapshot(qInscritos, (snapshot) => {
                 listaUI.innerHTML = ''; inscritosAtuais = []; 
-                if(snapshot.empty) { listaUI.innerHTML = '<li>Nenhum inscrito.</li>'; return; }
+                if(snapshot.empty) { listaUI.innerHTML = '<li style="border: none; background: transparent; color: var(--gray);">Nenhum inscrito.</li>'; return; }
                 
                 snapshot.forEach((docSnap) => {
                     const dados = docSnap.data(); 
@@ -669,14 +710,15 @@
                     li.style.cssText = "display: flex; justify-content: space-between; align-items: center;";
                     
                     let star = '';
-if (dados.nivelSeed === 1) star = ' <span style="color:#ffd700">⭐ C1</span>';
-else if (dados.nivelSeed === 2) star = ' <span style="color:#c0c0c0">🌟 C2</span>';
-else if (dados.isSeed) star = ' ⭐'; // Para compatibilidade com torneios antigos
-                    let nomes = dados.jogador2 ? `🎾 <strong>${dados.jogador1}</strong> e <strong>${dados.jogador2}</strong>${star}` : `🎾 <strong>${dados.jogador1}</strong>${star}`;
+                    if (dados.nivelSeed === 1) star = ' <span style="color:#d4af37; font-size:0.8rem;">⭐ C1</span>';
+                    else if (dados.nivelSeed === 2) star = ' <span style="color:#8a919e; font-size:0.8rem;">🌟 C2</span>';
+                    else if (dados.isSeed) star = ' ⭐'; 
                     
-                    let btnExcluir = isLogged ? `<button onclick="deletarInscrito('${idInscrito}')" class="btn btn-outline" style="padding: 2px 8px; font-size: 0.8rem; border-color: #e74c3c; color: #e74c3c;">🗑️ Excluir</button>` : '';
+                    let nomes = dados.jogador2 ? `<strong>${dados.jogador1}</strong> & <strong>${dados.jogador2}</strong>${star}` : `<strong>${dados.jogador1}</strong>${star}`;
+                    
+                    let btnExcluir = isLogged ? `<button onclick="deletarInscrito('${idInscrito}')" class="btn btn-outline" style="padding: 2px 6px; font-size: 0.75rem; border-color: #dc3545; color: #dc3545 !important;">Excluir</button>` : '';
 
-                    li.innerHTML = `<span>${nomes}</span> ${btnExcluir}`;
+                    li.innerHTML = `<span style="color: var(--dark);">${nomes}</span> ${btnExcluir}`;
                     listaUI.appendChild(li);
                 });
             });
@@ -688,11 +730,8 @@ else if (dados.isSeed) star = ' ⭐'; // Para compatibilidade com torneios antig
                 return;
             }
             if (confirm("Tem certeza que deseja remover esta inscrição?")) {
-                try {
-                    await deleteDoc(doc(db, "campeonatos", torneioAbertoId, "inscritos", idInscrito));
-                } catch (error) {
-                    alert("Erro ao remover: " + error.message);
-                }
+                try { await deleteDoc(doc(db, "campeonatos", torneioAbertoId, "inscritos", idInscrito)); } 
+                catch (error) { alert("Erro ao remover: " + error.message); }
             }
         };
 
@@ -701,31 +740,23 @@ else if (dados.isSeed) star = ' ⭐'; // Para compatibilidade com torneios antig
             const j2 = document.getElementById('nomeJogador2').value.trim();
             if (!j1) { alert("Preencha o Jogador 1!"); return; }
 
-            if (j1 === j2) {
-                alert("🚨 O Jogador 1 e o Jogador 2 não podem ser a mesma pessoa!");
-                return;
-            }
+            if (j1 === j2) { alert("🚨 O Jogador 1 e o Jogador 2 não podem ser a mesma pessoa!"); return; }
 
-            let jaInscrito = false;
-            let nomeRepetido = "";
-            
+            let jaInscrito = false; let nomeRepetido = "";
             inscritosAtuais.forEach(insc => {
                 if (insc.jogador1 === j1 || (insc.jogador2 && insc.jogador2 === j1)) { jaInscrito = true; nomeRepetido = j1; }
                 if (j2 !== "" && (insc.jogador1 === j2 || (insc.jogador2 && insc.jogador2 === j2))) { jaInscrito = true; nomeRepetido = j2; }
             });
 
-            if (jaInscrito) {
-                alert(`🚨 Bloqueado: O jogador "${nomeRepetido}" já está inscrito neste campeonato!`);
-                return;
-            }
+            if (jaInscrito) { alert(`🚨 Bloqueado: O jogador "${nomeRepetido}" já está inscrito neste campeonato!`); return; }
 
             document.getElementById('btnAddInscrito').disabled = true;
             try {
                 let nivelSeed = parseInt(document.getElementById('tipoJogador').value) || 0;
-await addDoc(collection(db, "campeonatos", torneioAbertoId, "inscritos"), { jogador1: j1, jogador2: j2, nivelSeed: nivelSeed, dataCriacao: serverTimestamp() });
+                await addDoc(collection(db, "campeonatos", torneioAbertoId, "inscritos"), { jogador1: j1, jogador2: j2, nivelSeed: nivelSeed, dataCriacao: serverTimestamp() });
 
-document.getElementById('nomeJogador1').value = ''; document.getElementById('nomeJogador2').value = '';
-document.getElementById('tipoJogador').value = '0'; // Volta ao padrão
+                document.getElementById('nomeJogador1').value = ''; document.getElementById('nomeJogador2').value = '';
+                document.getElementById('tipoJogador').value = '0'; 
                 document.getElementById('nomeJogador1').focus(); 
             } catch (error) { alert("Erro ao inscrever."); } 
             finally { document.getElementById('btnAddInscrito').disabled = false; }
@@ -754,14 +785,14 @@ document.getElementById('tipoJogador').value = '0'; // Volta ao padrão
                     <div style="display: flex; flex-direction: column; align-items: center; gap: 5px; margin: 10px 0;">
                         ${[1, 2, 3].map((set, i) => `
                         <div style="display: flex; align-items: center; gap: 10px;">
-                            <span style="font-size: 0.8rem; width: 45px; color: var(--gray);">${set===3 ? 'Tie' : set+'º Set'}</span>
+                            <span style="font-size: 0.75rem; width: 40px; color: var(--gray); text-transform: uppercase;">${set===3 ? 'Tie' : set+'º Set'}</span>
                             <input type="number" class="score-input p-timeA" min="0" oninput="liberarBotaoSalvar(this)" value="${dados.placarA[i] !== undefined ? dados.placarA[i] : ''}" ${bloqueio}> 
-                            <span style="font-weight: bold;">X</span> 
+                            <span style="font-weight: 500; color: #ced4da;">X</span> 
                             <input type="number" class="score-input p-timeB" min="0" oninput="liberarBotaoSalvar(this)" value="${dados.placarB[i] !== undefined ? dados.placarB[i] : ''}" ${bloqueio}>
                         </div>`).join('')}
                     </div>`;
             } else {
-                return `<div class="match-score"><input type="number" class="score-input p-timeA" min="0" oninput="liberarBotaoSalvar(this)" value="${dados.placarA[0] !== undefined ? dados.placarA[0] : ''}" ${bloqueio}> <span>X</span> <input type="number" class="score-input p-timeB" min="0" oninput="liberarBotaoSalvar(this)" value="${dados.placarB[0] !== undefined ? dados.placarB[0] : ''}" ${bloqueio}></div>`;
+                return `<div class="match-score"><input type="number" class="score-input p-timeA" min="0" oninput="liberarBotaoSalvar(this)" value="${dados.placarA[0] !== undefined ? dados.placarA[0] : ''}" ${bloqueio}> <span style="font-weight: 500; color: #ced4da;">X</span> <input type="number" class="score-input p-timeB" min="0" oninput="liberarBotaoSalvar(this)" value="${dados.placarB[0] !== undefined ? dados.placarB[0] : ''}" ${bloqueio}></div>`;
             }
         }
 
@@ -773,9 +804,8 @@ document.getElementById('tipoJogador').value = '0'; // Volta ao padrão
             if (btn && btn.textContent === '✅ Salvo!') {
                 btn.disabled = false;
                 btn.textContent = '💾 Salvar Placar';
-                btn.style.background = 'transparent';
-                btn.style.color = 'var(--primary)';
-                btn.style.border = '1px solid var(--primary)';
+                btn.className = 'btn btn-outline';
+                btn.style.cssText = 'margin-top: 10px; font-size: 0.8rem; padding: 0.5rem 1rem;';
                 matchBox.classList.remove('resolvido'); 
             }
         };
@@ -813,9 +843,8 @@ document.getElementById('tipoJogador').value = '0'; // Volta ao padrão
                 jogosSalvos[matchId] = dadosDoJogo; 
 
                 botao.textContent = '✅ Salvo!'; 
-                botao.style.background = 'var(--primary)'; 
-                botao.style.color = '#fff'; 
-                botao.style.border = 'none';
+                botao.className = 'btn';
+                botao.style.cssText = 'margin-top: 10px; font-size: 0.8rem; padding: 0.5rem 1rem;';
                 matchBox.classList.add('resolvido');
 
                 if (isMataMata && vencedor !== "") {
@@ -890,10 +919,10 @@ document.getElementById('tipoJogador').value = '0'; // Volta ao padrão
 
             let classif = Object.values(stats).sort((a,b) => b.v !== a.v ? b.v - a.v : (b.ss !== a.ss ? b.ss - a.ss : b.sg - a.sg));
             
-            let htmlTab = `<table class="standings-table" style="margin-top: 20px;"><thead><tr><th>Jogador(a)</th><th>J</th><th>V</th><th>SS</th><th>SG</th></tr></thead><tbody>`;
+            let htmlTab = `<table class="standings-table"><thead><tr><th>Jogador(a)</th><th style="width: 40px;">J</th><th style="width: 40px;">V</th><th style="width: 40px;">SS</th><th style="width: 40px;">SG</th></tr></thead><tbody>`;
             classif.forEach((t, i) => {
-                let icone = i === 0 ? '🥇 ' : (i === 1 ? '🥈 ' : (i === 2 ? '🥉 ' : ''));
-                htmlTab += `<tr><td>${icone}${t.nome}</td><td>${t.j}</td><td><strong>${t.v}</strong></td><td>${t.ss}</td><td>${t.sg}</td></tr>`;
+                let icone = i === 0 ? '1º ' : (i === 1 ? '2º ' : (i === 2 ? '3º ' : (i === 3 ? '4º ' : '')));
+                htmlTab += `<tr><td><span style="color: var(--secondary); font-size: 0.8rem; font-weight: bold; margin-right: 5px;">${icone}</span>${t.nome}</td><td>${t.j}</td><td><strong>${t.v}</strong></td><td>${t.ss}</td><td>${t.sg}</td></tr>`;
             });
             htmlTab += `</tbody></table>`;
             tabelaContainer.innerHTML = htmlTab;
@@ -920,8 +949,6 @@ document.getElementById('tipoJogador').value = '0'; // Volta ao padrão
 
             if (isGrupos) {
                 let numGrupos = 1;
-                
-                // Nova matemática: Divide por 4 no Super 4, e por 3 nas categorias normais
                 if (formatoAberto.includes("Super 4")) {
                     numGrupos = Math.max(1, Math.floor(sorteados.length / 4));
                 } else if (sorteados.length >= 6) {
@@ -934,16 +961,15 @@ document.getElementById('tipoJogador').value = '0'; // Volta ao padrão
                 });
 
                 grupos.forEach((grupo, index) => {
-                    const letra = String.fromCharCode(65 + index);
-                    html += `<div class="grupo-container" style="margin-bottom: 30px; background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
-                                <h5 style="background: var(--dark); color: #fff; padding: 10px; border-radius: 8px 8px 0 0; text-align: center; margin-bottom: 15px;">🏆 Grupo ${letra}</h5>`;
+                    let numLabel = (index + 1).toString().padStart(2, '0');
+                    html += `<div class="grupo-container" style="margin-bottom: 30px; background: var(--white); padding: 0; border-radius: 8px; border: 1px solid var(--border);">
+                                <h5 style="color: var(--gray); font-family: var(--font-heading); padding: 15px 15px 5px 15px; text-align: left; margin: 0; font-size: 0.95rem; text-transform: uppercase;">Grupo ${numLabel}</h5>
+                                <div style="padding: 0 15px;">`;
                     
                     if (formatoAberto.includes("Super 4")) {
-                        // Garante que o grupo tem 4 posições
                         let p = grupo.map(g => g.jogador1);
                         while (p.length < 4) p.push("Vaga " + (p.length + 1));
 
-                        // Cria as 3 partidas de rotação fixa do Super 4
                         let combinacoes = [
                             { tA: `${p[0]} & ${p[1]}`, tB: `${p[2]} & ${p[3]}` },
                             { tA: `${p[0]} & ${p[2]}`, tB: `${p[1]} & ${p[3]}` },
@@ -953,14 +979,14 @@ document.getElementById('tipoJogador').value = '0'; // Volta ao padrão
                         combinacoes.forEach(comb => {
                             let matchId = comb.tA.replace(/\s+/g, '') + "_vs_" + comb.tB.replace(/\s+/g, '');
                             let isResolvido = jogosSalvos[matchId] ? 'resolvido' : '';
-                            let btnStyle = jogosSalvos[matchId] ? 'background: var(--primary); color: #fff; border: none;' : 'background: transparent; color: var(--primary); border: 1px solid var(--primary);';
-                            let btnText = jogosSalvos[matchId] ? '✅ Salvo!' : '💾 Salvar Placar';
+                            let btnStyle = jogosSalvos[matchId] ? 'background: var(--primary); color: #fff; border: none;' : 'background: transparent; color: var(--secondary); border: 1px solid var(--secondary);';
+                            let btnClass = jogosSalvos[matchId] ? 'btn' : 'btn btn-outline';
+                            let btnText = jogosSalvos[matchId] ? '✅ Salvo!' : 'Salvar Placar';
                             let hideSave = isLogged ? '' : 'hidden';
                             
-                            html += `<div class="match-box ${isResolvido}"><strong class="t-a" style="color: var(--primary-dark);">${comb.tA}</strong>${gerarInputsPlacar(setsAberto, matchId)}<strong class="t-b" style="color: var(--dark);">${comb.tB}</strong><br><button onclick="salvarPlacar(this)" data-matchid="${matchId}" class="btn ${hideSave}" style="${btnStyle}; margin-top: 10px;">${btnText}</button></div>`;
+                            html += `<div class="match-box ${isResolvido}"><strong class="t-a" style="color: var(--secondary);">${comb.tA}</strong>${gerarInputsPlacar(setsAberto, matchId)}<strong class="t-b" style="color: var(--dark);">${comb.tB}</strong><br><button onclick="salvarPlacar(this)" data-matchid="${matchId}" class="${btnClass} ${hideSave}" style="${btnStyle} margin-top: 10px; font-size: 0.8rem; padding: 0.5rem 1rem;">${btnText}</button></div>`;
                         });
                     } else {
-                        // Lógica normal para Duplas fixas ou Simples
                         for (let i = 0; i < grupo.length; i++) {
                             for (let j = i + 1; j < grupo.length; j++) {
                                 let tA = grupo[i].jogador2 ? `${grupo[i].jogador1} & ${grupo[i].jogador2}` : grupo[i].jogador1;
@@ -968,18 +994,19 @@ document.getElementById('tipoJogador').value = '0'; // Volta ao padrão
                                 let matchId = tA.replace(/\s+/g, '') + "_vs_" + tB.replace(/\s+/g, '');
                                 
                                 let isResolvido = jogosSalvos[matchId] ? 'resolvido' : '';
-                                let btnStyle = jogosSalvos[matchId] ? 'background: var(--primary); color: #fff; border: none;' : 'background: transparent; color: var(--primary); border: 1px solid var(--primary);';
-                                let btnText = jogosSalvos[matchId] ? '✅ Salvo!' : '💾 Salvar Placar';
+                                let btnStyle = jogosSalvos[matchId] ? 'background: var(--primary); color: #fff; border: none;' : 'background: transparent; color: var(--secondary); border: 1px solid var(--secondary);';
+                                let btnClass = jogosSalvos[matchId] ? 'btn' : 'btn btn-outline';
+                                let btnText = jogosSalvos[matchId] ? '✅ Salvo!' : 'Salvar Placar';
                                 let hideSave = isLogged ? '' : 'hidden'; 
 
-                                html += `<div class="match-box ${isResolvido}"><strong class="t-a" style="color: var(--primary-dark);">${tA}</strong>${gerarInputsPlacar(setsAberto, matchId)}<strong class="t-b" style="color: var(--dark);">${tB}</strong><br><button onclick="salvarPlacar(this)" data-matchid="${matchId}" class="btn ${hideSave}" style="${btnStyle}; margin-top: 10px;">${btnText}</button></div>`;
+                                html += `<div class="match-box ${isResolvido}"><strong class="t-a" style="color: var(--secondary);">${tA}</strong>${gerarInputsPlacar(setsAberto, matchId)}<strong class="t-b" style="color: var(--dark);">${tB}</strong><br><button onclick="salvarPlacar(this)" data-matchid="${matchId}" class="${btnClass} ${hideSave}" style="${btnStyle} margin-top: 10px; font-size: 0.8rem; padding: 0.5rem 1rem;">${btnText}</button></div>`;
                             }
                         }
                     }
-                    html += `<div class="tabela-container"></div></div>`;
+                    html += `</div><div style="background: #fdfdfd; padding: 1px 15px 15px 15px; border-top: 1px solid var(--border); border-radius: 0 0 8px 8px;"><p style="font-size: 0.8rem; color: var(--secondary); margin-top: 15px; margin-bottom: -5px; text-align: center;">Classificação do Grupo</p><div class="tabela-container"></div></div></div>`;
                 });
                 if (isLogged) document.getElementById('btnMontarMataMata').classList.remove('hidden');
-            } else { html += '<h4>⚔️ Mata-Mata Apenas</h4>'; }
+            } else { html += '<h4 style="color: var(--gray); text-align: center; padding: 20px;">⚔️ Torneio Apenas Mata-Mata</h4>'; }
             
             chavesUI.innerHTML = html;
 
@@ -1006,7 +1033,7 @@ document.getElementById('tipoJogador').value = '0'; // Volta ao padrão
                 box.querySelectorAll('input').forEach(inp => inp.disabled = true);
                 box.querySelectorAll('button').forEach(b => {
                     b.disabled = true;
-                    if (b.textContent !== '✅ Salvo!') { b.textContent = '🔒 Fechado'; b.style.border = 'none'; b.style.background = '#eee'; b.style.color = '#888'; }
+                    if (b.textContent !== '✅ Salvo!') { b.textContent = '🔒 Concluído'; b.className = 'btn'; b.style.border = '1px solid var(--border)'; b.style.background = '#f8f9fa'; b.style.color = 'var(--gray)'; }
                 });
             });
         }
@@ -1020,50 +1047,39 @@ document.getElementById('tipoJogador').value = '0'; // Volta ao padrão
 
             let sorteados = [];
 
-if (formatoAberto.includes("Super 4")) {
-    // 1. Separa os jogadores em 3 potes distintos
-    let seeds1 = inscritosAtuais.filter(i => i.nivelSeed === 1).sort(() => Math.random() - 0.5);
-    let seeds2 = inscritosAtuais.filter(i => i.nivelSeed === 2).sort(() => Math.random() - 0.5);
-    let normais = inscritosAtuais.filter(i => i.nivelSeed !== 1 && i.nivelSeed !== 2).sort(() => Math.random() - 0.5);
-    
-    // 2. Define o número de grupos (a basear em 4 jogadores por grupo)
-    let numGrupos = Math.max(1, Math.floor(inscritosAtuais.length / 4));
-    let gruposTemporarios = Array.from({ length: numGrupos }, () => []);
-    
-    // 3. Distribui 1 Cabeça de Chave 1 por grupo
-    for(let i=0; i<numGrupos; i++) {
-        if(seeds1.length > 0) gruposTemporarios[i].push(seeds1.pop());
-    }
-    // 4. Distribui 1 Cabeça de Chave 2 por grupo
-    for(let i=0; i<numGrupos; i++) {
-        if(seeds2.length > 0) gruposTemporarios[i].push(seeds2.pop());
-    }
-    
-    // 5. Preenche os lugares restantes com os jogadores normais
-    let todosRestantes = [...seeds1, ...seeds2, ...normais].sort(() => Math.random() - 0.5);
-    let idx = 0;
-    while(todosRestantes.length > 0) {
-        gruposTemporarios[idx % numGrupos].push(todosRestantes.pop());
-        idx++;
-    }
-    
-    // 6. Formata a lista para o sistema de renderização original
-    sorteados = new Array(inscritosAtuais.length);
-    for (let g = 0; g < numGrupos; g++) {
-        for (let j = 0; j < gruposTemporarios[g].length; j++) {
-            sorteados[g + j * numGrupos] = gruposTemporarios[g][j];
-        }
-    }
-    sorteados = sorteados.filter(item => item !== undefined);
+            if (formatoAberto.includes("Super 4")) {
+                let seeds1 = inscritosAtuais.filter(i => i.nivelSeed === 1).sort(() => Math.random() - 0.5);
+                let seeds2 = inscritosAtuais.filter(i => i.nivelSeed === 2).sort(() => Math.random() - 0.5);
+                let normais = inscritosAtuais.filter(i => i.nivelSeed !== 1 && i.nivelSeed !== 2).sort(() => Math.random() - 0.5);
+                
+                let numGrupos = Math.max(1, Math.floor(inscritosAtuais.length / 4));
+                let gruposTemporarios = Array.from({ length: numGrupos }, () => []);
+                
+                for(let i=0; i<numGrupos; i++) { if(seeds1.length > 0) gruposTemporarios[i].push(seeds1.pop()); }
+                for(let i=0; i<numGrupos; i++) { if(seeds2.length > 0) gruposTemporarios[i].push(seeds2.pop()); }
+                
+                let todosRestantes = [...seeds1, ...seeds2, ...normais].sort(() => Math.random() - 0.5);
+                let idx = 0;
+                while(todosRestantes.length > 0) {
+                    gruposTemporarios[idx % numGrupos].push(todosRestantes.pop());
+                    idx++;
+                }
+                
+                sorteados = new Array(inscritosAtuais.length);
+                for (let g = 0; g < numGrupos; g++) {
+                    for (let j = 0; j < gruposTemporarios[g].length; j++) {
+                        sorteados[g + j * numGrupos] = gruposTemporarios[g][j];
+                    }
+                }
+                sorteados = sorteados.filter(item => item !== undefined);
 
-} else {
-    // Mantém a lógica antiga para os formatos de duplas regulares
-    let seeds = inscritosAtuais.filter(i => i.isSeed || i.nivelSeed === 1 || i.nivelSeed === 2).sort(() => Math.random() - 0.5);
-    let normais = inscritosAtuais.filter(i => !i.isSeed && i.nivelSeed !== 1 && i.nivelSeed !== 2).sort(() => Math.random() - 0.5);
-    sorteados = [...seeds, ...normais];
-}
+            } else {
+                let seeds = inscritosAtuais.filter(i => i.isSeed || i.nivelSeed === 1 || i.nivelSeed === 2).sort(() => Math.random() - 0.5);
+                let normais = inscritosAtuais.filter(i => !i.isSeed && i.nivelSeed !== 1 && i.nivelSeed !== 2).sort(() => Math.random() - 0.5);
+                sorteados = [...seeds, ...normais];
+            }
             
-            document.getElementById('btnGerarChaves').textContent = "Gerando e Salvando...";
+            document.getElementById('btnGerarChaves').textContent = "Aguarde...";
             
             torneioAbertoData.sorteados = sorteados;
             jogosSalvos = {}; 
@@ -1110,9 +1126,8 @@ if (formatoAberto.includes("Super 4")) {
                 torneioAbertoData.fasesMataMata = window.fasesMataMata;
                 await updateDoc(doc(db, "campeonatos", torneioAbertoId), { sorteados: sorteados, fasesMataMata: window.fasesMataMata, fasesPrata: [] });
                 
-                document.getElementById('chavesGeradasUI').innerHTML = '<h4 style="text-align:center; padding: 20px; color: var(--gray);">⚔️ Torneio Apenas Mata-Mata</h4>';
+                document.getElementById('chavesGeradasUI').innerHTML = '';
                 renderizarMataMata(false);
-
                 setTimeout(() => { avancarVencedorMataMata(); }, 600);
             }
 
@@ -1204,24 +1219,22 @@ if (formatoAberto.includes("Super 4")) {
 
             for (let rodadaIndex = 0; rodadaIndex < maxRounds; rodadaIndex++) {
                 let nome = "Eliminatórias";
-                if (rodadaIndex === maxRounds - 1) nome = "FINAL 🏆";
+                if (rodadaIndex === maxRounds - 1) nome = "FINAL";
                 else if (rodadaIndex === maxRounds - 2) nome = "Semifinal";
                 else if (rodadaIndex === maxRounds - 3) nome = "Quartas de Final";
                 nomesFases.push(nome);
 
                 html += `<div class="bracket-round">`;
                 
-                // Ouro
                 if (window.fasesMataMata && window.fasesMataMata[rodadaIndex]) {
                     if (window.fasesPrata && window.fasesPrata.length > 0) {
-                        html += `<h4 style="color: #ffd700; text-align: center; margin: 15px 0; font-size: 1.2rem;">🏆 Chave Ouro</h4>`;
+                        html += `<h4 style="color: #d4af37; text-align: center; margin: 10px 0; font-size: 1.1rem; font-family: var(--font-heading);">🏆 Chave Ouro</h4>`;
                     }
                     html += gerarJogosRodada(window.fasesMataMata[rodadaIndex], rodadaIndex, 'Ouro');
                 }
                 
-                // Prata
                 if (window.fasesPrata && window.fasesPrata[rodadaIndex]) {
-                    html += `<h4 style="color: #c0c0c0; text-align: center; margin: 25px 0 15px 0; font-size: 1.2rem; border-top: 1px dashed var(--border); padding-top: 20px;">🥈 Chave Prata</h4>`;
+                    html += `<h4 style="color: var(--gray); text-align: center; margin: 25px 0 10px 0; font-size: 1.1rem; font-family: var(--font-heading); border-top: 1px dashed var(--border); padding-top: 20px;">🥈 Chave Prata</h4>`;
                     html += gerarJogosRodada(window.fasesPrata[rodadaIndex], rodadaIndex, 'Prata');
                 }
                 
@@ -1248,18 +1261,18 @@ if (formatoAberto.includes("Super 4")) {
                 let isBye = tA.includes("BYE") || tB.includes("BYE");
 
                 if (isBye) {
-                    let btnRepescagem = isLogged ? `<button onclick="abrirRepescagem(this, ${rodadaIndex}, '${matchId}')" class="btn btn-outline btn-puxar" style="width: 100%; margin-top: 10px; font-size: 0.8rem; padding: 8px; border-color: #ff9800; color: #ff9800;">🔄 Puxar Repescagem</button>` : '';
+                    let btnRepescagem = isLogged ? `<button onclick="abrirRepescagem(this, ${rodadaIndex}, '${matchId}')" class="btn btn-outline btn-puxar" style="width: 100%; margin-top: 10px; font-size: 0.8rem; padding: 6px; border-color: var(--primary); color: var(--primary) !important;">🔄 Puxar Repescagem</button>` : '';
                     html += `
-                        <div class="bracket-match mata-mata-match resolvido" id="box-${matchId}" style="background: rgba(12, 232, 126, 0.05); border-left-color: var(--primary);">
-                            <strong class="t-a" style="color: var(--primary-dark);">${tA}</strong>
-                            <div style="margin: 15px 0; color: var(--primary); font-size: 0.95rem; font-weight: bold; background: #0b0c0f; padding: 10px; border-radius: 8px; border: 1px dashed var(--primary);">🚀 Avança Direto</div>
+                        <div class="bracket-match mata-mata-match resolvido" id="box-${matchId}" style="background: #f8f9fa; border-left-color: var(--border);">
+                            <strong class="t-a" style="color: var(--secondary);">${tA}</strong>
+                            <div style="margin: 12px 0; color: var(--gray); font-size: 0.85rem; font-weight: 500; background: var(--white); padding: 8px; border-radius: 6px; border: 1px dashed var(--border);">Avança Direto</div>
                             <strong class="t-b" style="color: var(--dark);">${tB}</strong>
                             <div class="repescagem-area hidden" style="margin-top: 15px; background: var(--white); padding: 10px; border-radius: 8px; border: 1px solid var(--border);">
                                 <p style="font-size: 0.8rem; color: var(--gray); margin-bottom: 5px;">Selecione a dupla eliminada:</p>
                                 <select class="form-control select-repescagem" style="margin-bottom: 10px; padding: 5px; font-size: 0.9rem;"></select>
                                 <div style="display: flex; gap: 5px;">
-                                    <button onclick="confirmarRepescagem(this, ${rodadaIndex}, '${matchId}')" class="btn" style="flex: 1; padding: 5px; font-size: 0.8rem; background: #ff9800; color: #fff !important;">Substituir</button>
-                                    <button onclick="cancelarRepescagem(this)" class="btn btn-outline" style="padding: 5px; font-size: 0.8rem;">❌</button>
+                                    <button onclick="confirmarRepescagem(this, ${rodadaIndex}, '${matchId}')" class="btn" style="flex: 1; padding: 5px; font-size: 0.8rem;">Substituir</button>
+                                    <button onclick="cancelarRepescagem(this)" class="btn btn-outline" style="padding: 5px; font-size: 0.8rem;">Cancelar</button>
                                 </div>
                             </div>
                             ${btnRepescagem}
@@ -1267,21 +1280,21 @@ if (formatoAberto.includes("Super 4")) {
                 } else {
                     let hideBtn = (tA.includes("Aguardando") || tB.includes("Aguardando") || !isLogged) ? "hidden" : "";
                     let isResolvido = jogosSalvos[matchId] ? 'resolvido' : '';
-                    let btnStyle = jogosSalvos[matchId] ? 'background: var(--primary); color: #fff; border: none;' : 'background: transparent; color: var(--primary); border: 1px solid var(--primary);';
-                    let btnText = jogosSalvos[matchId] ? '✅ Salvo!' : '💾 Salvar Placar';
+                    let btnStyle = jogosSalvos[matchId] ? 'background: var(--primary); color: #fff; border: none;' : 'background: transparent; color: var(--secondary); border: 1px solid var(--secondary);';
+                    let btnClass = jogosSalvos[matchId] ? 'btn' : 'btn btn-outline';
+                    let btnText = jogosSalvos[matchId] ? '✅ Salvo!' : 'Salvar Placar';
                     html += `
                         <div class="bracket-match mata-mata-match ${isResolvido}">
-                            <strong class="t-a" style="color: var(--primary-dark);">${tA}</strong>
+                            <strong class="t-a" style="color: var(--secondary);">${tA}</strong>
                             ${gerarInputsPlacar(setsAberto, matchId)}
                             <strong class="t-b" style="color: var(--dark);">${tB}</strong>
-                            <br><button onclick="salvarPlacar(this)" data-matchid="${matchId}" class="btn ${hideBtn}" style="${btnStyle}; margin-top:10px;">${btnText}</button>
+                            <br><button onclick="salvarPlacar(this)" data-matchid="${matchId}" class="${btnClass} ${hideBtn}" style="${btnStyle} margin-top:10px; font-size: 0.8rem; padding: 0.5rem 1rem;">${btnText}</button>
                         </div>`;
                 }
             });
             return html;
         }
 
-        // 2. ATUALIZADO: Avançar vencedor (Suporte a Ouro e Prata)
         window.avancarVencedorMataMata = async function() {
             function atualizarChave(fases, chave) {
                 if(!fases) return;
@@ -1324,10 +1337,9 @@ if (formatoAberto.includes("Super 4")) {
             if (window.fasesPrata && window.fasesPrata.length > 0) updatePayload.fasesPrata = window.fasesPrata;
             
             await updateDoc(doc(db, "campeonatos", torneioAbertoId), updatePayload);
-            renderizarMataMata(true); // O "true" trava a aba atual no lugar!
+            renderizarMataMata(true); 
         };
         
-        // 3. ATUALIZADO: Montar o Mata-Mata (Super 4 Lógica)
         document.getElementById('btnMontarMataMata').addEventListener('click', async () => {
             const jogosFaseGrupos = document.querySelectorAll('#chavesGeradasUI .match-box');
             let jogosFaltando = 0;
@@ -1355,18 +1367,15 @@ if (formatoAberto.includes("Super 4")) {
                 let trs = tb.querySelectorAll('tr');
                 
                 if (isSuper4 && trs.length >= 4) {
-                    // Puxa o nome dos 4 indivíduos e agrupa em Duplas
-                    let n1 = trs[0].cells[0].innerText.replace(/[🥇🥈🥉]/g, '').trim();
-                    let n2 = trs[1].cells[0].innerText.replace(/[🥇🥈🥉]/g, '').trim();
-                    let n3 = trs[2].cells[0].innerText.replace(/[🥇🥈🥉]/g, '').trim();
-                    let n4 = trs[3].cells[0].innerText.replace(/[🥇🥈🥉]/g, '').trim();
+                    let n1 = trs[0].cells[0].innerText.replace(/[1234]º /g, '').trim();
+                    let n2 = trs[1].cells[0].innerText.replace(/[1234]º /g, '').trim();
+                    let n3 = trs[2].cells[0].innerText.replace(/[1234]º /g, '').trim();
+                    let n4 = trs[3].cells[0].innerText.replace(/[1234]º /g, '').trim();
 
-                    // Soma estatísticas de desempate para a Dupla Ouro
                     let vO = (parseInt(trs[0].cells[2].innerText)||0) + (parseInt(trs[1].cells[2].innerText)||0);
                     let ssO = (parseInt(trs[0].cells[3].innerText)||0) + (parseInt(trs[1].cells[3].innerText)||0);
                     let sgO = (parseInt(trs[0].cells[4].innerText)||0) + (parseInt(trs[1].cells[4].innerText)||0);
 
-                    // Soma estatísticas de desempate para a Dupla Prata
                     let vP = (parseInt(trs[2].cells[2].innerText)||0) + (parseInt(trs[3].cells[2].innerText)||0);
                     let ssP = (parseInt(trs[2].cells[3].innerText)||0) + (parseInt(trs[3].cells[3].innerText)||0);
                     let sgP = (parseInt(trs[2].cells[4].innerText)||0) + (parseInt(trs[3].cells[4].innerText)||0);
@@ -1380,7 +1389,7 @@ if (formatoAberto.includes("Super 4")) {
 
                     for (let i = 0; i < trs.length; i++) {
                         let linha = trs[i];
-                        let nome = linha.cells[0].innerText.replace(/[🥇🥈🥉]/g, '').trim();
+                        let nome = linha.cells[0].innerText.replace(/[1234]º /g, '').trim();
                         let v = parseInt(linha.cells[2].innerText) || 0;
                         let ss = parseInt(linha.cells[3].innerText) || 0;
                         let sg = parseInt(linha.cells[4].innerText) || 0;
@@ -1451,18 +1460,6 @@ if (formatoAberto.includes("Super 4")) {
             setTimeout(() => { avancarVencedorMataMata(); }, 600);
         });
 
-        const radiosFormato = document.querySelectorAll('input[name="formato"]');
-        const divPrata = document.getElementById('pontos-prata');
-        radiosFormato.forEach(r => {
-            r.addEventListener('change', (e) => {
-                if (e.target.value === 'super-4') {
-                    divPrata.style.display = 'block';
-                } else {
-                    divPrata.style.display = 'none';
-                }
-            });
-        });
-
         form.addEventListener('submit', async (e) => {
             e.preventDefault(); const b = form.querySelector('button[type="submit"]'); b.disabled = true;
             try {
@@ -1480,7 +1477,6 @@ if (formatoAberto.includes("Super 4")) {
                         oitavas: parseInt(document.getElementById('ptsOitavas').value) || 30,
                         participacao: parseInt(document.getElementById('ptsGrupos').value) || 15,
                         primeiroGrupo: parseInt(document.getElementById('ptsPrimeiroGrupo').value) || 10,
-                        
                         campeaoPrata: parseInt(document.getElementById('ptsCampeaoPrata').value) || 60,
                         vicePrata: parseInt(document.getElementById('ptsVicePrata').value) || 40,
                         terceiroPrata: parseInt(document.getElementById('ptsTerceiroPrata').value) || 30,
@@ -1582,23 +1578,23 @@ if (formatoAberto.includes("Super 4")) {
             if (podioOuro) {
                 isPronto = true;
                 html += `
-                <div style="background: linear-gradient(135deg, var(--dark), #333); color: var(--white); padding: 20px; border-radius: 10px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.2); border-top: 5px solid #ffd700; margin-top: 20px;">
-                    <h3 style="margin-bottom: 20px; color: #ffd700; border-bottom: 1px solid #555; padding-bottom: 10px;">🏆 Pódio - Chave Ouro</h3>
-                    <div style="margin: 15px 0; font-size: 1.4rem; font-weight: bold;">🥇 1º Lugar: <br><span style="color:#fff">${podioOuro.campeao}</span></div>
-                    <div style="margin: 15px 0; font-size: 1.2rem; font-weight: bold;">🥈 2º Lugar: <br><span style="color:#fff">${podioOuro.vice}</span></div>
-                    <div style="margin: 15px 0; font-size: 1.2rem; font-weight: bold;">🥉 3º Lugar: <br><span style="color:#fff">${podioOuro.terceiro}</span></div>
-                    <button onclick="compartilharWhatsApp('${podioOuro.campeao}', '${podioOuro.vice}', '${podioOuro.terceiro}', 'Ouro')" class="btn" style="background-color: #25D366; color: white; width: 100%; margin-top: 15px;">📲 Compartilhar Ouro</button>
+                <div style="background: var(--white); padding: 20px; border-radius: 12px; text-align: center; border: 1px solid var(--border); border-top: 5px solid #d4af37; margin-top: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.03);">
+                    <h3 style="margin-bottom: 20px; color: var(--dark); border-bottom: 1px solid var(--border); padding-bottom: 10px; font-family: var(--font-heading);">🏆 Pódio - Chave Ouro</h3>
+                    <div style="margin: 15px 0; font-size: 1.4rem; font-weight: 600; color: var(--dark);">🥇 1º Lugar: <br><span style="color:var(--secondary)">${podioOuro.campeao}</span></div>
+                    <div style="margin: 15px 0; font-size: 1.1rem; font-weight: 500; color: var(--gray);">🥈 2º Lugar: <br><span style="color:var(--dark)">${podioOuro.vice}</span></div>
+                    <div style="margin: 15px 0; font-size: 1.1rem; font-weight: 500; color: var(--gray);">🥉 3º Lugar: <br><span style="color:var(--dark)">${podioOuro.terceiro}</span></div>
+                    <button onclick="compartilharWhatsApp('${podioOuro.campeao}', '${podioOuro.vice}', '${podioOuro.terceiro}', 'Ouro')" class="btn" style="background-color: #25D366; color: white !important; width: 100%; margin-top: 15px;">📲 Compartilhar Ouro</button>
                 </div>`;
             }
 
             if (podioPrata) {
                 html += `
-                <div style="background: linear-gradient(135deg, #2c323d, #1c212a); color: var(--white); padding: 20px; border-radius: 10px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.2); border-top: 5px solid #c0c0c0; margin-top: 20px;">
-                    <h3 style="margin-bottom: 20px; color: #c0c0c0; border-bottom: 1px solid #555; padding-bottom: 10px;">🥈 Pódio - Chave Prata</h3>
-                    <div style="margin: 15px 0; font-size: 1.4rem; font-weight: bold;">🥇 1º Lugar: <br><span style="color:#fff">${podioPrata.campeao}</span></div>
-                    <div style="margin: 15px 0; font-size: 1.2rem; font-weight: bold;">🥈 2º Lugar: <br><span style="color:#fff">${podioPrata.vice}</span></div>
-                    <div style="margin: 15px 0; font-size: 1.2rem; font-weight: bold;">🥉 3º Lugar: <br><span style="color:#fff">${podioPrata.terceiro}</span></div>
-                    <button onclick="compartilharWhatsApp('${podioPrata.campeao}', '${podioPrata.vice}', '${podioPrata.terceiro}', 'Prata')" class="btn" style="background-color: #25D366; color: white; width: 100%; margin-top: 15px;">📲 Compartilhar Prata</button>
+                <div style="background: var(--white); padding: 20px; border-radius: 12px; text-align: center; border: 1px solid var(--border); border-top: 5px solid var(--gray); margin-top: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.03);">
+                    <h3 style="margin-bottom: 20px; color: var(--dark); border-bottom: 1px solid var(--border); padding-bottom: 10px; font-family: var(--font-heading);">🥈 Pódio - Chave Prata</h3>
+                    <div style="margin: 15px 0; font-size: 1.4rem; font-weight: 600; color: var(--dark);">🥇 1º Lugar: <br><span style="color:var(--secondary)">${podioPrata.campeao}</span></div>
+                    <div style="margin: 15px 0; font-size: 1.1rem; font-weight: 500; color: var(--gray);">🥈 2º Lugar: <br><span style="color:var(--dark)">${podioPrata.vice}</span></div>
+                    <div style="margin: 15px 0; font-size: 1.1rem; font-weight: 500; color: var(--gray);">🥉 3º Lugar: <br><span style="color:var(--dark)">${podioPrata.terceiro}</span></div>
+                    <button onclick="compartilharWhatsApp('${podioPrata.campeao}', '${podioPrata.vice}', '${podioPrata.terceiro}', 'Prata')" class="btn" style="background-color: #25D366; color: white !important; width: 100%; margin-top: 15px;">📲 Compartilhar Prata</button>
                 </div>`;
             }
 
@@ -1616,23 +1612,6 @@ if (formatoAberto.includes("Super 4")) {
             }
         }
 
-        // --- NAVEGAÇÃO ENTRE CAMPEONATOS E RANKING ---
-        const btnAbaCampeonatos = document.getElementById('btnAbaCampeonatos');
-        const btnAbaRankings = document.getElementById('btnAbaRankings');
-        const rankingSection = document.getElementById('ranking-section');
-
-        btnAbaCampeonatos.addEventListener('click', () => {
-            btnAbaCampeonatos.style.background = 'var(--white)'; btnAbaCampeonatos.style.color = 'var(--dark)';
-            btnAbaRankings.style.background = 'transparent'; btnAbaRankings.style.color = 'var(--white)';
-            listSection.classList.remove('hidden'); detailsSection.classList.add('hidden'); createSection.style.display = 'none'; rankingSection.classList.add('hidden');
-        });
-
-        btnAbaRankings.addEventListener('click', () => {
-            btnAbaRankings.style.background = 'var(--white)'; btnAbaRankings.style.color = 'var(--dark)';
-            btnAbaCampeonatos.style.background = 'transparent'; btnAbaCampeonatos.style.color = 'var(--white)';
-            listSection.classList.add('hidden'); detailsSection.classList.add('hidden'); createSection.style.display = 'none'; rankingSection.classList.remove('hidden');
-        });
-
         // --- ENCERRAMENTO COM CÁLCULO MÚLTIPLO ---
         document.getElementById('btnEncerrarTorneio').addEventListener('click', async () => {
             if (!confirm("🚨 ATENÇÃO! Tem certeza? Isso vai encerrar o torneio e somar os pontos no ranking.")) return;
@@ -1648,17 +1627,15 @@ if (formatoAberto.includes("Super 4")) {
 
             let statsIndividuais = {};
 
-            // 1. ENTREGA OS PONTOS DE PARTICIPAÇÃO PARA TODOS
             inscritosAtuais.forEach(insc => {
                 if (insc.jogador1) statsIndividuais[insc.jogador1] = { pontos: ptsConfig.participacao, titulos: 0, vitorias: 0, jogos: 0 };
                 if (insc.jogador2) statsIndividuais[insc.jogador2] = { pontos: ptsConfig.participacao, titulos: 0, vitorias: 0, jogos: 0 };
             });
 
-            // 2. ENTREGA O BÓNUS PARA O 1º LUGAR DE CADA GRUPO
             document.querySelectorAll('#chavesGeradasUI .standings-table tbody').forEach(tb => {
                 let trs = tb.querySelectorAll('tr');
                 if (trs.length > 0) {
-                    let nome1st = trs[0].cells[0].innerText.replace(/[🥇🥈🥉]/g, '').trim();
+                    let nome1st = trs[0].cells[0].innerText.replace(/[1234]º /g, '').trim();
                     let jogadores1st = nome1st.split('&').map(j => j.trim());
                     jogadores1st.forEach(j => {
                         if (statsIndividuais[j]) statsIndividuais[j].pontos += (ptsConfig.primeiroGrupo || 0);
@@ -1666,7 +1643,6 @@ if (formatoAberto.includes("Super 4")) {
                 }
             });
 
-            // 3. CALCULA O PONTO MÁXIMO ATINGIDO NO MATA-MATA (OURO E PRATA)
             function processarPontosDeChave(fasesArray, chave) {
                 if (!fasesArray || fasesArray.length === 0) return;
                 let maxPontosEquipe = {};
@@ -1715,17 +1691,14 @@ if (formatoAberto.includes("Super 4")) {
                     });
                 });
 
-                // Aplica os pontos máximos aos jogadores individuais
                 for (let equipe in maxPontosEquipe) {
                     let pontosMataMata = maxPontosEquipe[equipe];
                     let jogadores = equipe.split('&').map(j => j.trim());
                     jogadores.forEach(j => {
                         if (statsIndividuais[j]) {
                             statsIndividuais[j].pontos += pontosMataMata;
-                            
-                            // Conta título apenas se for o Campeão (Ouro ou Prata)
-                            if (chave === 'Ouro' && pontosMataMata === ptsConfig.campeao) statsIndividuais[j].titulos = 1;
-                            if (chave === 'Prata' && pontosMataMata === ptsConfig.campeaoPrata) statsIndividuais[j].titulos = 1;
+                            if (chave === 'Ouro' && pontosMataMata === (ptsConfig.campeao || 0)) statsIndividuais[j].titulos = 1;
+                            if (chave === 'Prata' && pontosMataMata === (ptsConfig.campeaoPrata || 0)) statsIndividuais[j].titulos = 1;
                         }
                     });
                 }
@@ -1734,7 +1707,6 @@ if (formatoAberto.includes("Super 4")) {
             processarPontosDeChave(window.fasesMataMata, 'Ouro');
             processarPontosDeChave(window.fasesPrata, 'Prata');
 
-            // 4. CALCULA JOGOS E VITÓRIAS GERAIS PARA AS ESTATÍSTICAS
             for (let id in jogosSalvos) {
                 let j = jogosSalvos[id];
                 if (!j.vencedor || j.timeA.includes("BYE") || j.timeB.includes("BYE")) continue;
@@ -1748,7 +1720,6 @@ if (formatoAberto.includes("Super 4")) {
                 vencedores.forEach(p => { if(statsIndividuais[p]) statsIndividuais[p].vitorias++; });
             }
 
-            // 5. SALVA TUDO NO FIREBASE
             try {
                 for (let jogador in statsIndividuais) {
                     let stats = statsIndividuais[jogador];
@@ -1799,7 +1770,7 @@ if (formatoAberto.includes("Super 4")) {
 
         async function carregarRanking() {
             let rankingNome = filtroRanking.options[filtroRanking.selectedIndex].text;
-            tbodyRanking.innerHTML = '<tr><td colspan="4" style="padding: 20px;">Carregando ranking...</td></tr>';
+            tbodyRanking.innerHTML = '<tr><td colspan="4" style="padding: 20px; color: var(--gray);">Carregando ranking...</td></tr>';
             
             const snap = await getDocs(collection(db, "rankings", rankingNome, "jogadores"));
             let lista = [];
@@ -1807,7 +1778,7 @@ if (formatoAberto.includes("Super 4")) {
             lista.sort((a,b) => b.pontos - a.pontos); 
             
             if (lista.length === 0) {
-                tbodyRanking.innerHTML = '<tr><td colspan="4" style="padding: 20px;">Nenhum jogador pontuou neste ranking ainda.</td></tr>';
+                tbodyRanking.innerHTML = '<tr><td colspan="4" style="padding: 20px; color: var(--gray);">Nenhum jogador pontuou neste ranking ainda.</td></tr>';
                 return;
             }
 
@@ -1817,14 +1788,14 @@ if (formatoAberto.includes("Super 4")) {
                 let titulos = jog.titulos || 0; let vitorias = jog.vitorias || 0; let jogos = jog.jogos || 0;
 
                 html += `<tr>
-                    <td><strong>${icone}</strong></td>
+                    <td><strong style="color: var(--dark);">${icone}</strong></td>
                     <td style="text-align:left;">
-                        <a href="#" onclick="abrirPerfilJogador('${jog.nome}', ${jog.pontos}, ${jog.torneios}, ${titulos}, ${vitorias}, ${jogos})" style="color: var(--primary-dark); text-decoration: none; font-weight: bold; border-bottom: 1px dashed var(--primary); cursor: pointer;">
+                        <a href="#" onclick="abrirPerfilJogador('${jog.nome}', ${jog.pontos}, ${jog.torneios}, ${titulos}, ${vitorias}, ${jogos})" style="color: var(--secondary); text-decoration: none; font-weight: 500;">
                             ${jog.nome}
                         </a>
                     </td>
-                    <td style="color: var(--dark); font-size: 1.1rem;"><strong>${jog.pontos}</strong></td>
-                    <td>${jog.torneios}</td>
+                    <td style="color: var(--dark); font-size: 1rem;"><strong>${jog.pontos}</strong></td>
+                    <td style="color: var(--gray);">${jog.torneios}</td>
                 </tr>`;
             });
             tbodyRanking.innerHTML = html;
@@ -1864,8 +1835,8 @@ if (formatoAberto.includes("Super 4")) {
                 selectRankingFilter.innerHTML += `<option value="${cat}">${cat}</option>`;
                 
                 const li = document.createElement('li');
-                li.style.cssText = "display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee;";
-                li.innerHTML = `<span>${cat}</span> <button class="btn btn-outline" style="padding: 2px 8px; color: #e74c3c; border-color: #e74c3c;" onclick="deletarCategoria('${id}')">Excluir</button>`;
+                li.style.cssText = "display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid var(--border); color: var(--dark);";
+                li.innerHTML = `<span>${cat}</span> <button class="btn btn-outline" style="padding: 2px 8px; color: #dc3545 !important; border-color: #dc3545;" onclick="deletarCategoria('${id}')">Excluir</button>`;
                 listaCategoriasUI.appendChild(li);
             });
             
@@ -1919,9 +1890,6 @@ if (formatoAberto.includes("Super 4")) {
 
         updateAuthUI();
 
-        // ==========================================
-        // LÓGICA DO APP (PWA)
-        // ==========================================
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js').then(reg => console.log('Motor do App registrado!')).catch(err => console.log('Erro no motor', err));
@@ -1968,12 +1936,9 @@ if (formatoAberto.includes("Super 4")) {
             
             await updateDoc(doc(db, "campeonatos", torneioAbertoId), { sorteados: torneioAbertoData.sorteados });
             renderizarGrupos(torneioAbertoData.sorteados);
-            document.getElementById('btnEfetuarTroca').textContent = "Trocar de Grupo";
+            document.getElementById('btnEfetuarTroca').textContent = "Trocar";
         });
 
-        // ==========================================
-        // SISTEMA DE REPESCAGEM (LUCKY LOSER)
-        // ==========================================
         window.abrirRepescagem = function(botao, rodadaIndex, matchId) {
             const box = document.getElementById('box-' + matchId) || botao.closest('.bracket-match');
             const area = box.querySelector('.repescagem-area');
