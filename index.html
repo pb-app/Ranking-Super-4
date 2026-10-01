@@ -431,7 +431,6 @@
             <div class="panel-grid" id="painel-grid">
                 
                 <div class="panel-card" id="painel-inscritos">
-                    <!-- CONTADOR DE INSCRITOS ADICIONADO AQUI -->
                     <h3 style="margin-bottom: 1.2rem; font-size: 1.2rem; color: var(--dark); display: flex; align-items: center;">
                         👥 Inscritos 
                         <span id="contadorInscritos" style="background: var(--primary-glow); color: var(--primary); font-size: 0.9rem; padding: 2px 10px; border-radius: 12px; margin-left: 10px; font-weight: 700;">0</span>
@@ -442,11 +441,11 @@
                         <input type="text" id="nomeJogador2" list="sugestoesJogadores" class="form-control" placeholder="Jogador 2 (Branco = Simples)" style="margin-bottom: 15px; background: var(--white);">
 
                         <div style="margin: 0 0 15px 0;">
-                            <label style="color: var(--gray); font-size: 0.85rem; margin-bottom: 5px;">Sorteio:</label>
+                            <label style="color: var(--gray); font-size: 0.85rem; margin-bottom: 5px;">Sorteio (Manual):</label>
                             <select id="tipoJogador" class="form-control" style="background: var(--white); padding: 0.6rem;">
-                                <option value="0">👤 Normal (Aleatório)</option>
-                                <option value="1">⭐ Cabeça de Chave 1</option>
-                                <option value="2">🌟 Cabeça de Chave 2</option>
+                                <option value="0">👤 Normal (Deixe em branco para o sistema puxar do ranking)</option>
+                                <option value="1">⭐ Forçar Cabeça de Chave 1</option>
+                                <option value="2">🌟 Forçar Cabeça de Chave 2</option>
                             </select>
                         </div>
                         
@@ -668,14 +667,13 @@
 
         function carregarInscritos(torneioId) {
             const listaUI = document.getElementById('listaInscritosUI');
-            const contadorUI = document.getElementById('contadorInscritos'); // NOVO: Contador
+            const contadorUI = document.getElementById('contadorInscritos');
             listaUI.innerHTML = '<li style="border:none; box-shadow:none; background:transparent;">Carregando...</li>';
             
             const qInscritos = query(collection(db, "campeonatos", torneioId, "inscritos"), orderBy("dataCriacao", "asc"));
             inscritosUnsubscribe = onSnapshot(qInscritos, (snapshot) => {
                 listaUI.innerHTML = ''; inscritosAtuais = []; 
                 
-                // ATUALIZA O CONTADOR
                 contadorUI.textContent = snapshot.size; 
                 
                 if(snapshot.empty) { listaUI.innerHTML = '<li style="border:none; box-shadow:none; background:transparent; color: var(--gray);">Nenhum inscrito.</li>'; return; }
@@ -1001,7 +999,7 @@
             
             let isGrupos = formatoAberto.includes("Grupos") || formatoAberto.includes("Super 4");
 
-            // NOVA TRAVA MATEMÁTICA: Exigir Múltiplos de 4
+            // TRAVA MATEMÁTICA
             if (isGrupos) {
                 if (inscritosAtuais.length % 4 !== 0) {
                     let faltam = 4 - (inscritosAtuais.length % 4);
@@ -1014,34 +1012,89 @@
                 if (!confirm("O torneio já foi sorteado! Gerar novamente vai APAGAR o chaveamento. Continuar?")) return;
             }
 
+            document.getElementById('btnGerarChaves').textContent = "A buscar Ranking...";
+            document.getElementById('btnGerarChaves').disabled = true;
+
+            // 1. BUSCA O RANKING PARA PREENCHIMENTO AUTOMÁTICO
+            let rankingMap = {};
+            if (torneioAbertoData.ranking) {
+                try {
+                    const snapRank = await getDocs(collection(db, "rankings", torneioAbertoData.ranking, "jogadores"));
+                    snapRank.forEach(doc => { rankingMap[doc.data().nome] = doc.data().pontos || 0; });
+                } catch(e) { console.log("Erro ao carregar ranking para sorteio:", e); }
+            }
+
+            // 2. ADICIONA OS PONTOS NA LISTA DE INSCRITOS
+            let inscritosComPontos = inscritosAtuais.map(insc => {
+                let pts1 = rankingMap[insc.jogador1] || 0;
+                let pts2 = insc.jogador2 ? (rankingMap[insc.jogador2] || 0) : 0;
+                return { ...insc, totalPontos: pts1 + pts2 };
+            });
+
+            // 3. CALCULA NÚMERO DE GRUPOS
+            let numGrupos = 1;
+            if (isGrupos) {
+                if (formatoAberto.includes("Super 4")) { numGrupos = Math.max(1, Math.floor(inscritosComPontos.length / 4)); } 
+                else if (inscritosComPontos.length >= 6) { numGrupos = Math.floor(inscritosComPontos.length / 3); }
+            }
+
+            // 4. SEPARA QUEM FOI SELECIONADO MANUALMENTE E QUEM SOBROU
+            let seeds1 = inscritosComPontos.filter(i => i.nivelSeed === 1);
+            let seeds2 = inscritosComPontos.filter(i => i.nivelSeed === 2);
+            let restantes = inscritosComPontos.filter(i => i.nivelSeed !== 1 && i.nivelSeed !== 2);
+
+            // 5. LÓGICA DE PREENCHIMENTO INTELIGENTE (AUTO-SEED)
+            if (isGrupos) {
+                // Ordena os restantes do maior para o menor ranking
+                restantes.sort((a, b) => b.totalPontos - a.totalPontos);
+                
+                // Preenche Cabeça de Chave 1 até completar 1 por grupo
+                while (seeds1.length < numGrupos && restantes.length > 0) {
+                    seeds1.push(restantes.shift());
+                }
+                
+                // Preenche Cabeça de Chave 2 até completar 1 por grupo
+                while (seeds2.length < numGrupos && restantes.length > 0) {
+                    seeds2.push(restantes.shift());
+                }
+            }
+
+            // 6. EMBARALHA DENTRO DOS SEUS POTES PARA ALEATORIEDADE
+            seeds1.sort(() => Math.random() - 0.5);
+            seeds2.sort(() => Math.random() - 0.5);
+            let normais = restantes.sort(() => Math.random() - 0.5);
+
             let sorteados = [];
             if (formatoAberto.includes("Super 4")) {
-                let seeds1 = inscritosAtuais.filter(i => i.nivelSeed === 1).sort(() => Math.random() - 0.5);
-                let seeds2 = inscritosAtuais.filter(i => i.nivelSeed === 2).sort(() => Math.random() - 0.5);
-                let normais = inscritosAtuais.filter(i => i.nivelSeed !== 1 && i.nivelSeed !== 2).sort(() => Math.random() - 0.5);
-                
-                let numGrupos = Math.max(1, Math.floor(inscritosAtuais.length / 4));
                 let gruposTemporarios = Array.from({ length: numGrupos }, () => []);
-                
                 for(let i=0; i<numGrupos; i++) { if(seeds1.length > 0) gruposTemporarios[i].push(seeds1.pop()); }
                 for(let i=0; i<numGrupos; i++) { if(seeds2.length > 0) gruposTemporarios[i].push(seeds2.pop()); }
                 
-                let todosRestantes = [...seeds1, ...seeds2, ...normais].sort(() => Math.random() - 0.5);
                 let idx = 0;
-                while(todosRestantes.length > 0) { gruposTemporarios[idx % numGrupos].push(todosRestantes.pop()); idx++; }
+                while(normais.length > 0) { gruposTemporarios[idx % numGrupos].push(normais.pop()); idx++; }
                 
-                sorteados = new Array(inscritosAtuais.length);
+                sorteados = new Array(inscritosComPontos.length);
                 for (let g = 0; g < numGrupos; g++) {
                     for (let j = 0; j < gruposTemporarios[g].length; j++) { sorteados[g + j * numGrupos] = gruposTemporarios[g][j]; }
                 }
                 sorteados = sorteados.filter(item => item !== undefined);
+            } else if (isGrupos) {
+                // Para grupos normais (Liga/Aberto), basta alinhar as arrays. O script de renderizar separa certinho!
+                sorteados = [...seeds1, ...seeds2, ...normais];
             } else {
-                let seeds = inscritosAtuais.filter(i => i.isSeed || i.nivelSeed === 1 || i.nivelSeed === 2).sort(() => Math.random() - 0.5);
-                let normais = inscritosAtuais.filter(i => !i.isSeed && i.nivelSeed !== 1 && i.nivelSeed !== 2).sort(() => Math.random() - 0.5);
-                sorteados = [...seeds, ...normais];
+                // Mata-Mata direto
+                let mSeeds = inscritosComPontos.filter(i => i.isSeed || i.nivelSeed === 1 || i.nivelSeed === 2).sort(() => Math.random() - 0.5);
+                let mNormais = inscritosComPontos.filter(i => !i.isSeed && i.nivelSeed !== 1 && i.nivelSeed !== 2).sort(() => Math.random() - 0.5);
+                sorteados = [...mSeeds, ...mNormais];
             }
-            
-            document.getElementById('btnGerarChaves').textContent = "Gerando...";
+
+            // Limpa as variáveis extras que usamos no Auto-Seed antes de enviar ao Banco de Dados
+            sorteados = sorteados.map(s => {
+                let { totalPontos, ...rest } = s;
+                return rest;
+            });
+
+            document.getElementById('btnGerarChaves').textContent = "A Gerar...";
             torneioAbertoData.sorteados = sorteados; jogosSalvos = {}; 
 
             if (isGrupos) {
@@ -1076,6 +1129,7 @@
             }
 
             document.getElementById('btnGerarChaves').innerHTML = "⚙ Gerar Confrontos";
+            document.getElementById('btnGerarChaves').disabled = false;
             document.getElementById('painel-inscritos').classList.add('hidden');
             document.getElementById('painel-grid').classList.add('grid-expandido');
             document.getElementById('btnMostrarInscritos').classList.add('hidden');
@@ -1634,7 +1688,6 @@
             } catch (err) { alert("Erro ao editar."); } finally { btn.textContent = "Salvar Alterações"; btn.disabled = false; }
         });
 
-        // NOVA LÓGICA DE ZERAR RANKING
         document.getElementById('btnZerarRanking').addEventListener('click', () => {
             let rankingNome = filtroRanking.options[filtroRanking.selectedIndex]?.text;
             if (!rankingNome) { alert("Selecione uma categoria primeiro."); return; }
