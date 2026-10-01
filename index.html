@@ -188,7 +188,7 @@
     <div id="modalEditPlayer" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(11, 15, 25, 0.85); z-index: 1100; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(8px);">
         <div style="background: var(--white); padding: 2.5rem; border-radius: 20px; width: 90%; max-width: 450px; border: 1px solid var(--border); position: relative;">
             <button type="button" onclick="document.getElementById('modalEditPlayer').classList.add('hidden')" style="position: absolute; top: 15px; right: 20px; background: transparent; border: none; font-size: 1.8rem; cursor: pointer; color: var(--gray);">&times;</button>
-            <h3 style="margin-bottom: 1.5rem; color: var(--dark); font-size: 1.4rem;">✏️ Editar Jogador</h3>
+            <h3 style="margin-bottom: 1.5rem; color: var(--dark); font-size: 1.4rem;">✏️️ Editar Jogador</h3>
             <h4 id="editNomeTitle" style="color: var(--primary); margin-bottom: 1.5rem;">Nome</h4>
             <form id="formEditPlayer">
                 <input type="hidden" id="editPlayerId">
@@ -302,6 +302,16 @@
                         <label><input type="radio" name="formato" value="super-4" required> Super 4 (Ouro e Prata)</label>
                     </div>
                 </div>
+
+                <!-- OPÇÕES EXCLUSIVAS SUPER 4 -->
+                <div class="form-group hidden" id="super4-opcoes-div" style="background: var(--light); padding: 20px; border-radius: 16px; border: 1px solid var(--border);">
+                    <label style="color: #f59e0b; margin-bottom: 10px; font-weight: 600;">⭐ Modo de Formação das Duplas (Super 4)</label>
+                    <div class="radio-group">
+                        <label><input type="radio" name="super4Modo" value="normal" checked> Padrão (1º+2º e 3º+4º do mesmo grupo)</label>
+                        <label><input type="radio" name="super4Modo" value="sortudo"> Sorteio Cruzado "Sortudo" (1º + 2º sorteado / 3º + 4º sorteado)</label>
+                    </div>
+                </div>
+
                 <div class="form-group">
                     <label for="qtdSets">Quantidade de Sets (Formato das Partidas)</label>
                     <select id="qtdSets" class="form-control" required>
@@ -373,7 +383,7 @@
                     </select>
                 </div>
                 <div style="display: flex; gap: 10px;">
-                    <button id="btnGerenciarRankings" class="btn btn-outline hidden" style="height: 52px; padding: 0 15px;">⚙️ Gerenciar</button>
+                    <button id="btnGerenciarRankings" class="btn btn-outline hidden" style="height: 52px; padding: 0 15px;">⚙️️ Gerenciar</button>
                     <button id="btnZerarRanking" class="btn hidden" style="height: 52px; padding: 0 15px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid #ef4444; box-shadow: none;">⚠️ Zerar Tudo</button>
                 </div>
             </div>
@@ -464,7 +474,7 @@
                     <div id="chavesGeradasUI" style="margin-top: 20px;"></div>
 
                     <button id="btnMontarMataMata" class="btn hidden" style="width: 100%; margin-top: 25px; background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff;">
-                        ⚔️ Avançar para o Mata-Mata
+                        ⚔️️ Avançar para o Mata-Mata
                     </button>
 
                     <div id="mataMataUI"></div>
@@ -963,7 +973,7 @@
                     html += `<div class="tabela-container"></div></div>`;
                 });
                 if (isLogged) document.getElementById('btnMontarMataMata').classList.remove('hidden');
-            } else { html += '<h4 style="text-align: center; padding: 20px;">⚔️ Mata-Mata Apenas</h4>'; }
+            } else { html += '<h4 style="text-align: center; padding: 20px;">⚔️️ Mata-Mata Apenas</h4>'; }
             
             chavesUI.innerHTML = html;
 
@@ -1314,44 +1324,102 @@
             let timesOuro = [];
             let timesPrata = [];
             let isSuper4 = formatoAberto.includes("Super 4");
+            let super4Modo = torneioAbertoData.super4Modo || 'normal';
 
+            // Coletar dados estatísticos individuais da tabela para o modo sortudo
+            let playerStatsMap = {};
             document.querySelectorAll('#chavesGeradasUI .standings-table tbody').forEach(tb => {
-                let trs = tb.querySelectorAll('tr');
-                
-                if (isSuper4 && trs.length >= 4) {
-                    let n1 = trs[0].cells[0].innerText.replace(/[🥇🥈🥉]/g, '').trim();
-                    let n2 = trs[1].cells[0].innerText.replace(/[🥇🥈🥉]/g, '').trim();
-                    let n3 = trs[2].cells[0].innerText.replace(/[🥇🥈🥉]/g, '').trim();
-                    let n4 = trs[3].cells[0].innerText.replace(/[🥇🥈🥉]/g, '').trim();
+                tb.querySelectorAll('tr').forEach(tr => {
+                    let nome = tr.cells[0].innerText.replace(/[🥇🥈🥉]/g, '').trim();
+                    let v = parseInt(tr.cells[2].innerText) || 0;
+                    let ss = parseInt(tr.cells[3].innerText) || 0;
+                    let sg = parseInt(tr.cells[4].innerText) || 0;
+                    playerStatsMap[nome] = { v, ss, sg };
+                });
+            });
 
-                    let vO = (parseInt(trs[0].cells[2].innerText)||0) + (parseInt(trs[1].cells[2].innerText)||0);
-                    let ssO = (parseInt(trs[0].cells[3].innerText)||0) + (parseInt(trs[1].cells[3].innerText)||0);
-                    let sgO = (parseInt(trs[0].cells[4].innerText)||0) + (parseInt(trs[1].cells[4].innerText)||0);
+            if (isSuper4 && super4Modo === 'sortudo') {
+                let gruposData = [];
+                document.querySelectorAll('#chavesGeradasUI .standings-table tbody').forEach(tb => {
+                    let trs = tb.querySelectorAll('tr');
+                    let gJogadores = [];
+                    trs.forEach(tr => {
+                        let nome = tr.cells[0].innerText.replace(/[🥇🥈🥉]/g, '').trim();
+                        gJogadores.push(nome);
+                    });
+                    gruposData.push(gJogadores);
+                });
 
-                    let vP = (parseInt(trs[2].cells[2].innerText)||0) + (parseInt(trs[3].cells[2].innerText)||0);
-                    let ssP = (parseInt(trs[2].cells[3].innerText)||0) + (parseInt(trs[3].cells[3].innerText)||0);
-                    let sgP = (parseInt(trs[2].cells[4].innerText)||0) + (parseInt(trs[3].cells[4].innerText)||0);
+                let segundosPool = gruposData.map(g => g[1] || '').filter(Boolean).sort(() => Math.random() - 0.5);
+                let quartosPool = gruposData.map(g => g[3] || '').filter(Boolean).sort(() => Math.random() - 0.5);
+
+                gruposData.forEach((g, i) => {
+                    let p1 = g[0];
+                    let p2 = segundosPool[i] || g[1];
+                    let p3 = g[2];
+                    let p4 = quartosPool[i] || g[3];
+
+                    if (p1 && p2) {
+                        let s1 = playerStatsMap[p1] || {v:0, ss:0, sg:0};
+                        let s2 = playerStatsMap[p2] || {v:0, ss:0, sg:0};
+                        timesOuro.push({
+                            nome: `${p1} & ${p2}`,
+                            v: s1.v + s2.v,
+                            ss: s1.ss + s2.ss,
+                            sg: s1.sg + s2.sg
+                        });
+                    }
+                    if (p3 && p4) {
+                        let s3 = playerStatsMap[p3] || {v:0, ss:0, sg:0};
+                        let s4 = playerStatsMap[p4] || {v:0, ss:0, sg:0};
+                        timesPrata.push({
+                            nome: `${p3} & ${p4}`,
+                            v: s3.v + s4.v,
+                            ss: s3.ss + s4.ss,
+                            sg: s3.sg + s4.sg
+                        });
+                    }
+                });
+
+            } else {
+                document.querySelectorAll('#chavesGeradasUI .standings-table tbody').forEach(tb => {
+                    let trs = tb.querySelectorAll('tr');
                     
-                    timesOuro.push({ nome: `${n1} & ${n2}`, v: vO, ss: ssO, sg: sgO });
-                    timesPrata.push({ nome: `${n3} & ${n4}`, v: vP, ss: ssP, sg: sgP });
-                    
-                } else {
-                    let qtdTimesNoGrupo = trs.length;
-                    let limiteOuro = qtdTimesNoGrupo >= 4 ? 3 : 2;
+                    if (isSuper4 && trs.length >= 4) {
+                        let n1 = trs[0].cells[0].innerText.replace(/[🥇🥈🥉]/g, '').trim();
+                        let n2 = trs[1].cells[0].innerText.replace(/[🥇🥈🥉]/g, '').trim();
+                        let n3 = trs[2].cells[0].innerText.replace(/[🥇🥈🥉]/g, '').trim();
+                        let n4 = trs[3].cells[0].innerText.replace(/[🥇🥈🥉]/g, '').trim();
 
-                    for (let i = 0; i < trs.length; i++) {
-                        let linha = trs[i];
-                        let nome = linha.cells[0].innerText.replace(/[🥇🥈🥉]/g, '').trim();
-                        let v = parseInt(linha.cells[2].innerText) || 0;
-                        let ss = parseInt(linha.cells[3].innerText) || 0;
-                        let sg = parseInt(linha.cells[4].innerText) || 0;
+                        let vO = (parseInt(trs[0].cells[2].innerText)||0) + (parseInt(trs[1].cells[2].innerText)||0);
+                        let ssO = (parseInt(trs[0].cells[3].innerText)||0) + (parseInt(trs[1].cells[3].innerText)||0);
+                        let sgO = (parseInt(trs[0].cells[4].innerText)||0) + (parseInt(trs[1].cells[4].innerText)||0);
+
+                        let vP = (parseInt(trs[2].cells[2].innerText)||0) + (parseInt(trs[3].cells[2].innerText)||0);
+                        let ssP = (parseInt(trs[2].cells[3].innerText)||0) + (parseInt(trs[3].cells[3].innerText)||0);
+                        let sgP = (parseInt(trs[2].cells[4].innerText)||0) + (parseInt(trs[3].cells[4].innerText)||0);
                         
-                        if (i < limiteOuro) {
-                            timesOuro.push({ nome, v, ss, sg });
+                        timesOuro.push({ nome: `${n1} & ${n2}`, v: vO, ss: ssO, sg: sgO });
+                        timesPrata.push({ nome: `${n3} & ${n4}`, v: vP, ss: ssP, sg: sgP });
+                        
+                    } else {
+                        let qtdTimesNoGrupo = trs.length;
+                        let limiteOuro = qtdTimesNoGrupo >= 4 ? 3 : 2;
+
+                        for (let i = 0; i < trs.length; i++) {
+                            let linha = trs[i];
+                            let nome = linha.cells[0].innerText.replace(/[🥇🥈🥉]/g, '').trim();
+                            let v = parseInt(linha.cells[2].innerText) || 0;
+                            let ss = parseInt(linha.cells[3].innerText) || 0;
+                            let sg = parseInt(linha.cells[4].innerText) || 0;
+                            
+                            if (i < limiteOuro) {
+                                timesOuro.push({ nome, v, ss, sg });
+                            }
                         }
                     }
-                }
-            });
+                });
+            }
 
             if (timesOuro.length < 2) { alert("Atualize as classificações dos grupos primeiro!"); return; }
 
@@ -1414,12 +1482,16 @@
 
         const radiosFormato = document.querySelectorAll('input[name="formato"]');
         const divPrata = document.getElementById('pontos-prata');
+        const divSuper4Opcoes = document.getElementById('super4-opcoes-div');
+
         radiosFormato.forEach(r => {
             r.addEventListener('change', (e) => {
                 if (e.target.value === 'super-4') {
                     divPrata.style.display = 'block';
+                    divSuper4Opcoes.classList.remove('hidden');
                 } else {
                     divPrata.style.display = 'none';
+                    divSuper4Opcoes.classList.add('hidden');
                 }
             });
         });
@@ -1427,10 +1499,14 @@
         form.addEventListener('submit', async (e) => {
             e.preventDefault(); const b = form.querySelector('button[type="submit"]'); b.disabled = true;
             try {
+                let formatoSelecionado = document.querySelector('input[name="formato"]:checked').parentElement.textContent.trim();
+                let super4ModoVal = document.querySelector('input[name="super4Modo"]:checked')?.value || 'normal';
+
                 await addDoc(collection(db, "campeonatos"), {
                     nome: document.getElementById('nomeTorneio').value,
                     ranking: document.getElementById('rankingVinculado').options[document.getElementById('rankingVinculado').selectedIndex].text,
-                    formato: document.querySelector('input[name="formato"]:checked').parentElement.textContent.trim(),
+                    formato: formatoSelecionado,
+                    super4Modo: super4ModoVal,
                     sets: document.getElementById('qtdSets').options[document.getElementById('qtdSets').selectedIndex].text,
                     pontosConfig: {
                         campeao: parseInt(document.getElementById('ptsCampeao').value) || 100,
@@ -1613,7 +1689,6 @@
                 if (insc.jogador2) statsIndividuais[insc.jogador2] = { pontos: ptsConfig.participacao, pontosOuro: 0, pontosPrata: 0, titulos: 0, vitorias: 0, jogos: 0 };
             });
 
-            // ATRIBUIR PONTOS DA FASE DE GRUPOS POR POSIÇÃO
             document.querySelectorAll('#chavesGeradasUI .standings-table tbody').forEach(tb => {
                 let trs = tb.querySelectorAll('tr');
                 trs.forEach((tr, index) => {
@@ -1874,7 +1949,7 @@
             let rankingNome = filtroRanking.options[filtroRanking.selectedIndex]?.text;
             if (!rankingNome) return;
             
-            if (!confirm(`⚠️️ CUIDADO! Você está prestes a ZERAR TODOS OS PONTOS (Geral, Ouro e Prata) e Estatísticas de todos os jogadores na categoria "${rankingNome}".\n\nIsso NÃO apaga os jogadores, apenas zera seus status.\n\nDeseja continuar?`)) return;
+            if (!confirm(`⚠️ CUIDADO! Você está prestes a ZERAR TODOS OS PONTOS (Geral, Ouro e Prata) e Estatísticas de todos os jogadores na categoria "${rankingNome}".\n\nIsso NÃO apaga os jogadores, apenas zera seus status.\n\nDeseja continuar?`)) return;
 
             const btn = document.getElementById('btnZerarRanking');
             btn.textContent = "Zerando..."; btn.disabled = true;
