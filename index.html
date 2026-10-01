@@ -322,7 +322,11 @@
                         <div><label style="font-size: 0.8rem; color: var(--gray); margin-bottom: 5px;">🏅 Quartas</label><input type="number" id="ptsQuartas" class="form-control" value="40" style="padding: 0.6rem; text-align: center;" required></div>
                         <div><label style="font-size: 0.8rem; color: var(--gray); margin-bottom: 5px;">🏅 Oitavas</label><input type="number" id="ptsOitavas" class="form-control" value="30" style="padding: 0.6rem; text-align: center;" required></div>
                         <div><label style="font-size: 0.8rem; color: var(--gray); margin-bottom: 5px;">🎾 Participação</label><input type="number" id="ptsGrupos" class="form-control" value="15" style="padding: 0.6rem; text-align: center;" required></div>
-                        <div><label style="font-size: 0.8rem; color: #f59e0b; margin-bottom: 5px; font-weight: 600;">⭐ 1º do Grupo</label><input type="number" id="ptsPrimeiroGrupo" class="form-control" value="10" style="padding: 0.6rem; text-align: center; border-color: rgba(245, 158, 11, 0.5); background: rgba(245, 158, 11, 0.05);" required></div>
+                        
+                        <div><label style="font-size: 0.8rem; color: #f59e0b; margin-bottom: 5px; font-weight: 600;">🥇 1º do Grupo</label><input type="number" id="ptsPrimeiroGrupo" class="form-control" value="15" style="padding: 0.6rem; text-align: center; border-color: rgba(245, 158, 11, 0.5); background: rgba(245, 158, 11, 0.05);" required></div>
+                        <div><label style="font-size: 0.8rem; color: #f59e0b; margin-bottom: 5px; font-weight: 600;">🥈 2º do Grupo</label><input type="number" id="ptsSegundoGrupo" class="form-control" value="10" style="padding: 0.6rem; text-align: center; border-color: rgba(245, 158, 11, 0.5); background: rgba(245, 158, 11, 0.05);" required></div>
+                        <div><label style="font-size: 0.8rem; color: #f59e0b; margin-bottom: 5px; font-weight: 600;">🥉 3º do Grupo</label><input type="number" id="ptsTerceiroGrupo" class="form-control" value="5" style="padding: 0.6rem; text-align: center; border-color: rgba(245, 158, 11, 0.5); background: rgba(245, 158, 11, 0.05);" required></div>
+                        <div><label style="font-size: 0.8rem; color: #f59e0b; margin-bottom: 5px; font-weight: 600;">🏅 4º do Grupo</label><input type="number" id="ptsQuartoGrupo" class="form-control" value="2" style="padding: 0.6rem; text-align: center; border-color: rgba(245, 158, 11, 0.5); background: rgba(245, 158, 11, 0.05);" required></div>
                     </div>
                 </div>
 
@@ -353,7 +357,6 @@
         <section id="ranking-section" class="hidden">
             <h2 class="section-title">🏆 Ranking</h2>
             
-            <!-- NOVOS FILTROS E BOTÕES -->
             <div style="display: flex; gap: 15px; align-items: flex-end; margin-bottom: 25px; flex-wrap: wrap;">
                 <div class="form-group" style="margin-bottom: 0; flex-grow: 1; min-width: 200px;">
                     <label>Categoria:</label>
@@ -395,7 +398,6 @@
             </div>
         </section>
 
-        <!-- Detalhes do Torneio (Sem alterações na UI base) -->
         <section id="details-section" class="hidden">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 15px;">
                 <button id="btnVoltar" class="btn btn-outline">⬅ Voltar para a Lista</button>
@@ -1438,7 +1440,11 @@
                         quartas: parseInt(document.getElementById('ptsQuartas').value) || 40,
                         oitavas: parseInt(document.getElementById('ptsOitavas').value) || 30,
                         participacao: parseInt(document.getElementById('ptsGrupos').value) || 15,
-                        primeiroGrupo: parseInt(document.getElementById('ptsPrimeiroGrupo').value) || 10,
+                        
+                        primeiroGrupo: parseInt(document.getElementById('ptsPrimeiroGrupo').value) || 15,
+                        segundoGrupo: parseInt(document.getElementById('ptsSegundoGrupo').value) || 10,
+                        terceiroGrupo: parseInt(document.getElementById('ptsTerceiroGrupo').value) || 5,
+                        quartoGrupo: parseInt(document.getElementById('ptsQuartoGrupo').value) || 2,
                         
                         campeaoPrata: parseInt(document.getElementById('ptsCampeaoPrata').value) || 60,
                         vicePrata: parseInt(document.getElementById('ptsVicePrata').value) || 40,
@@ -1595,7 +1601,8 @@
 
             let rankingNome = torneioAbertoData.ranking; 
             let ptsConfig = torneioAbertoData.pontosConfig || { 
-                campeao: 100, vice: 80, terceiro: 60, semi: 50, quartas: 40, oitavas: 30, participacao: 15, primeiroGrupo: 10,
+                campeao: 100, vice: 80, terceiro: 60, semi: 50, quartas: 40, oitavas: 30, participacao: 15, 
+                primeiroGrupo: 15, segundoGrupo: 10, terceiroGrupo: 5, quartoGrupo: 2,
                 campeaoPrata: 60, vicePrata: 40, terceiroPrata: 30, semiPrata: 20, quartasPrata: 10, oitavasPrata: 5 
             };
 
@@ -1606,15 +1613,23 @@
                 if (insc.jogador2) statsIndividuais[insc.jogador2] = { pontos: ptsConfig.participacao, pontosOuro: 0, pontosPrata: 0, titulos: 0, vitorias: 0, jogos: 0 };
             });
 
+            // ATRIBUIR PONTOS DA FASE DE GRUPOS POR POSIÇÃO
             document.querySelectorAll('#chavesGeradasUI .standings-table tbody').forEach(tb => {
                 let trs = tb.querySelectorAll('tr');
-                if (trs.length > 0) {
-                    let nome1st = trs[0].cells[0].innerText.replace(/[🥇🥈🥉]/g, '').trim();
-                    let jogadores1st = nome1st.split('&').map(j => j.trim());
-                    jogadores1st.forEach(j => {
-                        if (statsIndividuais[j]) statsIndividuais[j].pontos += (ptsConfig.primeiroGrupo || 0);
+                trs.forEach((tr, index) => {
+                    let nomeTime = tr.cells[0].innerText.replace(/[🥇🥈🥉]/g, '').trim();
+                    let jogadores = nomeTime.split('&').map(j => j.trim());
+                    
+                    let ptsGrupo = 0;
+                    if (index === 0) ptsGrupo = ptsConfig.primeiroGrupo || 0;
+                    else if (index === 1) ptsGrupo = ptsConfig.segundoGrupo || 0;
+                    else if (index === 2) ptsGrupo = ptsConfig.terceiroGrupo || 0;
+                    else if (index >= 3) ptsGrupo = ptsConfig.quartoGrupo || 0;
+
+                    jogadores.forEach(j => {
+                        if (statsIndividuais[j]) statsIndividuais[j].pontos += ptsGrupo;
                     });
-                }
+                });
             });
 
             function processarPontosDeChave(fasesArray, chave) {
@@ -1813,7 +1828,6 @@
         tipoFiltroRanking.addEventListener('change', carregarRanking);
         document.getElementById('btnAbaRankings').addEventListener('click', carregarRanking);
 
-        // Lógica de Edição de Jogador
         window.abrirModalEditarJogador = function(id, nome, ptsGeral, ptsOuro, ptsPrata, torneios, titulos, vitorias, jogos) {
             document.getElementById('editPlayerId').value = id;
             document.getElementById('editPlayerCategoria').value = filtroRanking.options[filtroRanking.selectedIndex].text;
@@ -1856,12 +1870,11 @@
             }
         });
 
-        // Lógica para Zerar Ranking
         document.getElementById('btnZerarRanking').addEventListener('click', async () => {
             let rankingNome = filtroRanking.options[filtroRanking.selectedIndex]?.text;
             if (!rankingNome) return;
             
-            if (!confirm(`⚠️ CUIDADO! Você está prestes a ZERAR TODOS OS PONTOS (Geral, Ouro e Prata) e Estatísticas de todos os jogadores na categoria "${rankingNome}".\n\nIsso NÃO apaga os jogadores, apenas zera seus status.\n\nDeseja continuar?`)) return;
+            if (!confirm(`⚠️️ CUIDADO! Você está prestes a ZERAR TODOS OS PONTOS (Geral, Ouro e Prata) e Estatísticas de todos os jogadores na categoria "${rankingNome}".\n\nIsso NÃO apaga os jogadores, apenas zera seus status.\n\nDeseja continuar?`)) return;
 
             const btn = document.getElementById('btnZerarRanking');
             btn.textContent = "Zerando..."; btn.disabled = true;
