@@ -85,11 +85,11 @@
 
         .tabela-container { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 12px; }
         .standings-table { width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 15px; margin-bottom: 25px; background-color: var(--white); border-radius: 12px; overflow: hidden; border: 1px solid var(--border); }
-        .standings-table th, .standings-table td { padding: 16px; text-align: center; border-bottom: 1px solid var(--border); }
-        .standings-table th { background-color: var(--light); color: var(--gray); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+        .standings-table th, .standings-table td { padding: 14px 12px; text-align: center; border-bottom: 1px solid var(--border); white-space: nowrap; }
+        .standings-table th { background-color: var(--light); color: var(--gray); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
         .standings-table tr:last-child td { border-bottom: none; }
         .standings-table tr:hover td { background-color: rgba(255,255,255,0.02); }
-        .standings-table td:first-child { text-align: left; font-weight: 500; word-break: break-word; }
+        .standings-table td:first-child { text-align: left; font-weight: 500; white-space: normal; word-break: break-word; }
 
         .match-box, .bracket-match { background-color: var(--white); padding: 20px; margin: 15px 0; border-radius: 16px; text-align: center; border: 1px solid var(--border); border-left: 4px solid #3a414e; transition: all 0.3s; box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
         .match-box:hover, .bracket-match:hover { border-color: #4b5563; }
@@ -128,17 +128,19 @@
         #podioUI > div { background: var(--white) !important; border: 1px solid var(--border); box-shadow: 0 20px 40px rgba(0,0,0,0.3) !important; border-radius: 20px !important; }
 
         @media (max-width: 768px) { 
-            main { padding: 2rem 15px; } 
-            #create-section, #details-section { padding: 2rem 15px; border-radius: 16px; }
-            .panel-card { padding: 1.5rem 15px; }
+            main { padding: 2rem 10px; } 
+            #create-section, #details-section { padding: 1.5rem 10px; border-radius: 16px; }
+            .panel-card { padding: 1.2rem 8px; }
+            .grupo-container { padding: 12px 8px !important; }
             #navegadorFases { padding: 15px 10px !important; }
             .panel-grid { grid-template-columns: 1fr !important; } 
             header { flex-direction: column; padding: 1.2rem; gap: 15px; }
             #nav-menu { margin: 0 !important; width: 100%; justify-content: center; flex-wrap: wrap; }
-            .standings-table { min-width: 500px; }
-            .score-input { width: 50px; height: 45px; font-size: 1.3rem; }
-            .match-box, .bracket-match { padding: 16px 12px; }
-            .t-a, .t-b { font-size: 0.95rem; }
+            .standings-table th, .standings-table td { padding: 10px 8px !important; font-size: 0.85rem; }
+            .standings-table { min-width: 100%; }
+            .score-input { width: 45px; height: 42px; font-size: 1.2rem; }
+            .match-box, .bracket-match { padding: 14px 8px; }
+            .t-a, .t-b { font-size: 0.9rem; }
         }
     </style>
 </head>
@@ -262,7 +264,6 @@
     <header>
         <h1>Ranking Confra & Play</h1>
         
-        <!-- Botões e Área de Login juntos na mesma linha / container de navegação -->
         <div id="nav-menu" style="display:flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-left: auto;">
             <button id="btnAbaCampeonatos" class="btn" style="background: var(--white); color: var(--dark);">Campeonatos</button>
             <button id="btnAbaRankings" class="btn btn-outline">🏆 Ver Ranking</button>
@@ -448,7 +449,7 @@
                      Adicione os jogadores primeiro para depois gerar os confrontos.
                     </p>
                     <button id="btnGerarChaves" class="btn" style="width: 100%; background: var(--white); color: var(--dark); border: 1px solid var(--border);">
-                        ⚙️️ Gerar Chaves / Grupos
+                        ⚙ Gerar Chaves / Grupos
                     </button>
 
                     <div id="navegadorFases" class="hidden" style="display: flex; justify-content: space-between; align-items: center; margin: 25px 0;">
@@ -1098,7 +1099,7 @@
                 setTimeout(() => { avancarVencedorMataMata(); }, 600);
             }
 
-            document.getElementById('btnGerarChaves').innerHTML = "⚙️️ Gerar Chaves / Grupos";
+            document.getElementById('btnGerarChaves').innerHTML = "⚙ Gerar Chaves / Grupos";
             document.getElementById('painel-inscritos').classList.add('hidden');
             document.getElementById('painel-grid').classList.add('grid-expandido');
             document.getElementById('btnMostrarInscritos').classList.add('hidden');
