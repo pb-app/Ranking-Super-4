@@ -133,11 +133,8 @@
             .panel-card { padding: 1.5rem 15px; }
             #navegadorFases { padding: 15px 10px !important; }
             .panel-grid { grid-template-columns: 1fr !important; } 
-            header { flex-direction: column; padding: 1.2rem; gap: 20px; }
+            header { flex-direction: column; padding: 1.2rem; gap: 15px; }
             #nav-menu { margin: 0 !important; width: 100%; justify-content: center; flex-wrap: wrap; }
-            #auth-area { width: 100%; display: flex; justify-content: center; }
-            #user-menu { display: flex; flex-direction: column; align-items: center; gap: 12px; width: 100%; }
-            #user-menu span { margin: 0 !important; }
             .standings-table { min-width: 500px; }
             .score-input { width: 50px; height: 45px; font-size: 1.3rem; }
             .match-box, .bracket-match { padding: 16px 12px; }
@@ -265,20 +262,19 @@
     <header>
         <h1>Ranking Confra & Play</h1>
         
-        <div id="nav-menu" style="display:flex; gap: 15px; margin-left: 30px; margin-right: auto;">
+        <!-- Botões e Área de Login juntos na mesma linha / container de navegação -->
+        <div id="nav-menu" style="display:flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-left: auto;">
             <button id="btnAbaCampeonatos" class="btn" style="background: var(--white); color: var(--dark);">Campeonatos</button>
             <button id="btnAbaRankings" class="btn btn-outline">🏆 Ver Ranking</button>
-            
             <button id="btnInstalarApp" class="btn hidden">📲 Instalar App</button>
-        </div>
-
-        <div id="auth-area">
-            <!-- Botão de Login transformado em um ícone compacto elegante -->
-            <button id="btnLogin" class="btn btn-outline" title="Área do Organizador" style="padding: 0; border-radius: 50%; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; border-color: var(--border);">🔒</button>
-            <div id="user-menu" class="hidden">
-                <span style="margin-right: 15px; color: var(--gray); font-weight: 500; font-size: 0.9rem;">Organizador</span>
-                <button id="btnNewTournament" class="btn" style="background: var(--white); color: var(--dark); border: 1px solid var(--border); padding: 0.6rem 1rem;">+ Torneio</button>
-                <button id="btnLogout" class="btn btn-outline" style="margin-left: 8px; padding: 0.6rem 1rem;">Sair</button>
+            
+            <div id="auth-area" style="display: inline-flex; align-items: center;">
+                <button id="btnLogin" class="btn btn-outline" title="Área do Organizador" style="padding: 0; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; border-color: var(--border);">🔒</button>
+                <div id="user-menu" class="hidden" style="display: flex; align-items: center; gap: 8px;">
+                    <span style="color: var(--gray); font-weight: 500; font-size: 0.85rem;">Organizador</span>
+                    <button id="btnNewTournament" class="btn" style="background: var(--white); color: var(--dark); border: 1px solid var(--border); padding: 0.5rem 0.8rem; font-size: 0.85rem;">+ Torneio</button>
+                    <button id="btnLogout" class="btn btn-outline" style="padding: 0.5rem 0.8rem; font-size: 0.85rem;">Sair</button>
+                </div>
             </div>
         </div>
     </header>
@@ -386,7 +382,7 @@
                     </select>
                 </div>
                 <div style="display: flex; gap: 10px;">
-                    <button id="btnGerenciarRankings" class="btn btn-outline hidden" style="height: 52px; padding: 0 15px;">⚙️️ Gerenciar</button>
+                    <button id="btnGerenciarRankings" class="btn btn-outline hidden" style="height: 52px; padding: 0 15px;">⚙ Gerenciar</button>
                     <button id="btnZerarRanking" class="btn hidden" style="height: 52px; padding: 0 15px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid #ef4444; box-shadow: none;">⚠ Zerar Tudo</button>
                 </div>
             </div>
@@ -452,7 +448,7 @@
                      Adicione os jogadores primeiro para depois gerar os confrontos.
                     </p>
                     <button id="btnGerarChaves" class="btn" style="width: 100%; background: var(--white); color: var(--dark); border: 1px solid var(--border);">
-                        ⚙️ Gerar Chaves / Grupos
+                        ⚙️️ Gerar Chaves / Grupos
                     </button>
 
                     <div id="navegadorFases" class="hidden" style="display: flex; justify-content: space-between; align-items: center; margin: 25px 0;">
@@ -1102,7 +1098,7 @@
                 setTimeout(() => { avancarVencedorMataMata(); }, 600);
             }
 
-            document.getElementById('btnGerarChaves').innerHTML = "⚙️ Gerar Chaves / Grupos";
+            document.getElementById('btnGerarChaves').innerHTML = "⚙️️ Gerar Chaves / Grupos";
             document.getElementById('painel-inscritos').classList.add('hidden');
             document.getElementById('painel-grid').classList.add('grid-expandido');
             document.getElementById('btnMostrarInscritos').classList.add('hidden');
