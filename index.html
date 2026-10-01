@@ -51,7 +51,7 @@
         .btn-outline { background: transparent !important; color: var(--dark); border: 1px solid var(--border); box-shadow: none; }
         .btn-outline:hover:not(:disabled) { background: #f9fafb !important; border-color: #d1d5db; color: var(--primary); }
 
-        /* Abas Superiores Customizadas (Correção Bug 1) */
+        /* Abas Superiores Customizadas */
         #nav-menu .tab-btn { padding: 0.7rem 1.2rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; font-size: 0.95rem; display: inline-flex; align-items: center; justify-content: center; border: 1px solid transparent; }
         #nav-menu .tab-active { background: #f9fafb; color: var(--primary); border-color: var(--border); box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); }
         #nav-menu .tab-inactive { background: transparent; color: var(--gray); border-color: transparent; }
@@ -104,7 +104,6 @@
         
         .match-score { display: flex; align-items: center; justify-content: center; gap: 12px; margin: 15px 0; }
         
-        /* Correção Bug 2 (Inputs Claros e Sólidos) */
         .score-input { width: 55px; height: 50px; background: #ffffff; color: var(--dark); text-align: center; font-size: 1.4rem; border: 1px solid #d1d5db; border-radius: 8px; font-weight: 700; transition: all 0.2s; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05); }
         .score-input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(242, 101, 34, 0.2);}
         .score-input:disabled { opacity: 1; background: #e5e7eb; color: var(--gray); border-color: #d1d5db; box-shadow: none; cursor: not-allowed; }
@@ -124,7 +123,7 @@
         
         .t-a, .t-b { color: var(--dark) !important; font-weight: 600; font-size: 1rem; word-break: break-word; line-height: 1.3; display: inline-block; width: 100%; padding: 0 5px; }
 
-        #modalPerfilJogador, #modalEditPlayer, #modalRankings, #loginModal { background: rgba(0, 0, 0, 0.4) !important; backdrop-filter: blur(3px); }
+        #modalPerfilJogador, #modalEditPlayer, #modalRankings, #loginModal, #modalZerarRanking { background: rgba(0, 0, 0, 0.4) !important; backdrop-filter: blur(3px); }
 
         @media (max-width: 768px) { 
             main { padding: 1.5rem 10px; } 
@@ -233,6 +232,20 @@
         </div>
     </div>
 
+    <!-- Modal Zerar Ranking -->
+    <div id="modalZerarRanking" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1200; display: flex; justify-content: center; align-items: center;">
+        <div style="background: var(--white); padding: 2.5rem; border-radius: 16px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
+            <h3 style="margin-bottom: 1rem; color: #ef4444; font-size: 1.4rem;">⚠️ Zerar Ranking</h3>
+            <p style="margin-bottom: 1.5rem; color: var(--dark); font-size: 1rem;">O que você deseja zerar na categoria <br><strong id="zerarCategoriaNome" style="color: var(--primary); font-size: 1.2rem;"></strong>?</p>
+            
+            <button onclick="executarZerarRanking('tudo')" class="btn" style="width: 100%; background: #ef4444; margin-bottom: 12px; box-shadow: none;">🗑️ Zerar TUDO (Geral, Ouro e Prata)</button>
+            <button onclick="executarZerarRanking('ouro')" class="btn btn-outline" style="width: 100%; margin-bottom: 12px; border-color: #d97706; color: #d97706 !important;">🏆 Zerar APENAS Ouro</button>
+            <button onclick="executarZerarRanking('prata')" class="btn btn-outline" style="width: 100%; margin-bottom: 20px; border-color: #64748b; color: #64748b !important;">🥈 Zerar APENAS Prata</button>
+            
+            <button onclick="fecharModalZerar()" class="btn btn-outline" style="width: 100%; border-color: var(--border);">Cancelar</button>
+        </div>
+    </div>
+
     <!-- Gerenciar Categorias Modal -->
     <div id="modalRankings" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; display: flex; justify-content: center; align-items: center;">
         <div style="background: var(--white); padding: 2.5rem; border-radius: 16px; width: 90%; max-width: 420px; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
@@ -264,7 +277,6 @@
         <h1>Confra & Play</h1>
         
         <div id="nav-menu" style="display:flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-left: auto;">
-            <!-- Correção Bug 1 (Uso de classes em vez de style embutido) -->
             <button id="btnAbaCampeonatos" class="tab-btn tab-active">Campeonatos</button>
             <button id="btnAbaRankings" class="tab-btn tab-inactive">🏆 Ranking</button>
             <button id="btnInstalarApp" class="btn hidden" style="background: var(--blue-link);">📲 App</button>
@@ -383,7 +395,7 @@
                 </div>
                 <div style="display: flex; gap: 10px;">
                     <button id="btnGerenciarRankings" class="btn btn-outline hidden" style="height: 48px; padding: 0 15px;">⚙ Gerenciar</button>
-                    <button id="btnZerarRanking" class="btn hidden" style="height: 48px; padding: 0 15px; background: #fef2f2 !important; color: #ef4444 !important; border: 1px solid #fecaca !important; box-shadow: none;">⚠ Zerar Tudo</button>
+                    <button id="btnZerarRanking" class="btn hidden" style="height: 48px; padding: 0 15px; background: #fef2f2 !important; color: #ef4444 !important; border: 1px solid #fecaca !important; box-shadow: none;">⚠️ Zerar</button>
                 </div>
             </div>
             
@@ -419,7 +431,12 @@
             <div class="panel-grid" id="painel-grid">
                 
                 <div class="panel-card" id="painel-inscritos">
-                    <h3 style="margin-bottom: 1.2rem; font-size: 1.2rem; color: var(--dark);">👥 Inscritos</h3>
+                    <!-- CONTADOR DE INSCRITOS ADICIONADO AQUI -->
+                    <h3 style="margin-bottom: 1.2rem; font-size: 1.2rem; color: var(--dark); display: flex; align-items: center;">
+                        👥 Inscritos 
+                        <span id="contadorInscritos" style="background: var(--primary-glow); color: var(--primary); font-size: 0.9rem; padding: 2px 10px; border-radius: 12px; margin-left: 10px; font-weight: 700;">0</span>
+                    </h3>
+                    
                     <div class="form-group" id="area-add-inscritos" style="background: #f9fafb; padding: 15px; border-radius: 8px; border: 1px dashed var(--border);">
                         <input type="text" id="nomeJogador1" list="sugestoesJogadores" class="form-control" placeholder="Jogador 1 (Obrigatório)" style="margin-bottom: 10px; background: var(--white);">
                         <input type="text" id="nomeJogador2" list="sugestoesJogadores" class="form-control" placeholder="Jogador 2 (Branco = Simples)" style="margin-bottom: 15px; background: var(--white);">
@@ -651,10 +668,16 @@
 
         function carregarInscritos(torneioId) {
             const listaUI = document.getElementById('listaInscritosUI');
+            const contadorUI = document.getElementById('contadorInscritos'); // NOVO: Contador
             listaUI.innerHTML = '<li style="border:none; box-shadow:none; background:transparent;">Carregando...</li>';
+            
             const qInscritos = query(collection(db, "campeonatos", torneioId, "inscritos"), orderBy("dataCriacao", "asc"));
             inscritosUnsubscribe = onSnapshot(qInscritos, (snapshot) => {
                 listaUI.innerHTML = ''; inscritosAtuais = []; 
+                
+                // ATUALIZA O CONTADOR
+                contadorUI.textContent = snapshot.size; 
+                
                 if(snapshot.empty) { listaUI.innerHTML = '<li style="border:none; box-shadow:none; background:transparent; color: var(--gray);">Nenhum inscrito.</li>'; return; }
                 
                 snapshot.forEach((docSnap) => {
@@ -766,7 +789,6 @@
                 
                 const elA = matchBox.querySelector('.t-a');
                 const elB = matchBox.querySelector('.t-b');
-                // Correção Bug 2 (Resgata o dado limpo via atributo em vez de innerText bagunçado)
                 const timeA = elA.getAttribute('data-name') || elA.innerText;
                 const timeB = elB.getAttribute('data-name') || elB.innerText;
                 const matchIdPersonalizado = botao.getAttribute('data-matchid');
@@ -817,7 +839,6 @@
             jogosBox.forEach(box => {
                 const elA = box.querySelector('.t-a');
                 const elB = box.querySelector('.t-b');
-                // Correção Bug 2 (Resgata a String de dados estruturada "Nome1 & Nome2")
                 const tA = elA.getAttribute('data-name') || elA.innerText;
                 const tB = elB.getAttribute('data-name') || elB.innerText;
                 
@@ -977,6 +998,18 @@
 
         document.getElementById('btnGerarChaves').addEventListener('click', async () => {
             if (inscritosAtuais.length < 2) return;
+            
+            let isGrupos = formatoAberto.includes("Grupos") || formatoAberto.includes("Super 4");
+
+            // NOVA TRAVA MATEMÁTICA: Exigir Múltiplos de 4
+            if (isGrupos) {
+                if (inscritosAtuais.length % 4 !== 0) {
+                    let faltam = 4 - (inscritosAtuais.length % 4);
+                    alert(`🚨 AÇÃO BLOQUEADA!\n\nPara formar os grupos corretamente, o número de inscritos deve ser múltiplo de 4.\n\nAtualmente há ${inscritosAtuais.length} inscritos. Faltam ${faltam} jogador(es) para poder gerar as chaves.`);
+                    return;
+                }
+            }
+
             if (torneioAbertoData.sorteados && torneioAbertoData.sorteados.length > 0) {
                 if (!confirm("O torneio já foi sorteado! Gerar novamente vai APAGAR o chaveamento. Continuar?")) return;
             }
@@ -1010,8 +1043,6 @@
             
             document.getElementById('btnGerarChaves').textContent = "Gerando...";
             torneioAbertoData.sorteados = sorteados; jogosSalvos = {}; 
-            
-            let isGrupos = formatoAberto.includes("Grupos") || formatoAberto.includes("Super 4");
 
             if (isGrupos) {
                 torneioAbertoData.fasesMataMata = []; window.fasesMataMata = []; window.fasesPrata = [];
@@ -1430,7 +1461,6 @@
 
         const btnAbaCampeonatos = document.getElementById('btnAbaCampeonatos'); const btnAbaRankings = document.getElementById('btnAbaRankings'); const rankingSection = document.getElementById('ranking-section');
         
-        /* Correção Bug 1 - Uso de classes (tab-active / tab-inactive) */
         btnAbaCampeonatos.addEventListener('click', () => {
             btnAbaCampeonatos.classList.add('tab-active'); btnAbaCampeonatos.classList.remove('tab-inactive');
             btnAbaRankings.classList.add('tab-inactive'); btnAbaRankings.classList.remove('tab-active');
@@ -1604,16 +1634,52 @@
             } catch (err) { alert("Erro ao editar."); } finally { btn.textContent = "Salvar Alterações"; btn.disabled = false; }
         });
 
-        document.getElementById('btnZerarRanking').addEventListener('click', async () => {
-            let rankingNome = filtroRanking.options[filtroRanking.selectedIndex]?.text; if (!rankingNome) return;
-            if (!confirm(`⚠️ CUIDADO! Vai zerar TODOS OS PONTOS. Confirmar?`)) return;
-            const btn = document.getElementById('btnZerarRanking'); btn.textContent = "A limpar..."; btn.disabled = true;
-            try {
-                const snap = await getDocs(collection(db, "rankings", rankingNome, "jogadores")); let promessas = [];
-                snap.forEach(docSnap => { promessas.push(updateDoc(doc(db, "rankings", rankingNome, "jogadores", docSnap.id), { pontos: 0, pontosOuro: 0, pontosPrata: 0, torneios: 0, titulos: 0, vitorias: 0, jogos: 0 })); });
-                await Promise.all(promessas); alert("Zerar concluído!"); carregarRanking();
-            } catch (err) { alert("Erro ao zerar."); } finally { btn.innerHTML = "⚠️ Zerar Tudo"; btn.disabled = false; }
+        // NOVA LÓGICA DE ZERAR RANKING
+        document.getElementById('btnZerarRanking').addEventListener('click', () => {
+            let rankingNome = filtroRanking.options[filtroRanking.selectedIndex]?.text;
+            if (!rankingNome) { alert("Selecione uma categoria primeiro."); return; }
+            document.getElementById('zerarCategoriaNome').textContent = rankingNome;
+            document.getElementById('modalZerarRanking').classList.remove('hidden');
         });
+
+        window.fecharModalZerar = function() {
+            document.getElementById('modalZerarRanking').classList.add('hidden');
+        };
+
+        window.executarZerarRanking = async function(tipo) {
+            let rankingNome = filtroRanking.options[filtroRanking.selectedIndex]?.text;
+            if (!rankingNome) return;
+            
+            let msg = tipo === 'tudo' ? 'Zerar TODOS os pontos' : (tipo === 'ouro' ? 'Zerar APENAS os pontos Ouro' : 'Zerar APENAS os pontos Prata');
+            if (!confirm(`Tem certeza que deseja ${msg} da categoria ${rankingNome}? Esta ação não tem volta!`)) return;
+
+            fecharModalZerar();
+            const btn = document.getElementById('btnZerarRanking'); 
+            btn.textContent = "A limpar..."; btn.disabled = true;
+
+            try {
+                const snap = await getDocs(collection(db, "rankings", rankingNome, "jogadores")); 
+                let promessas = [];
+                snap.forEach(docSnap => { 
+                    let updates = {};
+                    if (tipo === 'tudo') {
+                        updates = { pontos: 0, pontosOuro: 0, pontosPrata: 0, torneios: 0, titulos: 0, vitorias: 0, jogos: 0 };
+                    } else if (tipo === 'ouro') {
+                        updates = { pontosOuro: 0 };
+                    } else if (tipo === 'prata') {
+                        updates = { pontosPrata: 0 };
+                    }
+                    promessas.push(updateDoc(doc(db, "rankings", rankingNome, "jogadores", docSnap.id), updates)); 
+                });
+                await Promise.all(promessas); 
+                alert("Ranking atualizado com sucesso!"); 
+                carregarRanking();
+            } catch (err) { 
+                alert("Erro ao zerar: " + err.message); 
+            } finally { 
+                btn.innerHTML = "⚠️ Zerar"; btn.disabled = false; 
+            }
+        };
 
         const selectRankingCreate = document.getElementById('rankingVinculado'); const selectRankingFilter = document.getElementById('filtroVisualRanking'); const btnGerenciarRankings = document.getElementById('btnGerenciarRankings'); const modalRankings = document.getElementById('modalRankings'); const listaCategoriasUI = document.getElementById('listaCategoriasUI');
         btnGerenciarRankings.addEventListener('click', () => modalRankings.classList.remove('hidden')); document.getElementById('btnFecharModalRankings').addEventListener('click', () => modalRankings.classList.add('hidden'));
