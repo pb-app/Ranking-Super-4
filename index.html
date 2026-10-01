@@ -227,7 +227,6 @@
                     </div>
                 </div>
                 
-                <!-- BOTÃO DE EXCLUIR ADICIONADO AQUI -->
                 <div style="display: flex; gap: 10px;">
                     <button type="submit" class="btn" style="flex: 2;">Salvar Alterações</button>
                     <button type="button" onclick="excluirJogadorRanking()" class="btn btn-outline" style="flex: 1; border-color: #ef4444; color: #ef4444 !important;" title="Excluir Jogador Definitivamente">🗑️ Excluir</button>
@@ -564,6 +563,9 @@
                 if(!document.getElementById('ranking-section').classList.contains('hidden')){
                     btnsZerar.classList.remove('hidden');
                     btnGerenciar.classList.remove('hidden');
+                } else {
+                    btnsZerar.classList.add('hidden');
+                    btnGerenciar.classList.add('hidden');
                 }
             } else {
                 btnLogin.classList.remove('hidden'); userMenu.classList.add('hidden'); createSection.style.display = 'none';
@@ -1456,11 +1458,11 @@
         loginForm.addEventListener('submit', (e) => {
             e.preventDefault();
             signInWithEmailAndPassword(auth, document.getElementById('emailInput').value, document.getElementById('senhaInput').value)
-                .then(() => { loginModal.classList.add('hidden'); loginForm.reset(); document.getElementById('loginErro').style.display = 'none'; })
+                .then(() => { loginModal.classList.add('hidden'); loginForm.reset(); document.getElementById('loginErro').style.display = 'none'; updateAuthUI(); })
                 .catch(() => { document.getElementById('loginErro').style.display = 'block'; });
         });
 
-        btnLogout.addEventListener('click', () => { signOut(auth).then(() => { detailsSection.classList.add('hidden'); listSection.classList.remove('hidden'); }); });
+        btnLogout.addEventListener('click', () => { signOut(auth).then(() => { detailsSection.classList.add('hidden'); listSection.classList.remove('hidden'); updateAuthUI(); }); });
         onAuthStateChanged(auth, (user) => { if (user) { isLogged = true; updateAuthUI(); } else { isLogged = false; updateAuthUI(); } });
         btnNewTournament.addEventListener('click', () => { createSection.style.display = 'block'; detailsSection.classList.add('hidden'); listSection.classList.remove('hidden'); });
         document.getElementById('btnCancelCreate').addEventListener('click', () => { createSection.style.display = 'none'; form.reset(); });
@@ -1523,11 +1525,13 @@
             btnAbaCampeonatos.classList.add('tab-active'); btnAbaCampeonatos.classList.remove('tab-inactive');
             btnAbaRankings.classList.add('tab-inactive'); btnAbaRankings.classList.remove('tab-active');
             listSection.classList.remove('hidden'); detailsSection.classList.add('hidden'); createSection.style.display = 'none'; rankingSection.classList.add('hidden');
+            updateAuthUI();
         });
         btnAbaRankings.addEventListener('click', () => {
             btnAbaRankings.classList.add('tab-active'); btnAbaRankings.classList.remove('tab-inactive');
             btnAbaCampeonatos.classList.add('tab-inactive'); btnAbaCampeonatos.classList.remove('tab-active');
             listSection.classList.add('hidden'); detailsSection.classList.add('hidden'); createSection.style.display = 'none'; rankingSection.classList.remove('hidden');
+            updateAuthUI();
         });
 
         document.getElementById('btnEncerrarTorneio').addEventListener('click', async () => {
@@ -1692,7 +1696,6 @@
             } catch (err) { alert("Erro ao editar."); } finally { btn.textContent = "Salvar Alterações"; btn.disabled = false; }
         });
         
-        // FUNÇÃO PARA EXCLUIR O JOGADOR DEFINITIVAMENTE DO RANKING
         window.excluirJogadorRanking = async function() {
             const id = document.getElementById('editPlayerId').value;
             const categoria = document.getElementById('editPlayerCategoria').value;
