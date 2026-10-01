@@ -20,350 +20,113 @@
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Poppins:wght@400;500;600;700&display=swap');
 
         :root {
-            /* Premium Emerald / Neon Green */
             --primary: #10b981; 
             --primary-dark: #059669;
             --primary-glow: rgba(16, 185, 129, 0.25);
             
-            /* Deep Slate Theme */
-            --dark: #ffffff;       /* Textos principais brancos */
-            --light: #0b0f19;      /* Fundo da página slate profundo */
-            --white: #161b22;      /* Cards slate ligeiramente mais claro */
-            --gray: #8b949e;       /* Textos secundários */
-            --border: #30363d;     /* Bordas sofisticadas */
+            --dark: #ffffff;       
+            --light: #0b0f19;      
+            --white: #161b22;      
+            --gray: #8b949e;       
+            --border: #30363d;     
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', 'Poppins', sans-serif; }
         
-        body { 
-            background-color: var(--light); 
-            color: var(--dark); 
-            max-width: 100vw; 
-            overflow-x: hidden; 
-            -webkit-font-smoothing: antialiased; 
-            -moz-osx-font-smoothing: grayscale;
-        }
+        body { background-color: var(--light); color: var(--dark); max-width: 100vw; overflow-x: hidden; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
 
-        /* Navbar Glassmorphism Premium */
-        header { 
-            background: rgba(11, 15, 25, 0.7); 
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05); 
-            padding: 1rem 5%; 
-            display: flex; justify-content: space-between; align-items: center; 
-            position: sticky; top: 0; z-index: 100;
-            box-shadow: 0 4px 30px rgba(0,0,0,0.4);
-        }
+        header { background: rgba(11, 15, 25, 0.7); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding: 1rem 5%; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 30px rgba(0,0,0,0.4); }
         
-        header h1 { 
-            color: var(--dark); 
-            font-size: 1.6rem; 
-            font-weight: 800; 
-            letter-spacing: -0.5px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        header h1::before {
-            content: '';
-            display: inline-block;
-            width: 12px;
-            height: 12px;
-            background: var(--primary);
-            border-radius: 50%;
-            box-shadow: 0 0 12px var(--primary);
-        }
+        header h1 { color: var(--dark); font-size: 1.6rem; font-weight: 800; letter-spacing: -0.5px; display: flex; align-items: center; gap: 8px; }
+        header h1::before { content: ''; display: inline-block; width: 12px; height: 12px; background: var(--primary); border-radius: 50%; box-shadow: 0 0 12px var(--primary); }
         
-        /* Botões Modernizados */
-        .btn { 
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark)); 
-            color: #ffffff !important; 
-            border: none; 
-            padding: 0.8rem 1.5rem; 
-            border-radius: 12px; 
-            font-weight: 600; 
-            cursor: pointer; 
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
-            box-shadow: 0 4px 15px var(--primary-glow); 
-            font-size: 0.9rem; 
-            letter-spacing: 0.3px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-        .btn:hover:not(:disabled) { 
-            transform: translateY(-2px); 
-            box-shadow: 0 8px 25px var(--primary-glow); 
-            filter: brightness(1.1);
-        }
+        .btn { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: #ffffff !important; border: none; padding: 0.8rem 1.5rem; border-radius: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 4px 15px var(--primary-glow); font-size: 0.9rem; letter-spacing: 0.3px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 25px var(--primary-glow); filter: brightness(1.1); }
         .btn:active:not(:disabled) { transform: translateY(1px); }
         .btn:disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(100%); box-shadow: none; }
         
-        .btn-outline { 
-            background: rgba(255, 255, 255, 0.03) !important; 
-            color: var(--dark) !important; 
-            border: 1px solid var(--border); 
-            box-shadow: none;
-        }
-        .btn-outline:hover:not(:disabled) { 
-            background: rgba(255, 255, 255, 0.08) !important; 
-            border-color: var(--gray);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
+        .btn-outline { background: rgba(255, 255, 255, 0.03) !important; color: var(--dark) !important; border: 1px solid var(--border); box-shadow: none; }
+        .btn-outline:hover:not(:disabled) { background: rgba(255, 255, 255, 0.08) !important; border-color: var(--gray); box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
 
-        /* Estrutura Principal */
         main { padding: 3rem 5%; max-width: 1200px; margin: 0 auto; }
         
-        .section-title { 
-            margin-bottom: 2.5rem; 
-            font-size: 2.2rem; 
-            font-weight: 700; 
-            display: inline-block; 
-            position: relative; 
-            letter-spacing: -0.5px; 
-        }
-        .section-title::after { 
-            content: ''; 
-            position: absolute; 
-            left: 0; 
-            bottom: -10px; 
-            width: 40px; 
-            height: 4px; 
-            background: var(--primary); 
-            border-radius: 4px; 
-        }
+        .section-title { margin-bottom: 2.5rem; font-size: 2.2rem; font-weight: 700; display: inline-block; position: relative; letter-spacing: -0.5px; }
+        .section-title::after { content: ''; position: absolute; left: 0; bottom: -10px; width: 40px; height: 4px; background: var(--primary); border-radius: 4px; }
         .hidden { display: none !important; }
 
-        /* Inputs Premium */
-        .form-control { 
-            width: 100%; 
-            padding: 1rem 1.2rem; 
-            background-color: rgba(0,0,0,0.2); 
-            border: 1px solid var(--border); 
-            border-radius: 12px; 
-            color: var(--dark); 
-            font-size: 1rem; 
-            transition: all 0.3s ease; 
-        }
-        .form-control:focus { 
-            outline: none; 
-            border-color: var(--primary); 
-            box-shadow: 0 0 0 4px var(--primary-glow); 
-            background-color: rgba(16, 185, 129, 0.02);
-        }
+        .form-control { width: 100%; padding: 1rem 1.2rem; background-color: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 12px; color: var(--dark); font-size: 1rem; transition: all 0.3s ease; }
+        .form-control:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px var(--primary-glow); background-color: rgba(16, 185, 129, 0.02); }
         .form-control::placeholder { color: var(--gray); }
         .form-group { margin-bottom: 1.8rem; }
         .form-group label { display: block; margin-bottom: 0.8rem; font-weight: 500; font-size: 0.95rem; color: #c9d1d9; }
         
         .radio-group { display: flex; flex-wrap: wrap; gap: 1rem; }
-        .radio-group label { 
-            background: var(--white);
-            border: 1px solid var(--border);
-            padding: 0.8rem 1.2rem;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin: 0;
-        }
+        .radio-group label { background: var(--white); border: 1px solid var(--border); padding: 0.8rem 1.2rem; border-radius: 10px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; margin: 0; }
         .radio-group label:hover { border-color: var(--primary); }
         .radio-group input[type="radio"] { accent-color: var(--primary); width: 18px; height: 18px;}
 
-        /* Cards Principais */
-        #create-section, #details-section { 
-            background-color: var(--white); 
-            padding: 3rem; 
-            border-radius: 20px; 
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2); 
-            border: 1px solid rgba(255,255,255,0.05); 
-        }
+        #create-section, #details-section { background-color: var(--white); padding: 3rem; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); }
         
         .tournaments-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 2rem; }
-        .tournament-card { 
-            background: linear-gradient(145deg, var(--white), #12161c); 
-            border-radius: 20px; 
-            padding: 2rem; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15); 
-            border: 1px solid var(--border); 
-            cursor: pointer; 
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-            position: relative; 
-            overflow: hidden;
-        }
-        .tournament-card::before {
-            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px;
-            background: linear-gradient(90deg, var(--primary), #3b82f6);
-            opacity: 0.7; transition: opacity 0.3s;
-        }
-        .tournament-card:hover { 
-            transform: translateY(-8px); 
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3); 
-            border-color: rgba(16, 185, 129, 0.3);
-        }
+        .tournament-card { background: linear-gradient(145deg, var(--white), #12161c); border-radius: 20px; padding: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.15); border: 1px solid var(--border); cursor: pointer; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; overflow: hidden; }
+        .tournament-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: linear-gradient(90deg, var(--primary), #3b82f6); opacity: 0.7; transition: opacity 0.3s; }
+        .tournament-card:hover { transform: translateY(-8px); box-shadow: 0 20px 40px rgba(0,0,0,0.3); border-color: rgba(16, 185, 129, 0.3); }
         .tournament-card:hover::before { opacity: 1; }
         .tournament-card h3 { margin-bottom: 0.8rem; font-size: 1.5rem; font-weight: 700; }
         .tournament-card p { color: var(--gray); font-size: 0.95rem; margin-bottom: 0.5rem; }
         
-        .badge { 
-            display: inline-block; 
-            background-color: rgba(16, 185, 129, 0.1); 
-            padding: 0.5rem 1rem; 
-            border-radius: 8px; 
-            font-size: 0.85rem; 
-            margin-top: 1.2rem; 
-            font-weight: 600; 
-            color: var(--primary); 
-            border: 1px solid rgba(16, 185, 129, 0.2);
-        }
+        .badge { display: inline-block; background-color: rgba(16, 185, 129, 0.1); padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.85rem; margin-top: 1.2rem; font-weight: 600; color: var(--primary); border: 1px solid rgba(16, 185, 129, 0.2); }
 
-        /* Grade do Painel Interno */
         .panel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; margin-top: 2rem; transition: all 0.3s ease; }
-        .panel-card { 
-            background-color: var(--light); 
-            padding: 2rem; 
-            border-radius: 20px; 
-            border: 1px solid var(--border); 
-        }
+        .panel-card { background-color: var(--light); padding: 2rem; border-radius: 20px; border: 1px solid var(--border); }
         .lista-inscritos { list-style: none; margin-top: 1.5rem; }
-        .lista-inscritos li { 
-            background: var(--white); 
-            padding: 1.2rem; 
-            margin-bottom: 1rem; 
-            border-radius: 12px; 
-            border-left: 4px solid var(--primary); 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
-            border-top: 1px solid var(--border); border-right: 1px solid var(--border); border-bottom: 1px solid var(--border);
-            display: flex; justify-content: space-between; align-items: center;
-        }
+        .lista-inscritos li { background: var(--white); padding: 1.2rem; margin-bottom: 1rem; border-radius: 12px; border-left: 4px solid var(--primary); box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-top: 1px solid var(--border); border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
         .grid-expandido { grid-template-columns: 1fr !important; }
 
-        /* Tabelas de Classificação */
         .tabela-container { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 12px; }
-        .standings-table { 
-            width: 100%; 
-            border-collapse: separate; 
-            border-spacing: 0; 
-            margin-top: 15px; 
-            margin-bottom: 25px; 
-            background-color: var(--white); 
-            border-radius: 12px; 
-            overflow: hidden; 
-            border: 1px solid var(--border); 
-        }
+        .standings-table { width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 15px; margin-bottom: 25px; background-color: var(--white); border-radius: 12px; overflow: hidden; border: 1px solid var(--border); }
         .standings-table th, .standings-table td { padding: 16px; text-align: center; border-bottom: 1px solid var(--border); }
-        .standings-table th { 
-            background-color: var(--light); 
-            color: var(--gray); 
-            font-size: 0.85rem; 
-            text-transform: uppercase; 
-            letter-spacing: 1px; 
-            font-weight: 600; 
-        }
+        .standings-table th { background-color: var(--light); color: var(--gray); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
         .standings-table tr:last-child td { border-bottom: none; }
         .standings-table tr:hover td { background-color: rgba(255,255,255,0.02); }
         .standings-table td:first-child { text-align: left; font-weight: 500; }
 
-        /* Placares e Chaves */
-        .match-box, .bracket-match { 
-            background-color: var(--white); 
-            padding: 20px; 
-            margin: 15px 0; 
-            border-radius: 16px; 
-            text-align: center; 
-            border: 1px solid var(--border); 
-            border-left: 4px solid #3a414e; 
-            transition: all 0.3s; 
-            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-        }
+        .match-box, .bracket-match { background-color: var(--white); padding: 20px; margin: 15px 0; border-radius: 16px; text-align: center; border: 1px solid var(--border); border-left: 4px solid #3a414e; transition: all 0.3s; box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
         .match-box:hover, .bracket-match:hover { border-color: #4b5563; }
         .match-box.resolvido, .bracket-match.resolvido { border-left-color: var(--primary); background: linear-gradient(to right, rgba(16, 185, 129, 0.05), var(--white)); }
         
         .match-score { display: flex; align-items: center; justify-content: center; gap: 15px; margin: 18px 0; }
-        .score-input { 
-            width: 60px; height: 55px; 
-            background: rgba(0,0,0,0.2); 
-            color: var(--dark); 
-            text-align: center; 
-            font-size: 1.6rem; 
-            border: 1px solid var(--border); 
-            border-radius: 12px; 
-            font-weight: 700; 
-            transition: all 0.3s; 
-        }
+        .score-input { width: 60px; height: 55px; background: rgba(0,0,0,0.2); color: var(--dark); text-align: center; font-size: 1.6rem; border: 1px solid var(--border); border-radius: 12px; font-weight: 700; transition: all 0.3s; }
         .score-input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 15px var(--primary-glow); background: var(--light);}
         .score-input:disabled { opacity: 0.5; cursor: not-allowed; background: transparent; border-color: transparent; }
 
-        /* Layout Abas/Fases LetzPlay */
         #mataMataUI { width: 100%; padding-bottom: 15px; }
         .bracket-container { display: block; margin-top: 10px; padding: 0; border-top: none; width: 100%; }
         .bracket-round { display: none; flex-direction: column; width: 100%; gap: 15px; animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
         .bracket-round.fase-ativa { display: flex; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Modals Premium */
         .modal-content { background: var(--white) !important; color: var(--dark) !important; border: 1px solid var(--border); box-shadow: 0 25px 50px rgba(0,0,0,0.5); border-radius: 20px;}
 
-        /* Substituição de Variáveis via JS - Tratamento elegante */
         #nav-menu .btn { border-radius: 10px !important; }
-        #btnAbaCampeonatos[style*="background: var(--white)"], #btnAbaRankings[style*="background: var(--white)"] { 
-            background: var(--white) !important; 
-            color: var(--dark) !important; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
-            border: 1px solid var(--border) !important;
-        }
-        #btnAbaCampeonatos[style*="background: transparent"], #btnAbaRankings[style*="background: transparent"] { 
-            background: transparent !important; 
-            color: var(--gray) !important; 
-            border: 1px solid transparent !important; 
-            box-shadow: none; 
-        }
+        #btnAbaCampeonatos[style*="background: var(--white)"], #btnAbaRankings[style*="background: var(--white)"] { background: var(--white) !important; color: var(--dark) !important; box-shadow: 0 4px 15px rgba(0,0,0,0.2); border: 1px solid var(--border) !important; }
+        #btnAbaCampeonatos[style*="background: transparent"], #btnAbaRankings[style*="background: transparent"] { background: transparent !important; color: var(--gray) !important; border: 1px solid transparent !important; box-shadow: none; }
         
-        #navegadorFases { 
-            background: var(--white) !important; 
-            border: 1px solid var(--border); 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2) !important; 
-            border-radius: 16px !important;
-            padding: 15px 20px !important;
-        }
+        #navegadorFases { background: var(--white) !important; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.2) !important; border-radius: 16px !important; padding: 15px 20px !important; }
         #tituloFaseAtual { color: var(--primary) !important; font-weight: 700; font-size: 1.4rem !important;}
 
-        #chavesGeradasUI > div { 
-            background: var(--white) !important; 
-            border: 1px solid var(--border); 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15) !important; 
-            border-radius: 20px !important; 
-            overflow: hidden;
-        }
-        #chavesGeradasUI > div > h5 { 
-            background: var(--light) !important; 
-            color: var(--dark) !important; 
-            border-bottom: 1px solid var(--border); 
-            border-radius: 0 !important; 
-            font-weight: 600; 
-            font-size: 1.2rem; 
-            padding: 15px !important;
-        }
+        #chavesGeradasUI > div { background: var(--white) !important; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.15) !important; border-radius: 20px !important; overflow: hidden; }
+        #chavesGeradasUI > div > h5 { background: var(--light) !important; color: var(--dark) !important; border-bottom: 1px solid var(--border); border-radius: 0 !important; font-weight: 600; font-size: 1.2rem; padding: 15px !important; }
 
         .t-a, .t-b { color: var(--dark) !important; font-weight: 500; font-size: 1.1rem; }
         [style*="color: var(--primary-dark)"] { color: var(--primary) !important; font-weight: 600; }
 
-        /* Cores de Pódio e Ações */
         [style*="background-color: #e74c3c"] { background: linear-gradient(135deg, #ef4444, #b91c1c) !important; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3) !important; }
         [style*="background-color: #ff9800"] { background: linear-gradient(135deg, #f59e0b, #d97706) !important; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3) !important; color: #fff !important; }
         [style*="background-color: #25D366"] { background: linear-gradient(135deg, #10b981, #059669) !important; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3) !important; color: #fff !important;}
 
-        #podioUI > div { 
-            background: var(--white) !important; 
-            border: 1px solid var(--border); 
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3) !important; 
-            border-radius: 20px !important; 
-        }
+        #podioUI > div { background: var(--white) !important; border: 1px solid var(--border); box-shadow: 0 20px 40px rgba(0,0,0,0.3) !important; border-radius: 20px !important; }
 
-        /* Responsividade Celular */
         @media (max-width: 768px) { 
             main { padding: 2rem 15px; } 
             #create-section, #details-section { padding: 2rem 15px; border-radius: 16px; }
@@ -382,6 +145,7 @@
 </head>
 <body>
 
+    <!-- Perfil Viewer -->
     <div id="modalPerfilJogador" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(11, 15, 25, 0.85); z-index: 1000; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(8px);">
         <div style="background: var(--white); padding: 2.5rem; border-radius: 24px; width: 90%; max-width: 420px; text-align: center; position: relative; border: 1px solid var(--border); box-shadow: 0 25px 50px rgba(0,0,0,0.5);">
             <button type="button" id="btnFecharPerfilTop" style="position: absolute; top: 15px; right: 20px; background: transparent; border: none; font-size: 1.8rem; cursor: pointer; color: var(--gray); transition: 0.2s;">&times;</button>
@@ -392,7 +156,7 @@
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; background: var(--light); padding: 20px; border-radius: 16px; margin-bottom: 25px; border: 1px solid rgba(255,255,255,0.02);">
                 <div style="background: var(--white); padding: 15px 10px; border-radius: 12px; border-bottom: 3px solid var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
                     <div style="font-size: 1.8rem; font-weight: 700; color: var(--primary);" id="perfilPontos">0</div>
-                    <div style="font-size: 0.75rem; color: var(--gray); text-transform: uppercase; font-weight: 600; margin-top: 5px;">Pontos</div>
+                    <div style="font-size: 0.75rem; color: var(--gray); text-transform: uppercase; font-weight: 600; margin-top: 5px;">Pontos Exibidos</div>
                 </div>
                 <div style="background: var(--white); padding: 15px 10px; border-radius: 12px; border-bottom: 3px solid #3b82f6; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
                     <div style="font-size: 1.8rem; font-weight: 700; color: #3b82f6;" id="perfilTorneios">0</div>
@@ -420,6 +184,56 @@
         </div>
     </div>
 
+    <!-- Modal Editar Jogador (Apenas Organizador) -->
+    <div id="modalEditPlayer" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(11, 15, 25, 0.85); z-index: 1100; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(8px);">
+        <div style="background: var(--white); padding: 2.5rem; border-radius: 20px; width: 90%; max-width: 450px; border: 1px solid var(--border); position: relative;">
+            <button type="button" onclick="document.getElementById('modalEditPlayer').classList.add('hidden')" style="position: absolute; top: 15px; right: 20px; background: transparent; border: none; font-size: 1.8rem; cursor: pointer; color: var(--gray);">&times;</button>
+            <h3 style="margin-bottom: 1.5rem; color: var(--dark); font-size: 1.4rem;">✏️ Editar Jogador</h3>
+            <h4 id="editNomeTitle" style="color: var(--primary); margin-bottom: 1.5rem;">Nome</h4>
+            <form id="formEditPlayer">
+                <input type="hidden" id="editPlayerId">
+                <input type="hidden" id="editPlayerCategoria">
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label>Pts Geral</label>
+                        <input type="number" id="editPtsGeral" class="form-control" required>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label style="color: #f59e0b;">Pts Ouro</label>
+                        <input type="number" id="editPtsOuro" class="form-control" required>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label style="color: #94a3b8;">Pts Prata</label>
+                        <input type="number" id="editPtsPrata" class="form-control" required>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label>Torneios Jogados</label>
+                        <input type="number" id="editTorneios" class="form-control" required>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label>Títulos</label>
+                        <input type="number" id="editTitulos" class="form-control" required>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 1.5rem;">
+                        <label>Total Jogos</label>
+                        <input type="number" id="editJogos" class="form-control" required>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 1.5rem;">
+                        <label>Vitórias</label>
+                        <input type="number" id="editVitorias" class="form-control" required>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn" style="width: 100%;">Salvar Alterações</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Gerenciar Categorias Modal -->
     <div id="modalRankings" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(11, 15, 25, 0.85); z-index: 1000; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(8px);">
         <div style="background: var(--white); padding: 2.5rem; border-radius: 20px; width: 90%; max-width: 420px; border: 1px solid var(--border);">
             <h3 style="margin-bottom: 1.5rem; color: var(--dark); font-size: 1.4rem;">Gerenciar Categorias</h3>
@@ -432,6 +246,7 @@
         </div>
     </div>
     
+    <!-- Login Modal -->
     <div id="loginModal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(11, 15, 25, 0.85); z-index: 1000; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(8px);">
         <div style="background: var(--white); padding: 3rem; border-radius: 24px; width: 90%; max-width: 400px; text-align: center; border: 1px solid var(--border); box-shadow: 0 25px 50px rgba(0,0,0,0.5);">
             <h2 style="margin-bottom: 2rem; color: var(--dark); font-weight: 700;">Acesso Restrito</h2>
@@ -500,68 +315,26 @@
                 <div class="form-group" id="pontos-ouro">
                     <label>🏆 Distribuição de Pontos - Ouro (e Padrão)</label>
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 15px; background: var(--light); padding: 20px; border-radius: 16px; border: 1px solid var(--border); margin-top: 10px;">
-                        <div>
-                            <label style="font-size: 0.8rem; color: var(--gray); margin-bottom: 5px;">🥇 Campeão</label>
-                            <input type="number" id="ptsCampeao" class="form-control" value="100" style="padding: 0.6rem; text-align: center;" required>
-                        </div>
-                        <div>
-                            <label style="font-size: 0.8rem; color: var(--gray); margin-bottom: 5px;">🥈 Vice</label>
-                            <input type="number" id="ptsVice" class="form-control" value="80" style="padding: 0.6rem; text-align: center;" required>
-                        </div>
-                        <div>
-                            <label style="font-size: 0.8rem; color: var(--gray); margin-bottom: 5px;">🥉 3º Lugar</label>
-                            <input type="number" id="ptsTerceiro" class="form-control" value="60" style="padding: 0.6rem; text-align: center;" required>
-                        </div>
-                        <div>
-                            <label style="font-size: 0.8rem; color: var(--gray); margin-bottom: 5px;">🏅 Semifinal (4º)</label>
-                            <input type="number" id="ptsSemi" class="form-control" value="50" style="padding: 0.6rem; text-align: center;" required>
-                        </div>
-                        <div>
-                            <label style="font-size: 0.8rem; color: var(--gray); margin-bottom: 5px;">🏅 Quartas</label>
-                            <input type="number" id="ptsQuartas" class="form-control" value="40" style="padding: 0.6rem; text-align: center;" required>
-                        </div>
-                        <div>
-                            <label style="font-size: 0.8rem; color: var(--gray); margin-bottom: 5px;">🏅 Oitavas</label>
-                            <input type="number" id="ptsOitavas" class="form-control" value="30" style="padding: 0.6rem; text-align: center;" required>
-                        </div>
-                        <div>
-                            <label style="font-size: 0.8rem; color: var(--gray); margin-bottom: 5px;">🎾 Participação</label>
-                            <input type="number" id="ptsGrupos" class="form-control" value="15" style="padding: 0.6rem; text-align: center;" required>
-                        </div>
-                        <div>
-                            <label style="font-size: 0.8rem; color: #f59e0b; margin-bottom: 5px; font-weight: 600;">⭐ 1º do Grupo</label>
-                            <input type="number" id="ptsPrimeiroGrupo" class="form-control" value="10" style="padding: 0.6rem; text-align: center; border-color: rgba(245, 158, 11, 0.5); background: rgba(245, 158, 11, 0.05);" required>
-                        </div>
+                        <div><label style="font-size: 0.8rem; color: var(--gray); margin-bottom: 5px;">🥇 Campeão</label><input type="number" id="ptsCampeao" class="form-control" value="100" style="padding: 0.6rem; text-align: center;" required></div>
+                        <div><label style="font-size: 0.8rem; color: var(--gray); margin-bottom: 5px;">🥈 Vice</label><input type="number" id="ptsVice" class="form-control" value="80" style="padding: 0.6rem; text-align: center;" required></div>
+                        <div><label style="font-size: 0.8rem; color: var(--gray); margin-bottom: 5px;">🥉 3º Lugar</label><input type="number" id="ptsTerceiro" class="form-control" value="60" style="padding: 0.6rem; text-align: center;" required></div>
+                        <div><label style="font-size: 0.8rem; color: var(--gray); margin-bottom: 5px;">🏅 Semifinal (4º)</label><input type="number" id="ptsSemi" class="form-control" value="50" style="padding: 0.6rem; text-align: center;" required></div>
+                        <div><label style="font-size: 0.8rem; color: var(--gray); margin-bottom: 5px;">🏅 Quartas</label><input type="number" id="ptsQuartas" class="form-control" value="40" style="padding: 0.6rem; text-align: center;" required></div>
+                        <div><label style="font-size: 0.8rem; color: var(--gray); margin-bottom: 5px;">🏅 Oitavas</label><input type="number" id="ptsOitavas" class="form-control" value="30" style="padding: 0.6rem; text-align: center;" required></div>
+                        <div><label style="font-size: 0.8rem; color: var(--gray); margin-bottom: 5px;">🎾 Participação</label><input type="number" id="ptsGrupos" class="form-control" value="15" style="padding: 0.6rem; text-align: center;" required></div>
+                        <div><label style="font-size: 0.8rem; color: #f59e0b; margin-bottom: 5px; font-weight: 600;">⭐ 1º do Grupo</label><input type="number" id="ptsPrimeiroGrupo" class="form-control" value="10" style="padding: 0.6rem; text-align: center; border-color: rgba(245, 158, 11, 0.5); background: rgba(245, 158, 11, 0.05);" required></div>
                     </div>
                 </div>
 
                 <div class="form-group" id="pontos-prata" style="display: none;">
                     <label>🥈 Distribuição de Pontos - Prata (Exclusivo Super 4)</label>
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 15px; background: var(--light); padding: 20px; border-radius: 16px; border: 1px solid var(--border); margin-top: 10px;">
-                        <div>
-                            <label style="font-size: 0.8rem; color: var(--gray); margin-bottom: 5px;">🥇 Campeão Prata</label>
-                            <input type="number" id="ptsCampeaoPrata" class="form-control" value="60" style="padding: 0.6rem; text-align: center;">
-                        </div>
-                        <div>
-                            <label style="font-size: 0.8rem; color: var(--gray); margin-bottom: 5px;">🥈 Vice Prata</label>
-                            <input type="number" id="ptsVicePrata" class="form-control" value="40" style="padding: 0.6rem; text-align: center;">
-                        </div>
-                        <div>
-                            <label style="font-size: 0.8rem; color: var(--gray); margin-bottom: 5px;">🥉 3º Prata</label>
-                            <input type="number" id="ptsTerceiroPrata" class="form-control" value="30" style="padding: 0.6rem; text-align: center;">
-                        </div>
-                        <div>
-                            <label style="font-size: 0.8rem; color: var(--gray); margin-bottom: 5px;">🏅 Semi Prata</label>
-                            <input type="number" id="ptsSemiPrata" class="form-control" value="20" style="padding: 0.6rem; text-align: center;">
-                        </div>
-                        <div>
-                            <label style="font-size: 0.8rem; color: var(--gray); margin-bottom: 5px;">🏅 Quartas Prata</label>
-                            <input type="number" id="ptsQuartasPrata" class="form-control" value="10" style="padding: 0.6rem; text-align: center;">
-                        </div>
-                        <div>
-                            <label style="font-size: 0.8rem; color: var(--gray); margin-bottom: 5px;">🏅 Oitavas Prata</label>
-                            <input type="number" id="ptsOitavasPrata" class="form-control" value="5" style="padding: 0.6rem; text-align: center;">
-                        </div>
+                        <div><label style="font-size: 0.8rem; color: var(--gray); margin-bottom: 5px;">🥇 Campeão Prata</label><input type="number" id="ptsCampeaoPrata" class="form-control" value="60" style="padding: 0.6rem; text-align: center;"></div>
+                        <div><label style="font-size: 0.8rem; color: var(--gray); margin-bottom: 5px;">🥈 Vice Prata</label><input type="number" id="ptsVicePrata" class="form-control" value="40" style="padding: 0.6rem; text-align: center;"></div>
+                        <div><label style="font-size: 0.8rem; color: var(--gray); margin-bottom: 5px;">🥉 3º Prata</label><input type="number" id="ptsTerceiroPrata" class="form-control" value="30" style="padding: 0.6rem; text-align: center;"></div>
+                        <div><label style="font-size: 0.8rem; color: var(--gray); margin-bottom: 5px;">🏅 Semi Prata</label><input type="number" id="ptsSemiPrata" class="form-control" value="20" style="padding: 0.6rem; text-align: center;"></div>
+                        <div><label style="font-size: 0.8rem; color: var(--gray); margin-bottom: 5px;">🏅 Quartas Prata</label><input type="number" id="ptsQuartasPrata" class="form-control" value="10" style="padding: 0.6rem; text-align: center;"></div>
+                        <div><label style="font-size: 0.8rem; color: var(--gray); margin-bottom: 5px;">🏅 Oitavas Prata</label><input type="number" id="ptsOitavasPrata" class="form-control" value="5" style="padding: 0.6rem; text-align: center;"></div>
                     </div>
                 </div>
                 
@@ -578,15 +351,28 @@
         </section>
 
         <section id="ranking-section" class="hidden">
-            <h2 class="section-title">🏆 Ranking Geral</h2>
-            <div style="display: flex; gap: 15px; align-items: flex-end; margin-bottom: 25px;">
-                <div class="form-group" style="margin-bottom: 0; flex-grow: 1; max-width: 350px;">
-                    <label>Filtrar por Categoria:</label>
+            <h2 class="section-title">🏆 Ranking</h2>
+            
+            <!-- NOVOS FILTROS E BOTÕES -->
+            <div style="display: flex; gap: 15px; align-items: flex-end; margin-bottom: 25px; flex-wrap: wrap;">
+                <div class="form-group" style="margin-bottom: 0; flex-grow: 1; min-width: 200px;">
+                    <label>Categoria:</label>
                     <select id="filtroVisualRanking" class="form-control" style="background: var(--white);">
                         <option value="">Carregando...</option>
                     </select>
                 </div>
-                <button id="btnGerenciarRankings" class="btn btn-outline hidden" style="height: 52px; padding: 0 20px;">⚙️ Gerenciar</button>
+                <div class="form-group" style="margin-bottom: 0; flex-grow: 1; min-width: 200px;">
+                    <label>Tipo de Ranking:</label>
+                    <select id="tipoFiltroRanking" class="form-control" style="background: var(--white); border-color: var(--primary);">
+                        <option value="geral">🌍 Ranking Geral (Total)</option>
+                        <option value="ouro">🏆 Pontos Chave Ouro</option>
+                        <option value="prata">🥈 Pontos Chave Prata</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button id="btnGerenciarRankings" class="btn btn-outline hidden" style="height: 52px; padding: 0 15px;">⚙️ Gerenciar</button>
+                    <button id="btnZerarRanking" class="btn hidden" style="height: 52px; padding: 0 15px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid #ef4444; box-shadow: none;">⚠️ Zerar Tudo</button>
+                </div>
             </div>
             
             <div style="background: var(--white); border-radius: 20px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); border: 1px solid var(--border);">
@@ -598,16 +384,18 @@
                                 <th style="text-align: left; background: transparent;">Jogador / Atleta</th>
                                 <th style="background: transparent;">Pontos</th>
                                 <th style="background: transparent;">Torneios</th>
+                                <th class="col-acao-admin hidden" style="background: transparent;">Ação</th>
                             </tr>
                         </thead>
                         <tbody id="rankingTabelaBody">
-                            <tr><td colspan="4" style="padding: 30px;">Selecione um ranking para carregar...</td></tr>
+                            <tr><td colspan="5" style="padding: 30px;">Selecione um ranking para carregar...</td></tr>
                         </tbody>
                     </table>
                 </div>
             </div>
         </section>
 
+        <!-- Detalhes do Torneio (Sem alterações na UI base) -->
         <section id="details-section" class="hidden">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 15px;">
                 <button id="btnVoltar" class="btn btn-outline">⬅ Voltar para a Lista</button>
@@ -697,20 +485,19 @@
         <button id="btnFecharIosPopup" class="btn" style="width: 100%;">Entendi</button>
     </div>
 
-    <!-- O bloco JS permanece 100% inalterado conforme solicitado -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, doc, updateDoc, getDocs, setDoc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
         const firebaseConfig = {
-  apiKey: "AIzaSyAzEUIZwc8vUgphMe4bpOkfOKTZIQlNsFs",
-  authDomain: "super-4-clube.firebaseapp.com",
-  projectId: "super-4-clube",
-  storageBucket: "super-4-clube.firebasestorage.app",
-  messagingSenderId: "831325355212",
-  appId: "1:831325355212:web:3edbfca9005fb0be20d669"
-};
+          apiKey: "AIzaSyAzEUIZwc8vUgphMe4bpOkfOKTZIQlNsFs",
+          authDomain: "super-4-clube.firebaseapp.com",
+          projectId: "super-4-clube",
+          storageBucket: "super-4-clube.firebasestorage.app",
+          messagingSenderId: "831325355212",
+          appId: "1:831325355212:web:3edbfca9005fb0be20d669"
+        };
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
@@ -723,7 +510,7 @@
         let inscritosUnsubscribe = null; 
         let inscritosAtuais = []; 
         window.fasesMataMata = []; 
-        window.fasesPrata = []; // Variável Nova para Super 4
+        window.fasesPrata = []; 
         let jogosSalvos = {}; 
 
         const btnLogin = document.getElementById('btnLogin');
@@ -737,10 +524,22 @@
         const detailsSection = document.getElementById('details-section');
 
         function updateAuthUI() {
+            const colsAcao = document.querySelectorAll('.col-acao-admin');
+            const btnsZerar = document.getElementById('btnZerarRanking');
+            const btnGerenciar = document.getElementById('btnGerenciarRankings');
+
             if (isLogged) {
                 btnLogin.classList.add('hidden'); userMenu.classList.remove('hidden');
+                colsAcao.forEach(col => col.classList.remove('hidden'));
+                if(!document.getElementById('ranking-section').classList.contains('hidden')){
+                    btnsZerar.classList.remove('hidden');
+                    btnGerenciar.classList.remove('hidden');
+                }
             } else {
                 btnLogin.classList.remove('hidden'); userMenu.classList.add('hidden'); createSection.style.display = 'none';
+                colsAcao.forEach(col => col.classList.add('hidden'));
+                btnsZerar.classList.add('hidden');
+                btnGerenciar.classList.add('hidden');
             }
         }
 
@@ -765,10 +564,10 @@
             setsAberto = camp.sets || ""; 
 
             if (camp.formato.includes("Super 4")) {
-        document.getElementById('nomeJogador2').classList.add('hidden');
-    } else {
-        document.getElementById('nomeJogador2').classList.remove('hidden');
-    }
+                document.getElementById('nomeJogador2').classList.add('hidden');
+            } else {
+                document.getElementById('nomeJogador2').classList.remove('hidden');
+            }
             
             document.getElementById('detalhe-nome-torneio').textContent = camp.nome;
             document.getElementById('detalhe-formato-torneio').textContent = `Formato: ${camp.formato}`;
@@ -787,7 +586,7 @@
             document.getElementById('podioUI').innerHTML = '';
             document.getElementById('btnEncerrarTorneio').classList.add('hidden');
             window.fasesMataMata = [];
-            window.fasesPrata = []; // Reset Prata
+            window.fasesPrata = [];
             jogosSalvos = {};
             
             carregarInscritos(id);
@@ -820,8 +619,6 @@
                 }
             });
         }
-
-        
 
         document.getElementById('btnMostrarInscritos').addEventListener('click', () => {
             document.getElementById('painel-inscritos').classList.remove('hidden');
@@ -858,9 +655,9 @@
                     const li = document.createElement('li');
                     
                     let star = '';
-if (dados.nivelSeed === 1) star = ' <span style="color:#ffd700">⭐ C1</span>';
-else if (dados.nivelSeed === 2) star = ' <span style="color:#c0c0c0">🌟 C2</span>';
-else if (dados.isSeed) star = ' ⭐'; // Para compatibilidade com torneios antigos
+                    if (dados.nivelSeed === 1) star = ' <span style="color:#f59e0b">⭐ C1</span>';
+                    else if (dados.nivelSeed === 2) star = ' <span style="color:#94a3b8">🌟 C2</span>';
+                    else if (dados.isSeed) star = ' ⭐'; 
                     let nomes = dados.jogador2 ? `🎾 <strong>${dados.jogador1}</strong> e <strong>${dados.jogador2}</strong>${star}` : `🎾 <strong>${dados.jogador1}</strong>${star}`;
                     
                     let btnExcluir = isLogged ? `<button onclick="deletarInscrito('${idInscrito}')" class="btn btn-outline" style="padding: 4px 10px; font-size: 0.8rem; border-color: #ef4444; color: #ef4444 !important;">🗑️ Excluir</button>` : '';
@@ -911,10 +708,10 @@ else if (dados.isSeed) star = ' ⭐'; // Para compatibilidade com torneios antig
             document.getElementById('btnAddInscrito').disabled = true;
             try {
                 let nivelSeed = parseInt(document.getElementById('tipoJogador').value) || 0;
-await addDoc(collection(db, "campeonatos", torneioAbertoId, "inscritos"), { jogador1: j1, jogador2: j2, nivelSeed: nivelSeed, dataCriacao: serverTimestamp() });
+                await addDoc(collection(db, "campeonatos", torneioAbertoId, "inscritos"), { jogador1: j1, jogador2: j2, nivelSeed: nivelSeed, dataCriacao: serverTimestamp() });
 
-document.getElementById('nomeJogador1').value = ''; document.getElementById('nomeJogador2').value = '';
-document.getElementById('tipoJogador').value = '0'; // Volta ao padrão
+                document.getElementById('nomeJogador1').value = ''; document.getElementById('nomeJogador2').value = '';
+                document.getElementById('tipoJogador').value = '0'; 
                 document.getElementById('nomeJogador1').focus(); 
             } catch (error) { alert("Erro ao inscrever."); } 
             finally { document.getElementById('btnAddInscrito').disabled = false; }
@@ -1205,37 +1002,37 @@ document.getElementById('tipoJogador').value = '0'; // Volta ao padrão
 
             let sorteados = [];
 
-if (formatoAberto.includes("Super 4")) {
-    let seeds1 = inscritosAtuais.filter(i => i.nivelSeed === 1).sort(() => Math.random() - 0.5);
-    let seeds2 = inscritosAtuais.filter(i => i.nivelSeed === 2).sort(() => Math.random() - 0.5);
-    let normais = inscritosAtuais.filter(i => i.nivelSeed !== 1 && i.nivelSeed !== 2).sort(() => Math.random() - 0.5);
-    
-    let numGrupos = Math.max(1, Math.floor(inscritosAtuais.length / 4));
-    let gruposTemporarios = Array.from({ length: numGrupos }, () => []);
-    
-    for(let i=0; i<numGrupos; i++) { if(seeds1.length > 0) gruposTemporarios[i].push(seeds1.pop()); }
-    for(let i=0; i<numGrupos; i++) { if(seeds2.length > 0) gruposTemporarios[i].push(seeds2.pop()); }
-    
-    let todosRestantes = [...seeds1, ...seeds2, ...normais].sort(() => Math.random() - 0.5);
-    let idx = 0;
-    while(todosRestantes.length > 0) {
-        gruposTemporarios[idx % numGrupos].push(todosRestantes.pop());
-        idx++;
-    }
-    
-    sorteados = new Array(inscritosAtuais.length);
-    for (let g = 0; g < numGrupos; g++) {
-        for (let j = 0; j < gruposTemporarios[g].length; j++) {
-            sorteados[g + j * numGrupos] = gruposTemporarios[g][j];
-        }
-    }
-    sorteados = sorteados.filter(item => item !== undefined);
+            if (formatoAberto.includes("Super 4")) {
+                let seeds1 = inscritosAtuais.filter(i => i.nivelSeed === 1).sort(() => Math.random() - 0.5);
+                let seeds2 = inscritosAtuais.filter(i => i.nivelSeed === 2).sort(() => Math.random() - 0.5);
+                let normais = inscritosAtuais.filter(i => i.nivelSeed !== 1 && i.nivelSeed !== 2).sort(() => Math.random() - 0.5);
+                
+                let numGrupos = Math.max(1, Math.floor(inscritosAtuais.length / 4));
+                let gruposTemporarios = Array.from({ length: numGrupos }, () => []);
+                
+                for(let i=0; i<numGrupos; i++) { if(seeds1.length > 0) gruposTemporarios[i].push(seeds1.pop()); }
+                for(let i=0; i<numGrupos; i++) { if(seeds2.length > 0) gruposTemporarios[i].push(seeds2.pop()); }
+                
+                let todosRestantes = [...seeds1, ...seeds2, ...normais].sort(() => Math.random() - 0.5);
+                let idx = 0;
+                while(todosRestantes.length > 0) {
+                    gruposTemporarios[idx % numGrupos].push(todosRestantes.pop());
+                    idx++;
+                }
+                
+                sorteados = new Array(inscritosAtuais.length);
+                for (let g = 0; g < numGrupos; g++) {
+                    for (let j = 0; j < gruposTemporarios[g].length; j++) {
+                        sorteados[g + j * numGrupos] = gruposTemporarios[g][j];
+                    }
+                }
+                sorteados = sorteados.filter(item => item !== undefined);
 
-} else {
-    let seeds = inscritosAtuais.filter(i => i.isSeed || i.nivelSeed === 1 || i.nivelSeed === 2).sort(() => Math.random() - 0.5);
-    let normais = inscritosAtuais.filter(i => !i.isSeed && i.nivelSeed !== 1 && i.nivelSeed !== 2).sort(() => Math.random() - 0.5);
-    sorteados = [...seeds, ...normais];
-}
+            } else {
+                let seeds = inscritosAtuais.filter(i => i.isSeed || i.nivelSeed === 1 || i.nivelSeed === 2).sort(() => Math.random() - 0.5);
+                let normais = inscritosAtuais.filter(i => !i.isSeed && i.nivelSeed !== 1 && i.nivelSeed !== 2).sort(() => Math.random() - 0.5);
+                sorteados = [...seeds, ...normais];
+            }
             
             document.getElementById('btnGerarChaves').textContent = "Gerando e Salvando...";
             
@@ -1805,8 +1602,8 @@ if (formatoAberto.includes("Super 4")) {
             let statsIndividuais = {};
 
             inscritosAtuais.forEach(insc => {
-                if (insc.jogador1) statsIndividuais[insc.jogador1] = { pontos: ptsConfig.participacao, titulos: 0, vitorias: 0, jogos: 0 };
-                if (insc.jogador2) statsIndividuais[insc.jogador2] = { pontos: ptsConfig.participacao, titulos: 0, vitorias: 0, jogos: 0 };
+                if (insc.jogador1) statsIndividuais[insc.jogador1] = { pontos: ptsConfig.participacao, pontosOuro: 0, pontosPrata: 0, titulos: 0, vitorias: 0, jogos: 0 };
+                if (insc.jogador2) statsIndividuais[insc.jogador2] = { pontos: ptsConfig.participacao, pontosOuro: 0, pontosPrata: 0, titulos: 0, vitorias: 0, jogos: 0 };
             });
 
             document.querySelectorAll('#chavesGeradasUI .standings-table tbody').forEach(tb => {
@@ -1875,8 +1672,14 @@ if (formatoAberto.includes("Super 4")) {
                         if (statsIndividuais[j]) {
                             statsIndividuais[j].pontos += pontosMataMata;
                             
-                            if (chave === 'Ouro' && pontosMataMata === ptsConfig.campeao) statsIndividuais[j].titulos = 1;
-                            if (chave === 'Prata' && pontosMataMata === ptsConfig.campeaoPrata) statsIndividuais[j].titulos = 1;
+                            if (chave === 'Ouro') {
+                                statsIndividuais[j].pontosOuro += pontosMataMata;
+                                if (pontosMataMata === ptsConfig.campeao) statsIndividuais[j].titulos = 1;
+                            }
+                            if (chave === 'Prata') {
+                                statsIndividuais[j].pontosPrata += pontosMataMata;
+                                if (pontosMataMata === ptsConfig.campeaoPrata) statsIndividuais[j].titulos = 1;
+                            }
                         }
                     });
                 }
@@ -1910,6 +1713,8 @@ if (formatoAberto.includes("Super 4")) {
                         await setDoc(ref, { 
                             nome: jogador, 
                             pontos: (dados.pontos || 0) + stats.pontos, 
+                            pontosOuro: (dados.pontosOuro || 0) + stats.pontosOuro, 
+                            pontosPrata: (dados.pontosPrata || 0) + stats.pontosPrata, 
                             torneios: (dados.torneios || 0) + 1,
                             titulos: (dados.titulos || 0) + stats.titulos,
                             vitorias: (dados.vitorias || 0) + stats.vitorias,
@@ -1917,7 +1722,7 @@ if (formatoAberto.includes("Super 4")) {
                         });
                     } else {
                         await setDoc(ref, { 
-                            nome: jogador, pontos: stats.pontos, torneios: 1, titulos: stats.titulos, vitorias: stats.vitorias, jogos: stats.jogos
+                            nome: jogador, pontos: stats.pontos, pontosOuro: stats.pontosOuro, pontosPrata: stats.pontosPrata, torneios: 1, titulos: stats.titulos, vitorias: stats.vitorias, jogos: stats.jogos
                         });
                     }
                 }
@@ -1943,53 +1748,148 @@ if (formatoAberto.includes("Super 4")) {
         });
 
         const filtroRanking = document.getElementById('filtroVisualRanking');
+        const tipoFiltroRanking = document.getElementById('tipoFiltroRanking');
         const tbodyRanking = document.getElementById('rankingTabelaBody');
 
         async function carregarRanking() {
-            let rankingNome = filtroRanking.options[filtroRanking.selectedIndex].text;
-            tbodyRanking.innerHTML = '<tr><td colspan="4" style="padding: 30px;">Carregando ranking...</td></tr>';
+            let rankingNome = filtroRanking.options[filtroRanking.selectedIndex]?.text;
+            let tipoRanking = tipoFiltroRanking.value;
+
+            if(!rankingNome) {
+                tbodyRanking.innerHTML = '<tr><td colspan="5" style="padding: 30px;">Selecione uma categoria...</td></tr>';
+                return;
+            }
+
+            tbodyRanking.innerHTML = '<tr><td colspan="5" style="padding: 30px;">Carregando ranking...</td></tr>';
             
             const snap = await getDocs(collection(db, "rankings", rankingNome, "jogadores"));
             let lista = [];
-            snap.forEach(doc => lista.push(doc.data()));
-            lista.sort((a,b) => b.pontos - a.pontos); 
+            snap.forEach(doc => {
+                let d = doc.data();
+                d.id = doc.id;
+                lista.push(d);
+            });
+            
+            if (tipoRanking === 'ouro') lista.sort((a,b) => (b.pontosOuro || 0) - (a.pontosOuro || 0));
+            else if (tipoRanking === 'prata') lista.sort((a,b) => (b.pontosPrata || 0) - (a.pontosPrata || 0));
+            else lista.sort((a,b) => (b.pontos || 0) - (a.pontos || 0));
             
             if (lista.length === 0) {
-                tbodyRanking.innerHTML = '<tr><td colspan="4" style="padding: 30px;">Nenhum jogador pontuou neste ranking ainda.</td></tr>';
+                tbodyRanking.innerHTML = '<tr><td colspan="5" style="padding: 30px;">Nenhum jogador pontuou neste ranking ainda.</td></tr>';
                 return;
             }
 
             let html = '';
             lista.forEach((jog, index) => {
+                let ptsToShow = jog.pontos;
+                let corPts = "var(--dark)";
+                
+                if (tipoRanking === 'ouro') { ptsToShow = jog.pontosOuro || 0; corPts = "#f59e0b"; }
+                if (tipoRanking === 'prata') { ptsToShow = jog.pontosPrata || 0; corPts = "#94a3b8"; }
+
                 let icone = index === 0 ? '🥇' : (index === 1 ? '🥈' : (index === 2 ? '🥉' : (index + 1 + 'º')));
                 let titulos = jog.titulos || 0; let vitorias = jog.vitorias || 0; let jogos = jog.jogos || 0;
+
+                let hideAdmin = isLogged ? "" : "hidden";
 
                 html += `<tr>
                     <td style="font-size: 1.1rem;"><strong>${icone}</strong></td>
                     <td style="text-align:left;">
-                        <a href="#" onclick="abrirPerfilJogador('${jog.nome}', ${jog.pontos}, ${jog.torneios}, ${titulos}, ${vitorias}, ${jogos})" style="color: var(--primary); text-decoration: none; font-weight: 600; border-bottom: 1px dashed var(--primary-glow); cursor: pointer; transition: 0.2s;">
+                        <a href="#" onclick="abrirPerfilJogador('${jog.nome}', ${ptsToShow}, ${jog.torneios}, ${titulos}, ${vitorias}, ${jogos})" style="color: var(--primary); text-decoration: none; font-weight: 600; border-bottom: 1px dashed var(--primary-glow); cursor: pointer; transition: 0.2s;">
                             ${jog.nome}
                         </a>
                     </td>
-                    <td style="color: var(--dark); font-size: 1.2rem;"><strong>${jog.pontos}</strong></td>
-                    <td style="color: var(--gray); font-weight: 500;">${jog.torneios}</td>
+                    <td style="color: ${corPts}; font-size: 1.2rem;"><strong>${ptsToShow}</strong></td>
+                    <td style="color: var(--gray); font-weight: 500;">${jog.torneios || 0}</td>
+                    <td class="col-acao-admin ${hideAdmin}">
+                        <button onclick="abrirModalEditarJogador('${jog.id}', '${jog.nome}', ${jog.pontos||0}, ${jog.pontosOuro||0}, ${jog.pontosPrata||0}, ${jog.torneios||0}, ${titulos}, ${vitorias}, ${jogos})" class="btn btn-outline" style="padding: 6px 12px; font-size: 0.85rem; border-color: var(--gray);">✏️ Editar</button>
+                    </td>
                 </tr>`;
             });
             tbodyRanking.innerHTML = html;
         }
 
         filtroRanking.addEventListener('change', carregarRanking);
+        tipoFiltroRanking.addEventListener('change', carregarRanking);
         document.getElementById('btnAbaRankings').addEventListener('click', carregarRanking);
+
+        // Lógica de Edição de Jogador
+        window.abrirModalEditarJogador = function(id, nome, ptsGeral, ptsOuro, ptsPrata, torneios, titulos, vitorias, jogos) {
+            document.getElementById('editPlayerId').value = id;
+            document.getElementById('editPlayerCategoria').value = filtroRanking.options[filtroRanking.selectedIndex].text;
+            document.getElementById('editNomeTitle').textContent = nome;
+            
+            document.getElementById('editPtsGeral').value = ptsGeral;
+            document.getElementById('editPtsOuro').value = ptsOuro;
+            document.getElementById('editPtsPrata').value = ptsPrata;
+            document.getElementById('editTorneios').value = torneios;
+            document.getElementById('editTitulos').value = titulos;
+            document.getElementById('editVitorias').value = vitorias;
+            document.getElementById('editJogos').value = jogos;
+
+            document.getElementById('modalEditPlayer').classList.remove('hidden');
+        };
+
+        document.getElementById('formEditPlayer').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('editPlayerId').value;
+            const categoria = document.getElementById('editPlayerCategoria').value;
+            const btn = e.target.querySelector('button[type="submit"]');
+
+            btn.textContent = "Salvando..."; btn.disabled = true;
+            try {
+                await updateDoc(doc(db, "rankings", categoria, "jogadores", id), {
+                    pontos: parseInt(document.getElementById('editPtsGeral').value) || 0,
+                    pontosOuro: parseInt(document.getElementById('editPtsOuro').value) || 0,
+                    pontosPrata: parseInt(document.getElementById('editPtsPrata').value) || 0,
+                    torneios: parseInt(document.getElementById('editTorneios').value) || 0,
+                    titulos: parseInt(document.getElementById('editTitulos').value) || 0,
+                    vitorias: parseInt(document.getElementById('editVitorias').value) || 0,
+                    jogos: parseInt(document.getElementById('editJogos').value) || 0
+                });
+                document.getElementById('modalEditPlayer').classList.add('hidden');
+                carregarRanking();
+            } catch (err) {
+                alert("Erro ao editar jogador: " + err.message);
+            } finally {
+                btn.textContent = "Salvar Alterações"; btn.disabled = false;
+            }
+        });
+
+        // Lógica para Zerar Ranking
+        document.getElementById('btnZerarRanking').addEventListener('click', async () => {
+            let rankingNome = filtroRanking.options[filtroRanking.selectedIndex]?.text;
+            if (!rankingNome) return;
+            
+            if (!confirm(`⚠️ CUIDADO! Você está prestes a ZERAR TODOS OS PONTOS (Geral, Ouro e Prata) e Estatísticas de todos os jogadores na categoria "${rankingNome}".\n\nIsso NÃO apaga os jogadores, apenas zera seus status.\n\nDeseja continuar?`)) return;
+
+            const btn = document.getElementById('btnZerarRanking');
+            btn.textContent = "Zerando..."; btn.disabled = true;
+
+            try {
+                const snap = await getDocs(collection(db, "rankings", rankingNome, "jogadores"));
+                let promessas = [];
+                snap.forEach(docSnap => {
+                    promessas.push(updateDoc(doc(db, "rankings", rankingNome, "jogadores", docSnap.id), {
+                        pontos: 0, pontosOuro: 0, pontosPrata: 0, torneios: 0, titulos: 0, vitorias: 0, jogos: 0
+                    }));
+                });
+                
+                await Promise.all(promessas);
+                alert("Todos os jogadores desta categoria foram zerados com sucesso!");
+                carregarRanking();
+            } catch (err) {
+                alert("Erro ao zerar: " + err.message);
+            } finally {
+                btn.innerHTML = "⚠️ Zerar Tudo"; btn.disabled = false;
+            }
+        });
 
         const selectRankingCreate = document.getElementById('rankingVinculado');
         const selectRankingFilter = document.getElementById('filtroVisualRanking');
         const btnGerenciarRankings = document.getElementById('btnGerenciarRankings');
         const modalRankings = document.getElementById('modalRankings');
         const listaCategoriasUI = document.getElementById('listaCategoriasUI');
-
-        onAuthStateChanged(auth, (user) => {
-            if (user) { btnGerenciarRankings.classList.remove('hidden'); } else { btnGerenciarRankings.classList.add('hidden'); }
-        });
 
         btnGerenciarRankings.addEventListener('click', () => modalRankings.classList.remove('hidden'));
         document.getElementById('btnFecharModalRankings').addEventListener('click', () => modalRankings.classList.add('hidden'));
