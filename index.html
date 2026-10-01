@@ -80,7 +80,7 @@
         .panel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; margin-top: 2rem; transition: all 0.3s ease; }
         .panel-card { background-color: var(--light); padding: 2rem; border-radius: 20px; border: 1px solid var(--border); }
         .lista-inscritos { list-style: none; margin-top: 1.5rem; }
-        .lista-inscritos li { background: var(--white); padding: 1.2rem; margin-bottom: 1rem; border-radius: 12px; border-left: 4px solid var(--primary); box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-top: 1px solid var(--border); border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .lista-inscritos li { background: var(--white); padding: 1.2rem; margin-bottom: 1rem; border-radius: 12px; border-left: 4px solid var(--primary); box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-top: 1px solid var(--border); border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; word-break: break-word; }
         .grid-expandido { grid-template-columns: 1fr !important; }
 
         .tabela-container { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 12px; }
@@ -89,7 +89,7 @@
         .standings-table th { background-color: var(--light); color: var(--gray); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
         .standings-table tr:last-child td { border-bottom: none; }
         .standings-table tr:hover td { background-color: rgba(255,255,255,0.02); }
-        .standings-table td:first-child { text-align: left; font-weight: 500; }
+        .standings-table td:first-child { text-align: left; font-weight: 500; word-break: break-word; }
 
         .match-box, .bracket-match { background-color: var(--white); padding: 20px; margin: 15px 0; border-radius: 16px; text-align: center; border: 1px solid var(--border); border-left: 4px solid #3a414e; transition: all 0.3s; box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
         .match-box:hover, .bracket-match:hover { border-color: #4b5563; }
@@ -118,7 +118,7 @@
         #chavesGeradasUI > div { background: var(--white) !important; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.15) !important; border-radius: 20px !important; overflow: hidden; }
         #chavesGeradasUI > div > h5 { background: var(--light) !important; color: var(--dark) !important; border-bottom: 1px solid var(--border); border-radius: 0 !important; font-weight: 600; font-size: 1.2rem; padding: 15px !important; }
 
-        .t-a, .t-b { color: var(--dark) !important; font-weight: 500; font-size: 1.1rem; }
+        .t-a, .t-b { color: var(--dark) !important; font-weight: 500; font-size: 1.05rem; word-break: break-word; line-height: 1.35; display: inline-block; width: 100%; padding: 0 5px; }
         [style*="color: var(--primary-dark)"] { color: var(--primary) !important; font-weight: 600; }
 
         [style*="background-color: #e74c3c"] { background: linear-gradient(135deg, #ef4444, #b91c1c) !important; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3) !important; }
@@ -140,6 +140,8 @@
             #user-menu span { margin: 0 !important; }
             .standings-table { min-width: 500px; }
             .score-input { width: 50px; height: 45px; font-size: 1.3rem; }
+            .match-box, .bracket-match { padding: 16px 12px; }
+            .t-a, .t-b { font-size: 0.95rem; }
         }
     </style>
 </head>
@@ -188,7 +190,7 @@
     <div id="modalEditPlayer" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(11, 15, 25, 0.85); z-index: 1100; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(8px);">
         <div style="background: var(--white); padding: 2.5rem; border-radius: 20px; width: 90%; max-width: 450px; border: 1px solid var(--border); position: relative;">
             <button type="button" onclick="document.getElementById('modalEditPlayer').classList.add('hidden')" style="position: absolute; top: 15px; right: 20px; background: transparent; border: none; font-size: 1.8rem; cursor: pointer; color: var(--gray);">&times;</button>
-            <h3 style="margin-bottom: 1.5rem; color: var(--dark); font-size: 1.4rem;">✏️️ Editar Jogador</h3>
+            <h3 style="margin-bottom: 1.5rem; color: var(--dark); font-size: 1.4rem;">✏️ Editar Jogador</h3>
             <h4 id="editNomeTitle" style="color: var(--primary); margin-bottom: 1.5rem;">Nome</h4>
             <form id="formEditPlayer">
                 <input type="hidden" id="editPlayerId">
@@ -383,8 +385,8 @@
                     </select>
                 </div>
                 <div style="display: flex; gap: 10px;">
-                    <button id="btnGerenciarRankings" class="btn btn-outline hidden" style="height: 52px; padding: 0 15px;">⚙️️ Gerenciar</button>
-                    <button id="btnZerarRanking" class="btn hidden" style="height: 52px; padding: 0 15px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid #ef4444; box-shadow: none;">⚠️ Zerar Tudo</button>
+                    <button id="btnGerenciarRankings" class="btn btn-outline hidden" style="height: 52px; padding: 0 15px;">⚙️ Gerenciar</button>
+                    <button id="btnZerarRanking" class="btn hidden" style="height: 52px; padding: 0 15px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid #ef4444; box-shadow: none;">⚠️️ Zerar Tudo</button>
                 </div>
             </div>
             
@@ -474,7 +476,7 @@
                     <div id="chavesGeradasUI" style="margin-top: 20px;"></div>
 
                     <button id="btnMontarMataMata" class="btn hidden" style="width: 100%; margin-top: 25px; background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff;">
-                        ⚔️️ Avançar para o Mata-Mata
+                        ⚔️ Avançar para o Mata-Mata
                     </button>
 
                     <div id="mataMataUI"></div>
@@ -973,7 +975,7 @@
                     html += `<div class="tabela-container"></div></div>`;
                 });
                 if (isLogged) document.getElementById('btnMontarMataMata').classList.remove('hidden');
-            } else { html += '<h4 style="text-align: center; padding: 20px;">⚔️️ Mata-Mata Apenas</h4>'; }
+            } else { html += '<h4 style="text-align: center; padding: 20px;">⚔️ Mata-Mata Apenas</h4>'; }
             
             chavesUI.innerHTML = html;
 
@@ -1326,7 +1328,6 @@
             let isSuper4 = formatoAberto.includes("Super 4");
             let super4Modo = torneioAbertoData.super4Modo || 'normal';
 
-            // Coletar dados estatísticos individuais da tabela para o modo sortudo
             let playerStatsMap = {};
             document.querySelectorAll('#chavesGeradasUI .standings-table tbody').forEach(tb => {
                 tb.querySelectorAll('tr').forEach(tr => {
