@@ -126,7 +126,7 @@
         
         .t-a, .t-b { color: var(--dark) !important; font-weight: 600; font-size: 1rem; word-break: break-word; line-height: 1.3; display: inline-block; width: 100%; padding: 0 5px; }
 
-        #modalPerfilJogador, #modalEditPlayer, #modalRankings, #loginModal, #modalZerarRanking { background: rgba(0, 0, 0, 0.4) !important; backdrop-filter: blur(3px); }
+        #modalPerfilJogador, #modalEditPlayer, #modalRankings, #loginModal, #modalZerarRanking, #modalInstalarApp { background: rgba(0, 0, 0, 0.4) !important; backdrop-filter: blur(3px); }
 
         @media (max-width: 768px) { 
             main { padding: 1.5rem 10px; } 
@@ -146,6 +146,19 @@
     </style>
 </head>
 <body>
+
+    <!-- Modal Automático de Instalação do App -->
+    <div id="modalInstalarApp" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999; display: flex; justify-content: center; align-items: center;">
+        <div style="background: var(--white); padding: 2.5rem; border-radius: 16px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 15px 40px rgba(0,0,0,0.2); animation: fadeIn 0.3s ease;">
+            <div style="font-size: 3.5rem; margin-bottom: 10px;">📱</div>
+            <h3 style="margin-bottom: 0.8rem; color: var(--dark); font-size: 1.5rem; font-weight: 800;">Instalar Confra & Play</h3>
+            <p style="color: var(--gray); font-size: 0.95rem; margin-bottom: 1.5rem; line-height: 1.5;">
+                Adicione o aplicativo ao seu telemóvel para aceder rapidamente em tela cheia e ter uma melhor experiência de uso!
+            </p>
+            <button id="btnExecutarInstalacao" class="btn" style="width: 100%; margin-bottom: 10px; background: var(--primary); padding: 12px; font-size: 1rem;">Instalar Agora</button>
+            <button id="btnFecharModalInstalar" class="btn btn-outline" style="width: 100%; border-color: var(--border);">Continuar no Navegador</button>
+        </div>
+    </div>
 
     <!-- Perfil Viewer -->
     <div id="modalPerfilJogador" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; display: flex; justify-content: center; align-items: center;">
@@ -285,7 +298,7 @@
         <div id="nav-menu" style="display:flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-left: auto;">
             <button id="btnAbaCampeonatos" class="tab-btn tab-active">Campeonatos</button>
             <button id="btnAbaRankings" class="tab-btn tab-inactive">🏆 Ranking</button>
-            <button id="btnInstalarApp" class="btn hidden" style="background: var(--blue-link);">📲 App</button>
+            <button id="btnInstalarAppHeader" class="btn hidden" style="background: var(--blue-link); font-size: 0.85rem; padding: 0.5rem 0.8rem;">📲 Instalar App</button>
             
             <div id="auth-area" style="display: inline-flex; align-items: center;">
                 <button id="btnLogin" class="btn btn-outline" title="Área do Organizador" style="padding: 0; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">🔒</button>
@@ -1922,14 +1935,68 @@
 
         if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(err => console.log('Erro no motor', err)); }); }
 
-        let promptInstalacao; const btnInstalarApp = document.getElementById('btnInstalarApp');
-        window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); promptInstalacao = e; btnInstalarApp.classList.remove('hidden'); });
-        btnInstalarApp.addEventListener('click', async () => { if (promptInstalacao) { promptInstalacao.prompt(); const resposta = await promptInstalacao.userChoice; promptInstalacao = null; btnInstalarApp.classList.add('hidden'); } });
-        window.addEventListener('appinstalled', () => { btnInstalarApp.classList.add('hidden'); });
+        // --- LÓGICA DE INSTALAÇÃO DO PWA (AUTOMÁTICA E MANUAL) ---
+        let promptInstalacao = null; 
+        const modalInstalarApp = document.getElementById('modalInstalarApp');
+        const btnInstalarAppHeader = document.getElementById('btnInstalarAppHeader');
+        const iosInstallPopup = document.getElementById('iosInstallPopup');
 
-        const isIos = () => /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase()); const isInStandaloneMode = () => ('standalone' in window.navigator) && (window.navigator.standalone);
-        if (isIos() && !isInStandaloneMode()) { setTimeout(() => { document.getElementById('iosInstallPopup').classList.remove('hidden'); }, 2000); }
-        document.getElementById('btnFecharIosPopup').addEventListener('click', () => { document.getElementById('iosInstallPopup').classList.add('hidden'); });
+        const isStandalone = () => window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            promptInstalacao = e;
+            btnInstalarAppHeader.classList.remove('hidden');
+
+            // Se o app não estiver instalado, mostra a modal automática de instalação ao entrar
+            if (!isStandalone()) {
+                setTimeout(() => {
+                    modalInstalarApp.classList.remove('hidden');
+                }, 1500);
+            }
+        });
+
+        // Ação do Botão "Instalar Agora" na Modal Automática
+        document.getElementById('btnExecutarInstalacao').addEventListener('click', async () => {
+            if (promptInstalacao) {
+                promptInstalacao.prompt();
+                const escolha = await promptInstalacao.userChoice;
+                if (escolha.outcome === 'accepted') {
+                    console.log('Utilizador aceitou instalar o aplicativo');
+                }
+                promptInstalacao = null;
+                modalInstalarApp.classList.add('hidden');
+            } else {
+                // Se estiver no iOS ou o navegador não disparar o prompt automático
+                modalInstalarApp.classList.add('hidden');
+                if (/iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase())) {
+                    iosInstallPopup.classList.remove('hidden');
+                } else {
+                    alert("Para instalar, utilize a opção 'Adicionar à Tela Inicial' ou 'Instalar Aplicativo' no menu do seu navegador (três pontos no canto superior).");
+                }
+            }
+        });
+
+        // Botão do cabeçalho para reabrir a modal de instalação
+        btnInstalarAppHeader.addEventListener('click', () => {
+            modalInstalarApp.classList.remove('hidden');
+        });
+
+        document.getElementById('btnFecharModalInstalar').addEventListener('click', () => {
+            modalInstalarApp.classList.add('hidden');
+        });
+
+        // Detector para iOS caso não abra o beforeinstallprompt
+        const isIos = () => /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase()); 
+        if (isIos() && !isStandalone()) { 
+            setTimeout(() => { 
+                modalInstalarApp.classList.remove('hidden'); 
+            }, 2000); 
+        }
+
+        document.getElementById('btnFecharIosPopup').addEventListener('click', () => { 
+            iosInstallPopup.classList.add('hidden'); 
+        });
 
         document.getElementById('btnEfetuarTroca').addEventListener('click', async () => {
             let i1 = document.getElementById('trocaTime1').value; let i2 = document.getElementById('trocaTime2').value;
