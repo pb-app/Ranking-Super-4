@@ -16,6 +16,9 @@
     <link rel="apple-touch-icon" sizes="180x180" href="icon-192.png">
     <link rel="apple-touch-icon" sizes="167x167" href="icon-192.png">
 
+    <!-- Biblioteca para gerar a Imagem do Ranking -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Poppins:wght@400;500;600;700&display=swap');
 
@@ -379,7 +382,10 @@
         </section>
 
         <section id="ranking-section" class="hidden">
-            <h2 class="section-title">🏆 Ranking</h2>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 10px;">
+                <h2 class="section-title" style="margin-bottom: 0;">🏆 Ranking</h2>
+                <button id="btnBaixarRanking" class="btn" style="background: #10b981; color: white;">📸 Baixar Imagem</button>
+            </div>
             
             <div style="display: flex; gap: 15px; align-items: flex-end; margin-bottom: 25px; flex-wrap: wrap;">
                 <div class="form-group" style="margin-bottom: 0; flex-grow: 1; min-width: 180px;">
@@ -402,7 +408,13 @@
                 </div>
             </div>
             
-            <div style="background: var(--white); border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); border: 1px solid var(--border);">
+            <div id="cartaoRanking" style="background: var(--white); border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); border: 1px solid var(--border);">
+                <!-- Este cabeçalho só aparece na hora de gerar a imagem -->
+                <div id="cabecalhoExportacao" style="text-align: center; margin-bottom: 20px; display: none;">
+                    <h2 style="color: var(--primary); font-size: 1.8rem; font-weight: 800; margin-bottom: 5px;">Confra & Play</h2>
+                    <h3 id="tituloExportacao" style="color: var(--dark); font-size: 1.2rem;">Ranking</h3>
+                </div>
+                
                 <div class="tabela-container">
                     <table class="standings-table" style="margin: 0; border: none; box-shadow: none;">
                         <thead>
@@ -545,14 +557,8 @@
             let badge = '';
             let playerInfo = null;
 
-            // 1º Tenta achar nos sorteados finais (onde ficam as seeds automáticas do ranking)
-            if (torneioAbertoData && torneioAbertoData.sorteados) {
-                playerInfo = torneioAbertoData.sorteados.find(i => i.jogador1 === nome || i.jogador2 === nome);
-            }
-            // 2º Se não achar, tenta na lista de inscritos base
-            if (!playerInfo && inscritosAtuais && inscritosAtuais.length > 0) {
-                playerInfo = inscritosAtuais.find(i => i.jogador1 === nome || i.jogador2 === nome);
-            }
+            if (torneioAbertoData && torneioAbertoData.sorteados) { playerInfo = torneioAbertoData.sorteados.find(i => i.jogador1 === nome || i.jogador2 === nome); }
+            if (!playerInfo && inscritosAtuais && inscritosAtuais.length > 0) { playerInfo = inscritosAtuais.find(i => i.jogador1 === nome || i.jogador2 === nome); }
 
             if (playerInfo) {
                 if (playerInfo.nivelSeed === 1) badge = ' <span style="background: #fef3c7; color:#d97706; font-size:0.65rem; font-weight:800; padding: 2px 4px; border-radius: 4px; margin-left: 3px; vertical-align: middle;" title="Cabeça de Chave 1">⭐ C1</span>';
@@ -1037,7 +1043,6 @@
             
             let isGrupos = formatoAberto.includes("Grupos") || formatoAberto.includes("Super 4");
 
-            // TRAVA MATEMÁTICA
             if (isGrupos) {
                 if (inscritosAtuais.length % 4 !== 0) {
                     let faltam = 4 - (inscritosAtuais.length % 4);
@@ -1053,7 +1058,6 @@
             document.getElementById('btnGerarChaves').textContent = "A buscar Ranking...";
             document.getElementById('btnGerarChaves').disabled = true;
 
-            // 1. BUSCA O RANKING PARA PREENCHIMENTO AUTOMÁTICO
             let rankingMap = {};
             if (torneioAbertoData.ranking) {
                 try {
@@ -1062,38 +1066,34 @@
                 } catch(e) { console.log("Erro ao carregar ranking para sorteio:", e); }
             }
 
-            // 2. ADICIONA OS PONTOS NA LISTA DE INSCRITOS
             let inscritosComPontos = inscritosAtuais.map(insc => {
                 let pts1 = rankingMap[insc.jogador1] || 0;
                 let pts2 = insc.jogador2 ? (rankingMap[insc.jogador2] || 0) : 0;
                 return { ...insc, totalPontos: pts1 + pts2 };
             });
 
-            // 3. CALCULA NÚMERO DE GRUPOS
             let numGrupos = 1;
             if (isGrupos) {
                 if (formatoAberto.includes("Super 4")) { numGrupos = Math.max(1, Math.floor(inscritosComPontos.length / 4)); } 
                 else if (inscritosComPontos.length >= 6) { numGrupos = Math.floor(inscritosComPontos.length / 3); }
             }
 
-            // 4. SEPARA QUEM FOI SELECIONADO MANUALMENTE E QUEM SOBROU
             let seeds1 = inscritosComPontos.filter(i => i.nivelSeed === 1);
             let seeds2 = inscritosComPontos.filter(i => i.nivelSeed === 2);
             let restantes = inscritosComPontos.filter(i => i.nivelSeed !== 1 && i.nivelSeed !== 2);
 
-            // 5. LÓGICA DE PREENCHIMENTO INTELIGENTE (AUTO-SEED COM ETIQUETAS)
             if (isGrupos) {
                 restantes.sort((a, b) => b.totalPontos - a.totalPontos);
                 
                 while (seeds1.length < numGrupos && restantes.length > 0) {
                     let autoSeed1 = restantes.shift();
-                    autoSeed1.nivelSeed = 1; // Etiqueta o melhor do ranking como C1
+                    autoSeed1.nivelSeed = 1; 
                     seeds1.push(autoSeed1);
                 }
                 
                 while (seeds2.length < numGrupos && restantes.length > 0) {
                     let autoSeed2 = restantes.shift();
-                    autoSeed2.nivelSeed = 2; // Etiqueta o segundo melhor do ranking como C2
+                    autoSeed2.nivelSeed = 2; 
                     seeds2.push(autoSeed2);
                 }
             }
@@ -1358,7 +1358,6 @@
             let isSuper4 = formatoAberto.includes("Super 4"); let super4Modo = torneioAbertoData.super4Modo || 'normal';
             let playerStatsMap = {};
 
-            // Arrays para o sorteio cruzado
             let todosPrimeiros = []; let todosSegundos = [];
             let todosTerceiros = []; let todosQuartos = [];
 
@@ -1379,13 +1378,11 @@
 
                 if (isSuper4) {
                     if (super4Modo === 'sortudo') {
-                        // Apenas recolhe os jogadores por posição (não cria as equipas ainda)
                         if (jogadoresGrupo[0]) todosPrimeiros.push(jogadoresGrupo[0].nome);
                         if (jogadoresGrupo[1]) todosSegundos.push(jogadoresGrupo[1].nome);
                         if (jogadoresGrupo[2]) todosTerceiros.push(jogadoresGrupo[2].nome);
                         if (jogadoresGrupo[3]) todosQuartos.push(jogadoresGrupo[3].nome);
                     } else {
-                        // Lógica Super 4 PADRÃO (dentro do próprio grupo)
                         let metade = Math.ceil(jogadoresGrupo.length / 2);
                         let ouroJogadores = jogadoresGrupo.slice(0, metade);
                         let prataJogadores = jogadoresGrupo.slice(metade);
@@ -1415,7 +1412,6 @@
                         }
                     }
                 } else {
-                    // Lógica para formatos sem Super 4
                     let limiteOuro = trs.length >= 4 ? 3 : 2;
                     for (let i = 0; i < trs.length; i++) {
                         let n = trs[i].cells[0].getAttribute('data-name') || trs[i].cells[0].innerText.replace(/👤/g, '').replace(/[🥇🥈🥉]/g, '').trim();
@@ -1425,13 +1421,10 @@
                 }
             });
 
-            // PROCESSAMENTO DO SORTEIO CRUZADO (Fora do loop das tabelas)
             if (isSuper4 && super4Modo === 'sortudo') {
-                // Mistura aleatoriamente os 2ºs e os 4ºs classificados de todos os grupos
                 todosSegundos.sort(() => Math.random() - 0.5);
                 todosQuartos.sort(() => Math.random() - 0.5);
 
-                // Junta os 1ºs classificados com os 2ºs classificados (sorteados)
                 for (let i = 0; i < todosPrimeiros.length; i++) {
                     let p1 = todosPrimeiros[i];
                     let p2 = todosSegundos[i] || todosPrimeiros[0]; 
@@ -1443,7 +1436,6 @@
                     }
                 }
 
-                // Junta os 3ºs classificados com os 4ºs classificados (sorteados)
                 for (let i = 0; i < todosTerceiros.length; i++) {
                     let p1 = todosTerceiros[i];
                     let p2 = todosQuartos[i] || todosTerceiros[0]; 
@@ -1731,7 +1723,6 @@
                 let d = doc.data(); 
                 d.id = doc.id; 
                 
-                // FILTRO: Ignora jogadores que têm 0 pontos no filtro selecionado
                 if (tipoRanking === 'ouro' && (!d.pontosOuro || d.pontosOuro <= 0)) return;
                 if (tipoRanking === 'prata' && (!d.pontosPrata || d.pontosPrata <= 0)) return;
                 if (tipoRanking === 'geral' && (!d.pontos || d.pontos <= 0)) return;
@@ -1771,6 +1762,40 @@
         }
 
         filtroRanking.addEventListener('change', carregarRanking); tipoFiltroRanking.addEventListener('change', carregarRanking); document.getElementById('btnAbaRankings').addEventListener('click', carregarRanking);
+
+        // --- FUNÇÃO PARA TIRAR O PRINT DO RANKING ---
+        document.getElementById('btnBaixarRanking').addEventListener('click', () => {
+            const btn = document.getElementById('btnBaixarRanking');
+            btn.textContent = "📸 Capturando...";
+            const cartao = document.getElementById('cartaoRanking');
+            const cabecalho = document.getElementById('cabecalhoExportacao');
+            const titulo = document.getElementById('tituloExportacao');
+            
+            let cat = document.getElementById('filtroVisualRanking').options[document.getElementById('filtroVisualRanking').selectedIndex]?.text;
+            let tipo = document.getElementById('tipoFiltroRanking').options[document.getElementById('tipoFiltroRanking').selectedIndex]?.text;
+            if (!cat) { alert("Selecione um ranking primeiro."); btn.textContent = "📸 Baixar Imagem"; return; }
+            
+            titulo.textContent = `🏆 ${cat} - ${tipo}`;
+            cabecalho.style.display = 'block';
+
+            document.querySelectorAll('.col-acao-admin').forEach(el => el.style.display = 'none');
+
+            html2canvas(cartao, { scale: 2, backgroundColor: "#ffffff" }).then(canvas => {
+                let link = document.createElement('a');
+                link.download = `Ranking_${cat.replace(/\s+/g, '_')}_${tipo.replace(/\s+/g, '_')}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                
+                cabecalho.style.display = 'none';
+                if(isLogged) document.querySelectorAll('.col-acao-admin').forEach(el => el.style.display = '');
+                btn.innerHTML = "📸 Baixar Imagem";
+            }).catch(() => {
+                alert("Erro ao capturar imagem.");
+                cabecalho.style.display = 'none';
+                if(isLogged) document.querySelectorAll('.col-acao-admin').forEach(el => el.style.display = '');
+                btn.innerHTML = "📸 Baixar Imagem";
+            });
+        });
 
         window.abrirModalEditarJogador = function(id, nome, ptsGeral, ptsOuro, ptsPrata, torneios, titulos, vitorias, jogos) {
             document.getElementById('editPlayerId').value = id; document.getElementById('editPlayerCategoria').value = filtroRanking.options[filtroRanking.selectedIndex].text;
