@@ -1346,6 +1346,10 @@
             let isSuper4 = formatoAberto.includes("Super 4"); let super4Modo = torneioAbertoData.super4Modo || 'normal';
             let playerStatsMap = {};
 
+            // Arrays para o sorteio cruzado
+            let todosPrimeiros = []; let todosSegundos = [];
+            let todosTerceiros = []; let todosQuartos = [];
+
             document.querySelectorAll('#chavesGeradasUI .standings-table tbody').forEach(tb => {
                 let trs = tb.querySelectorAll('tr');
                 let jogadoresGrupo = [];
@@ -1361,45 +1365,45 @@
                     }
                 });
 
-                if (isSuper4 && super4Modo === 'sortudo') {
-                    let p1 = jogadoresGrupo[0]?.nome; let p2 = jogadoresGrupo[1]?.nome; let p3 = jogadoresGrupo[2]?.nome; let p4 = jogadoresGrupo[3]?.nome;
-                    if (p1 && p2) {
-                        let s1 = playerStatsMap[p1] || {v:0, ss:0, sg:0}; let s2 = playerStatsMap[p2] || {v:0, ss:0, sg:0};
-                        timesOuro.push({ nome: `${p1} & ${p2}`, v: s1.v+s2.v, ss: s1.ss+s2.ss, sg: s1.sg+s2.sg });
-                    }
-                    if (p3 && p4) {
-                        let s3 = playerStatsMap[p3] || {v:0, ss:0, sg:0}; let s4 = playerStatsMap[p4] || {v:0, ss:0, sg:0};
-                        timesPrata.push({ nome: `${p3} & ${p4}`, v: s3.v+s4.v, ss: s3.ss+s4.ss, sg: s3.sg+s4.sg });
-                    }
-                } else if (isSuper4) {
-                    let metade = Math.ceil(jogadoresGrupo.length / 2);
-                    let ouroJogadores = jogadoresGrupo.slice(0, metade);
-                    let prataJogadores = jogadoresGrupo.slice(metade);
+                if (isSuper4) {
+                    if (super4Modo === 'sortudo') {
+                        // Apenas recolhe os jogadores por posição (não cria as equipas ainda)
+                        if (jogadoresGrupo[0]) todosPrimeiros.push(jogadoresGrupo[0].nome);
+                        if (jogadoresGrupo[1]) todosSegundos.push(jogadoresGrupo[1].nome);
+                        if (jogadoresGrupo[2]) todosTerceiros.push(jogadoresGrupo[2].nome);
+                        if (jogadoresGrupo[3]) todosQuartos.push(jogadoresGrupo[3].nome);
+                    } else {
+                        // Lógica Super 4 PADRÃO (dentro do próprio grupo)
+                        let metade = Math.ceil(jogadoresGrupo.length / 2);
+                        let ouroJogadores = jogadoresGrupo.slice(0, metade);
+                        let prataJogadores = jogadoresGrupo.slice(metade);
 
-                    for (let i = 0; i < ouroJogadores.length; i += 2) {
-                        let p1 = ouroJogadores[i]?.nome;
-                        let p2 = ouroJogadores[i+1]?.nome || ouroJogadores[0]?.nome;
-                        if (p1 && p2 && p1 !== p2) {
-                            let s1 = playerStatsMap[p1] || {v:0, ss:0, sg:0}; 
-                            let s2 = playerStatsMap[p2] || {v:0, ss:0, sg:0};
-                            timesOuro.push({ nome: `${p1} & ${p2}`, v: s1.v+s2.v, ss: s1.ss+s2.ss, sg: s1.sg+s2.sg });
-                        } else if (p1) {
-                            timesOuro.push({ nome: p1, v: playerStatsMap[p1].v, ss: 0, sg: 0 });
+                        for (let i = 0; i < ouroJogadores.length; i += 2) {
+                            let p1 = ouroJogadores[i]?.nome;
+                            let p2 = ouroJogadores[i+1]?.nome || ouroJogadores[0]?.nome;
+                            if (p1 && p2 && p1 !== p2) {
+                                let s1 = playerStatsMap[p1] || {v:0, ss:0, sg:0}; 
+                                let s2 = playerStatsMap[p2] || {v:0, ss:0, sg:0};
+                                timesOuro.push({ nome: `${p1} & ${p2}`, v: s1.v+s2.v, ss: s1.ss+s2.ss, sg: s1.sg+s2.sg });
+                            } else if (p1) {
+                                timesOuro.push({ nome: p1, v: playerStatsMap[p1].v, ss: 0, sg: 0 });
+                            }
                         }
-                    }
 
-                    for (let i = 0; i < prataJogadores.length; i += 2) {
-                        let p1 = prataJogadores[i]?.nome;
-                        let p2 = prataJogadores[i+1]?.nome || prataJogadores[0]?.nome;
-                        if (p1 && p2 && p1 !== p2) {
-                            let s1 = playerStatsMap[p1] || {v:0, ss:0, sg:0}; 
-                            let s2 = playerStatsMap[p2] || {v:0, ss:0, sg:0};
-                            timesPrata.push({ nome: `${p1} & ${p2}`, v: s1.v+s2.v, ss: s1.ss+s2.ss, sg: s1.sg+s2.sg });
-                        } else if (p1) {
-                            timesPrata.push({ nome: p1, v: playerStatsMap[p1].v, ss: 0, sg: 0 });
+                        for (let i = 0; i < prataJogadores.length; i += 2) {
+                            let p1 = prataJogadores[i]?.nome;
+                            let p2 = prataJogadores[i+1]?.nome || prataJogadores[0]?.nome;
+                            if (p1 && p2 && p1 !== p2) {
+                                let s1 = playerStatsMap[p1] || {v:0, ss:0, sg:0}; 
+                                let s2 = playerStatsMap[p2] || {v:0, ss:0, sg:0};
+                                timesPrata.push({ nome: `${p1} & ${p2}`, v: s1.v+s2.v, ss: s1.ss+s2.ss, sg: s1.sg+s2.sg });
+                            } else if (p1) {
+                                timesPrata.push({ nome: p1, v: playerStatsMap[p1].v, ss: 0, sg: 0 });
+                            }
                         }
                     }
                 } else {
+                    // Lógica para formatos sem Super 4
                     let limiteOuro = trs.length >= 4 ? 3 : 2;
                     for (let i = 0; i < trs.length; i++) {
                         let n = trs[i].cells[0].getAttribute('data-name') || trs[i].cells[0].innerText.replace(/👤/g, '').replace(/[🥇🥈🥉]/g, '').trim();
@@ -1408,6 +1412,37 @@
                     }
                 }
             });
+
+            // PROCESSAMENTO DO SORTEIO CRUZADO (Fora do loop das tabelas)
+            if (isSuper4 && super4Modo === 'sortudo') {
+                // Mistura aleatoriamente os 2ºs e os 4ºs classificados de todos os grupos
+                todosSegundos.sort(() => Math.random() - 0.5);
+                todosQuartos.sort(() => Math.random() - 0.5);
+
+                // Junta os 1ºs classificados com os 2ºs classificados (sorteados)
+                for (let i = 0; i < todosPrimeiros.length; i++) {
+                    let p1 = todosPrimeiros[i];
+                    let p2 = todosSegundos[i] || todosPrimeiros[0]; 
+                    
+                    if (p1 && p2) {
+                        let s1 = playerStatsMap[p1] || {v:0, ss:0, sg:0}; 
+                        let s2 = playerStatsMap[p2] || {v:0, ss:0, sg:0};
+                        timesOuro.push({ nome: `${p1} & ${p2}`, v: s1.v+s2.v, ss: s1.ss+s2.ss, sg: s1.sg+s2.sg });
+                    }
+                }
+
+                // Junta os 3ºs classificados com os 4ºs classificados (sorteados)
+                for (let i = 0; i < todosTerceiros.length; i++) {
+                    let p1 = todosTerceiros[i];
+                    let p2 = todosQuartos[i] || todosTerceiros[0]; 
+                    
+                    if (p1 && p2) {
+                        let s1 = playerStatsMap[p1] || {v:0, ss:0, sg:0}; 
+                        let s2 = playerStatsMap[p2] || {v:0, ss:0, sg:0};
+                        timesPrata.push({ nome: `${p1} & ${p2}`, v: s1.v+s2.v, ss: s1.ss+s2.ss, sg: s1.sg+s2.sg });
+                    }
+                }
+            }
 
             if (timesOuro.length < 2) { alert("Sem dados suficientes das tabelas!"); return; }
 
