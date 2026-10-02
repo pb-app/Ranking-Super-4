@@ -425,7 +425,7 @@
         <section id="details-section" class="hidden">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 10px;">
                 <button id="btnVoltar" class="btn btn-outline" style="border: none; padding-left: 0; color: var(--blue-link) !important; font-weight: 600;">← Voltar</button>
-                <button id="btnExcluirTorneio" class="btn hidden" style="background: #ef4444; color: white;">🗑️️ Excluir Torneio</button>
+                <button id="btnExcluirTorneio" class="btn hidden" style="background: #ef4444; color: white;">🗑 Excluir Torneio</button>
             </div>
             
             <h2 class="section-title" id="detalhe-nome-torneio" style="margin-bottom: 0.2rem; font-size: 1.6rem;">Nome do Torneio</h2>
@@ -538,6 +538,21 @@
         let setsAberto = ""; 
         let inscritosUnsubscribe = null; 
         let inscritosAtuais = []; 
+        
+        // --- FUNÇÃO INTELIGENTE DE ETIQUETAS (SEEDS) ---
+        window.getBadgeSeed = function(nome) {
+            if (!nome || typeof nome !== 'string') return '';
+            let badge = '';
+            if (inscritosAtuais && inscritosAtuais.length > 0) {
+                let insc = inscritosAtuais.find(i => i.jogador1 === nome || i.jogador2 === nome);
+                if (insc) {
+                    if (insc.nivelSeed === 1) badge = ' <span style="background: #fef3c7; color:#d97706; font-size:0.65rem; font-weight:800; padding: 2px 4px; border-radius: 4px; margin-left: 3px; vertical-align: middle;" title="Cabeça de Chave 1">⭐ C1</span>';
+                    else if (insc.nivelSeed === 2) badge = ' <span style="background: #f1f5f9; color:#475569; font-size:0.65rem; font-weight:800; padding: 2px 4px; border-radius: 4px; margin-left: 3px; vertical-align: middle;" title="Cabeça de Chave 2">🌟 C2</span>';
+                }
+            }
+            return badge;
+        };
+
         window.fasesMataMata = []; 
         window.fasesPrata = []; 
         let jogosSalvos = {}; 
@@ -692,8 +707,8 @@
                     const li = document.createElement('li');
                     
                     let star = '';
-                    if (dados.nivelSeed === 1) star = ' <span style="color:#f59e0b; font-size:0.8rem;">⭐ C1</span>';
-                    else if (dados.nivelSeed === 2) star = ' <span style="color:#94a3b8; font-size:0.8rem;">🌟 C2</span>';
+                    if (dados.nivelSeed === 1) star = ' <span style="background: #fef3c7; color:#d97706; font-size:0.7rem; font-weight:800; padding: 2px 5px; border-radius: 4px; margin-left: 4px;">⭐ C1</span>';
+                    else if (dados.nivelSeed === 2) star = ' <span style="background: #f1f5f9; color:#475569; font-size:0.7rem; font-weight:800; padding: 2px 5px; border-radius: 4px; margin-left: 4px;">🌟 C2</span>';
                     else if (dados.isSeed) star = ' ⭐'; 
                     
                     let nomes = dados.jogador2 ? `<span>${dados.jogador1}<br><span style="color:var(--gray); font-size:0.85rem; font-weight:400;">${dados.jogador2}</span></span>${star}` : `<span>${dados.jogador1}</span>${star}`;
@@ -893,7 +908,10 @@
             classif.forEach((t, i) => {
                 let posText = `${i+1}º`;
                 let nomeParts = t.nome.split('&'); 
-                let displayNome = nomeParts.length > 1 ? `<span>${nomeParts[0].trim()}<br><span style="color:var(--gray); font-weight:400; font-size:0.85rem;">${nomeParts[1].trim()}</span></span>` : `<span>${t.nome}</span>`;
+                
+                let displayNome = nomeParts.length > 1 
+                    ? `<span>${nomeParts[0].trim()}${window.getBadgeSeed(nomeParts[0].trim())}<br><span style="color:var(--gray); font-weight:400; font-size:0.85rem;">${nomeParts[1].trim()}${window.getBadgeSeed(nomeParts[1].trim())}</span></span>` 
+                    : `<span>${t.nome}${window.getBadgeSeed(t.nome)}</span>`;
                 
                 htmlTab += `<tr>
                     <td data-name="${t.nome}" style="display:flex; align-items:center; gap:10px;"><div style="width:28px; height:28px; background:#e5e7eb; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.8rem;">👤</div>${displayNome}</td>
@@ -943,9 +961,9 @@
                         let p = grupo.map(g => g.jogador1);
                         while (p.length < 4) p.push("Vaga " + (p.length + 1));
                         let combinacoes = [ 
-                            { tA_data: `${p[0]} & ${p[1]}`, tB_data: `${p[2]} & ${p[3]}`, tA_display: `<span>${p[0]}</span><br><span style="color:var(--gray); font-size:0.85rem; font-weight:400;">${p[1]}</span>`, tB_display: `<span>${p[2]}</span><br><span style="color:var(--gray); font-size:0.85rem; font-weight:400;">${p[3]}</span>` },
-                            { tA_data: `${p[0]} & ${p[2]}`, tB_data: `${p[1]} & ${p[3]}`, tA_display: `<span>${p[0]}</span><br><span style="color:var(--gray); font-size:0.85rem; font-weight:400;">${p[2]}</span>`, tB_display: `<span>${p[1]}</span><br><span style="color:var(--gray); font-size:0.85rem; font-weight:400;">${p[3]}</span>` },
-                            { tA_data: `${p[0]} & ${p[3]}`, tB_data: `${p[1]} & ${p[2]}`, tA_display: `<span>${p[0]}</span><br><span style="color:var(--gray); font-size:0.85rem; font-weight:400;">${p[3]}</span>`, tB_display: `<span>${p[1]}</span><br><span style="color:var(--gray); font-size:0.85rem; font-weight:400;">${p[2]}</span>` } 
+                            { tA_data: `${p[0]} & ${p[1]}`, tB_data: `${p[2]} & ${p[3]}`, tA_display: `<span>${p[0]}${window.getBadgeSeed(p[0])}</span><br><span style="color:var(--gray); font-size:0.85rem; font-weight:400;">${p[1]}${window.getBadgeSeed(p[1])}</span>`, tB_display: `<span>${p[2]}${window.getBadgeSeed(p[2])}</span><br><span style="color:var(--gray); font-size:0.85rem; font-weight:400;">${p[3]}${window.getBadgeSeed(p[3])}</span>` },
+                            { tA_data: `${p[0]} & ${p[2]}`, tB_data: `${p[1]} & ${p[3]}`, tA_display: `<span>${p[0]}${window.getBadgeSeed(p[0])}</span><br><span style="color:var(--gray); font-size:0.85rem; font-weight:400;">${p[2]}${window.getBadgeSeed(p[2])}</span>`, tB_display: `<span>${p[1]}${window.getBadgeSeed(p[1])}</span><br><span style="color:var(--gray); font-size:0.85rem; font-weight:400;">${p[3]}${window.getBadgeSeed(p[3])}</span>` },
+                            { tA_data: `${p[0]} & ${p[3]}`, tB_data: `${p[1]} & ${p[2]}`, tA_display: `<span>${p[0]}${window.getBadgeSeed(p[0])}</span><br><span style="color:var(--gray); font-size:0.85rem; font-weight:400;">${p[3]}${window.getBadgeSeed(p[3])}</span>`, tB_display: `<span>${p[1]}${window.getBadgeSeed(p[1])}</span><br><span style="color:var(--gray); font-size:0.85rem; font-weight:400;">${p[2]}${window.getBadgeSeed(p[2])}</span>` } 
                         ];
                         
                         combinacoes.forEach(comb => {
@@ -961,8 +979,14 @@
                             for (let j = i + 1; j < grupo.length; j++) {
                                 let tA_data = grupo[i].jogador2 ? `${grupo[i].jogador1} & ${grupo[i].jogador2}` : grupo[i].jogador1;
                                 let tB_data = grupo[j].jogador2 ? `${grupo[j].jogador1} & ${grupo[j].jogador2}` : grupo[j].jogador1;
-                                let tA_display = grupo[i].jogador2 ? `<span>${grupo[i].jogador1}</span><br><span style="color:var(--gray); font-size:0.85rem; font-weight:400;">${grupo[i].jogador2}</span>` : `<span>${grupo[i].jogador1}</span>`;
-                                let tB_display = grupo[j].jogador2 ? `<span>${grupo[j].jogador1}</span><br><span style="color:var(--gray); font-size:0.85rem; font-weight:400;">${grupo[j].jogador2}</span>` : `<span>${grupo[j].jogador1}</span>`;
+                                
+                                let tA_display = grupo[i].jogador2 
+                                    ? `<span>${grupo[i].jogador1}${window.getBadgeSeed(grupo[i].jogador1)}</span><br><span style="color:var(--gray); font-size:0.85rem; font-weight:400;">${grupo[i].jogador2}${window.getBadgeSeed(grupo[i].jogador2)}</span>` 
+                                    : `<span>${grupo[i].jogador1}${window.getBadgeSeed(grupo[i].jogador1)}</span>`;
+                                    
+                                let tB_display = grupo[j].jogador2 
+                                    ? `<span>${grupo[j].jogador1}${window.getBadgeSeed(grupo[j].jogador1)}</span><br><span style="color:var(--gray); font-size:0.85rem; font-weight:400;">${grupo[j].jogador2}${window.getBadgeSeed(grupo[j].jogador2)}</span>` 
+                                    : `<span>${grupo[j].jogador1}${window.getBadgeSeed(grupo[j].jogador1)}</span>`;
                                 
                                 let matchId = tA_data.replace(/\s+/g, '') + "_vs_" + tB_data.replace(/\s+/g, '');
                                 let isResolvido = jogosSalvos[matchId] ? 'resolvido' : '';
@@ -978,7 +1002,7 @@
                     </div>`;
                 });
                 if (isLogged) document.getElementById('btnMontarMataMata').classList.remove('hidden');
-            } else { html += '<h4 style="text-align: center; padding: 20px; color:var(--gray);">⚔️️ Apenas Eliminatórias</h4>'; }
+            } else { html += '<h4 style="text-align: center; padding: 20px; color:var(--gray);">⚔ Apenas Eliminatórias</h4>'; }
             
             chavesUI.innerHTML = html;
 
@@ -1227,8 +1251,14 @@
             rodada.forEach(jogo => {
                 let tA_data = jogo.timeA || "Aguardando...";
                 let tB_data = jogo.timeB || "Aguardando...";
-                let tA_display = tA_data.includes('&') ? `<span>${tA_data.split('&')[0].trim()}</span><br><span style="color:var(--gray); font-size:0.85rem; font-weight:400;">${tA_data.split('&')[1].trim()}</span>` : `<span>${tA_data}</span>`;
-                let tB_display = tB_data.includes('&') ? `<span>${tB_data.split('&')[0].trim()}</span><br><span style="color:var(--gray); font-size:0.85rem; font-weight:400;">${tB_data.split('&')[1].trim()}</span>` : `<span>${tB_data}</span>`;
+                
+                let tA_display = tA_data.includes('&') 
+                    ? `<span>${tA_data.split('&')[0].trim()}${window.getBadgeSeed(tA_data.split('&')[0].trim())}</span><br><span style="color:var(--gray); font-size:0.85rem; font-weight:400;">${tA_data.split('&')[1].trim()}${window.getBadgeSeed(tA_data.split('&')[1].trim())}</span>` 
+                    : `<span>${tA_data}${window.getBadgeSeed(tA_data)}</span>`;
+                    
+                let tB_display = tB_data.includes('&') 
+                    ? `<span>${tB_data.split('&')[0].trim()}${window.getBadgeSeed(tB_data.split('&')[0].trim())}</span><br><span style="color:var(--gray); font-size:0.85rem; font-weight:400;">${tB_data.split('&')[1].trim()}${window.getBadgeSeed(tB_data.split('&')[1].trim())}</span>` 
+                    : `<span>${tB_data}${window.getBadgeSeed(tB_data)}</span>`;
                 
                 let prefix = chave === 'Prata' ? "MM_Prata_" : "MM_";
                 let matchId = `${prefix}${rodadaIndex}_${tA_data.replace(/\s+/g, '')}_vs_${tB_data.replace(/\s+/g, '')}`;
