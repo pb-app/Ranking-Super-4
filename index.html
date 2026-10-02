@@ -543,12 +543,20 @@
         window.getBadgeSeed = function(nome) {
             if (!nome || typeof nome !== 'string') return '';
             let badge = '';
-            if (inscritosAtuais && inscritosAtuais.length > 0) {
-                let insc = inscritosAtuais.find(i => i.jogador1 === nome || i.jogador2 === nome);
-                if (insc) {
-                    if (insc.nivelSeed === 1) badge = ' <span style="background: #fef3c7; color:#d97706; font-size:0.65rem; font-weight:800; padding: 2px 4px; border-radius: 4px; margin-left: 3px; vertical-align: middle;" title="Cabeça de Chave 1">⭐ C1</span>';
-                    else if (insc.nivelSeed === 2) badge = ' <span style="background: #f1f5f9; color:#475569; font-size:0.65rem; font-weight:800; padding: 2px 4px; border-radius: 4px; margin-left: 3px; vertical-align: middle;" title="Cabeça de Chave 2">🌟 C2</span>';
-                }
+            let playerInfo = null;
+
+            // 1º Tenta achar nos sorteados finais (onde ficam as seeds automáticas do ranking)
+            if (torneioAbertoData && torneioAbertoData.sorteados) {
+                playerInfo = torneioAbertoData.sorteados.find(i => i.jogador1 === nome || i.jogador2 === nome);
+            }
+            // 2º Se não achar, tenta na lista de inscritos base
+            if (!playerInfo && inscritosAtuais && inscritosAtuais.length > 0) {
+                playerInfo = inscritosAtuais.find(i => i.jogador1 === nome || i.jogador2 === nome);
+            }
+
+            if (playerInfo) {
+                if (playerInfo.nivelSeed === 1) badge = ' <span style="background: #fef3c7; color:#d97706; font-size:0.65rem; font-weight:800; padding: 2px 4px; border-radius: 4px; margin-left: 3px; vertical-align: middle;" title="Cabeça de Chave 1">⭐ C1</span>';
+                else if (playerInfo.nivelSeed === 2) badge = ' <span style="background: #f1f5f9; color:#475569; font-size:0.65rem; font-weight:800; padding: 2px 4px; border-radius: 4px; margin-left: 3px; vertical-align: middle;" title="Cabeça de Chave 2">🌟 C2</span>';
             }
             return badge;
         };
@@ -1073,16 +1081,20 @@
             let seeds2 = inscritosComPontos.filter(i => i.nivelSeed === 2);
             let restantes = inscritosComPontos.filter(i => i.nivelSeed !== 1 && i.nivelSeed !== 2);
 
-            // 5. LÓGICA DE PREENCHIMENTO INTELIGENTE (AUTO-SEED)
+            // 5. LÓGICA DE PREENCHIMENTO INTELIGENTE (AUTO-SEED COM ETIQUETAS)
             if (isGrupos) {
                 restantes.sort((a, b) => b.totalPontos - a.totalPontos);
                 
                 while (seeds1.length < numGrupos && restantes.length > 0) {
-                    seeds1.push(restantes.shift());
+                    let autoSeed1 = restantes.shift();
+                    autoSeed1.nivelSeed = 1; // Etiqueta o melhor do ranking como C1
+                    seeds1.push(autoSeed1);
                 }
                 
                 while (seeds2.length < numGrupos && restantes.length > 0) {
-                    seeds2.push(restantes.shift());
+                    let autoSeed2 = restantes.shift();
+                    autoSeed2.nivelSeed = 2; // Etiqueta o segundo melhor do ranking como C2
+                    seeds2.push(autoSeed2);
                 }
             }
 
