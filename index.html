@@ -1726,13 +1726,24 @@
             tbodyRanking.innerHTML = '<tr><td colspan="5" style="padding: 30px;">A carregar ranking...</td></tr>';
             
             const snap = await getDocs(collection(db, "rankings", rankingNome, "jogadores")); let lista = [];
-            snap.forEach(doc => { let d = doc.data(); d.id = doc.id; lista.push(d); });
+            
+            snap.forEach(doc => { 
+                let d = doc.data(); 
+                d.id = doc.id; 
+                
+                // FILTRO: Ignora jogadores que têm 0 pontos no filtro selecionado
+                if (tipoRanking === 'ouro' && (!d.pontosOuro || d.pontosOuro <= 0)) return;
+                if (tipoRanking === 'prata' && (!d.pontosPrata || d.pontosPrata <= 0)) return;
+                if (tipoRanking === 'geral' && (!d.pontos || d.pontos <= 0)) return;
+                
+                lista.push(d); 
+            });
             
             if (tipoRanking === 'ouro') lista.sort((a,b) => (b.pontosOuro || 0) - (a.pontosOuro || 0));
             else if (tipoRanking === 'prata') lista.sort((a,b) => (b.pontosPrata || 0) - (a.pontosPrata || 0));
             else lista.sort((a,b) => (b.pontos || 0) - (a.pontos || 0));
             
-            if (lista.length === 0) { tbodyRanking.innerHTML = '<tr><td colspan="5" style="padding: 30px;">Nenhum jogador pontuou ainda.</td></tr>'; return; }
+            if (lista.length === 0) { tbodyRanking.innerHTML = '<tr><td colspan="5" style="padding: 30px;">Nenhum jogador pontuou ainda nesta chave.</td></tr>'; return; }
 
             let html = '';
             lista.forEach((jog, index) => {
