@@ -929,7 +929,25 @@
                 }
             });
 
-            let classif = Object.values(stats).sort((a,b) => b.v !== a.v ? b.v - a.v : (b.ss !== a.ss ? b.ss - a.ss : b.sg - a.sg));
+            // Cria um armazenador de sorteio global para evitar que a tabela mude de ordem a cada tecla digitada no placar
+            window.tiebreakerSeeds = window.tiebreakerSeeds || {};
+
+            let classif = Object.values(stats).sort((a, b) => {
+                // 1º Critério: Número de Vitórias (V)
+                if (b.v !== a.v) return b.v - a.v;
+                
+                // 2º Critério: Saldo de Sets (SS)
+                if (b.ss !== a.ss) return b.ss - a.ss;
+                
+                // 3º Critério: Saldo de Games (SG)
+                if (b.sg !== a.sg) return b.sg - a.sg;
+                
+                // 4º Critério: Sorteio Aleatório
+                if (!window.tiebreakerSeeds[a.nome]) window.tiebreakerSeeds[a.nome] = Math.random();
+                if (!window.tiebreakerSeeds[b.nome]) window.tiebreakerSeeds[b.nome] = Math.random();
+                
+                return window.tiebreakerSeeds[b.nome] - window.tiebreakerSeeds[a.nome];
+            });
             
             let htmlTab = `<table class="standings-table"><thead><tr><th style="text-align:left; padding-left:15px;">Jogador(a)</th><th style="width:40px;">J</th><th style="width:40px;">V</th><th style="width:40px;">SS</th><th style="width:40px;">SG</th><th style="width:60px;">Posição</th></tr></thead><tbody>`;
             classif.forEach((t, i) => {
