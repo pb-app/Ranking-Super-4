@@ -1307,13 +1307,17 @@
                 let matchId = `${prefix}${rodadaIndex}_${tA_data.replace(/\s+/g, '')}_vs_${tB_data.replace(/\s+/g, '')}`;
                 let isBye = tA_data.includes("BYE") || tB_data.includes("BYE");
 
+                // Adiciona a possibilidade de clicar no nome para editar (se for organizador)
+                let cliqueEdicaoA = isLogged && !isBye && !tA_data.includes("Aguardando") ? `onclick="editarNomeDuplaMataMata(this, '${tA_data}', '${matchId}', ${rodadaIndex}, '${chave}')" style="cursor:pointer;" title="Clique para substituição de emergência"` : '';
+                let cliqueEdicaoB = isLogged && !isBye && !tB_data.includes("Aguardando") ? `onclick="editarNomeDuplaMataMata(this, '${tB_data}', '${matchId}', ${rodadaIndex}, '${chave}')" style="cursor:pointer;" title="Clique para substituição de emergência"` : '';
+
                 if (isBye) {
                     let btnRepescagem = isLogged ? `<button onclick="abrirRepescagem(this, ${rodadaIndex}, '${matchId}')" class="btn btn-outline btn-puxar" style="width: 100%; margin-top: 10px; font-size: 0.8rem; border-color: #d97706; color: #d97706 !important; padding:6px;">🔄 Repescagem</button>` : '';
                     html += `
                         <div class="bracket-match mata-mata-match resolvido" id="box-${matchId}" style="background: #f0fdf4; border-left-color: #10b981;">
-                            <strong class="t-a" data-name="${tA_data}">${tA_display}</strong>
+                            <strong class="t-a" data-name="${tA_data}" ${cliqueEdicaoA}>${tA_display}</strong>
                             <div style="margin: 10px 0; color: var(--blue-link); font-size: 0.85rem; font-weight: 600; background: #eff6ff; padding: 8px; border-radius: 6px; border: 1px dashed var(--blue-link);">🚀 Avança Direto</div>
-                            <strong class="t-b" data-name="${tB_data}">${tB_display}</strong>
+                            <strong class="t-b" data-name="${tB_data}" ${cliqueEdicaoB}>${tB_display}</strong>
                             <div class="repescagem-area hidden" style="margin-top: 15px; background: var(--white); padding: 12px; border-radius: 8px; border: 1px solid var(--border);">
                                 <select class="form-control select-repescagem" style="margin-bottom: 10px; padding: 8px; font-size: 0.9rem; background: #f9fafb;"></select>
                                 <div style="display: flex; gap: 8px;">
@@ -1327,13 +1331,20 @@
                     let hideBtn = (tA_data.includes("Aguardando") || tB_data.includes("Aguardando") || !isLogged) ? "hidden" : "";
                     let isResolvido = jogosSalvos[matchId] ? 'resolvido' : '';
                     let btnStyle = jogosSalvos[matchId] ? 'background: #ecfdf5; color: #10b981; border: 1px solid #10b981;' : 'background: transparent; color: var(--blue-link); border: 1px solid var(--blue-link);';
-                    let btnText = jogosSalvos[matchId] ? '✅ Salvo!' : '💾 Salvar Placar';
+                    let btnText = jogosSalvos[matchId] ? (jogosSalvos[matchId].isWO ? '✅ W.O. Aplicado!' : '✅ Salvo!') : '💾 Salvar Placar';
+                    
+                    // Botão de W.O. que só aparece se o jogo ainda não estiver salvo
+                    let btnWO = isLogged && !isBye && !jogosSalvos[matchId] && !hideBtn ? `<button onclick="declararWO(this, '${matchId}', '${tA_data}', '${tB_data}')" class="btn btn-outline" style="background: #fef2f2; color: #ef4444; border: 1px solid #fecaca; margin-top:5px; width:100%; max-width:180px; padding: 6px;">🛑 Aplicar W.O.</button>` : '';
+
                     html += `
                         <div class="bracket-match mata-mata-match ${isResolvido}">
-                            <strong class="t-a" data-name="${tA_data}">${tA_display}</strong>
+                            <strong class="t-a" data-name="${tA_data}" ${cliqueEdicaoA}>${tA_display}</strong>
                             ${gerarInputsPlacar(setsAberto, matchId)}
-                            <strong class="t-b" data-name="${tB_data}">${tB_display}</strong>
-                            <br><button onclick="salvarPlacar(this)" data-matchid="${matchId}" class="btn btn-outline ${hideBtn}" style="${btnStyle}; margin-top:10px; width:100%; max-width:180px; padding: 6px;">${btnText}</button>
+                            <strong class="t-b" data-name="${tB_data}" ${cliqueEdicaoB}>${tB_display}</strong>
+                            <div style="display:flex; flex-direction:column; align-items:center;">
+                                <button onclick="salvarPlacar(this)" data-matchid="${matchId}" class="btn btn-outline ${hideBtn}" style="${btnStyle}; margin-top:10px; width:100%; max-width:180px; padding: 6px;">${btnText}</button>
+                                ${btnWO}
+                            </div>
                         </div>`;
                 }
             });
@@ -2073,6 +2084,66 @@
                 await updateDoc(doc(db, "campeonatos", torneioAbertoId), updatePayload); renderizarMataMata(true);
             } catch (error) { alert("Erro ao aplicar repescagem."); botao.textContent = "Trocar"; botao.disabled = false; }
         };
+
+        // FUNÇÃO 1: TROCA DE EMERGÊNCIA NO MATA-MATA
+        window.editarNomeDuplaMataMata = async function(elemento, timeAntigo, matchId, indexRodada, chave) {
+            let novoNome = prompt("Troca de Emergência!\nDigite o novo nome da dupla (Ex: Maria & Ana):", timeAntigo);
+            if (!novoNome || novoNome === timeAntigo) return;
+
+            // Atualiza o visual na tela
+            elemento.setAttribute('data-name', novoNome);
+            elemento.innerHTML = novoNome.includes('&') 
+                ? `<span>${novoNome.split('&')[0].trim()}${window.getBadgeSeed(novoNome.split('&')[0].trim())}</span><br><span style="color:var(--gray); font-size:0.85rem; font-weight:400;">${novoNome.split('&')[1].trim()}${window.getBadgeSeed(novoNome.split('&')[1].trim())}</span>` 
+                : `<span>${novoNome}${window.getBadgeSeed(novoNome)}</span>`;
+
+            // Atualiza no banco de dados para o novo nome progredir caso vençam
+            let fases = chave === 'Prata' ? window.fasesPrata : window.fasesMataMata;
+            let rodada = fases[indexRodada].jogos || fases[indexRodada];
+            
+            rodada.forEach(jogo => {
+                if (jogo.timeA === timeAntigo) jogo.timeA = novoNome;
+                if (jogo.timeB === timeAntigo) jogo.timeB = novoNome;
+            });
+
+            let updatePayload = { fasesMataMata: window.fasesMataMata }; 
+            if (window.fasesPrata && window.fasesPrata.length > 0) updatePayload.fasesPrata = window.fasesPrata;
+            await updateDoc(doc(db, "campeonatos", torneioAbertoId), updatePayload);
+            
+            alert(`Dupla atualizada com sucesso!\nOs pontos finais irão para: ${novoNome}`);
+        };
+
+        // FUNÇÃO 2: BOTÃO RÁPIDO DE W.O.
+        window.declararWO = async function(botao, matchId, timeA, timeB) {
+            let vencedor = prompt(`🛑 DECLARAR W.O.\nQuem FICOU na quadra e VENCEU a partida?\n\nDigite 1 para: ${timeA}\nDigite 2 para: ${timeB}`);
+            if (vencedor !== "1" && vencedor !== "2") { alert("W.O. Cancelado."); return; }
+            
+            let nomeVencedor = vencedor === "1" ? timeA : timeB;
+            // Cria um placar padrão de 6x0
+            let pA = vencedor === "1" ? [6] : [0];
+            let pB = vencedor === "1" ? [0] : [6];
+
+            botao.textContent = 'Aguarde...'; botao.disabled = true;
+
+            let dadosDoJogo = { timeA, timeB, placarA: pA, placarB: pB, vencedor: nomeVencedor, fase: "Eliminatória", dataRegistro: serverTimestamp(), isWO: true };
+            
+            await setDoc(doc(db, "campeonatos", torneioAbertoId, "jogos", matchId), dadosDoJogo);
+            jogosSalvos[matchId] = dadosDoJogo; 
+
+            // Atualiza os botões na tela
+            let matchBox = botao.closest('.bracket-match');
+            matchBox.classList.add('resolvido');
+            let btnSalvar = matchBox.querySelector('button[onclick^="salvarPlacar"]');
+            if(btnSalvar) {
+                btnSalvar.textContent = '✅ W.O. Aplicado!'; 
+                btnSalvar.style.background = '#ecfdf5'; btnSalvar.style.color = '#10b981'; btnSalvar.style.border = '1px solid #10b981';
+                btnSalvar.disabled = true;
+            }
+            botao.style.display = 'none'; // Some com o botão de WO
+
+            avancarVencedorMataMata(); // Avança a dupla vencedora na chave
+        };
+
+        
     </script>
 </body>
 </html>
