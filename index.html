@@ -1210,6 +1210,7 @@
             const titulo = document.getElementById('tituloFaseAtual');
             const btnAnt = document.getElementById('btnFaseAnterior');
             const btnProx = document.getElementById('btnFaseProxima');
+            const painelTroca = document.getElementById('painelTrocaGrupos'); // Pegamos o painel aqui
             
             if (nomesFases.length === 0) { navegador.classList.add('hidden'); return; }
             navegador.classList.remove('hidden'); titulo.textContent = nomesFases[faseAtualUI];
@@ -1223,19 +1224,32 @@
                 if (faseAtualUI === 0) {
                     document.getElementById('chavesGeradasUI').style.display = 'block';
                     document.getElementById('mataMataUI').style.display = 'none';
+                    
                     let jaTemMataMata = torneioAbertoData.fasesMataMata && torneioAbertoData.fasesMataMata.length > 0;
+                    
+                    // Exibe o painel de troca APENAS na Fase de Grupos se o mata-mata ainda não foi gerado
+                    if (isLogged && !jaTemMataMata) { painelTroca.classList.remove('hidden'); }
+                    
                     if (isLogged && torneioAbertoData.status !== "encerrado" && !jaTemMataMata) { document.getElementById('btnMontarMataMata').classList.remove('hidden'); } 
                     else { document.getElementById('btnMontarMataMata').classList.add('hidden'); }
                 } else {
                     document.getElementById('chavesGeradasUI').style.display = 'none';
                     document.getElementById('mataMataUI').style.display = 'block';
                     document.getElementById('btnMontarMataMata').classList.add('hidden');
+                    
+                    // Esconde o painel de troca quando estiver no Mata-Mata
+                    painelTroca.classList.add('hidden'); 
+                    
                     mostrarRodadaMataMata(faseAtualUI - 1); 
                 }
             } else {
                 document.getElementById('chavesGeradasUI').style.display = 'none';
                 document.getElementById('mataMataUI').style.display = 'block';
                 document.getElementById('btnMontarMataMata').classList.add('hidden');
+                
+                // Esconde o painel de troca para torneios que são apenas Mata-Mata
+                painelTroca.classList.add('hidden'); 
+                
                 mostrarRodadaMataMata(faseAtualUI);
             }
         };
