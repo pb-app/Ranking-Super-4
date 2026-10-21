@@ -144,16 +144,25 @@
             .t-a, .t-b { font-size: 0.95rem; }
         }
 
-        /* --- MODO TELÃO --- */
+        /* --- MODO TELÃO AUTOMÁTICO --- */
         body.modo-telao header, 
         body.modo-telao #painel-inscritos, 
         body.modo-telao #painelTrocaGrupos, 
-        body.modo-telao #area-add-inscritos { display: none !important; }
+        body.modo-telao #area-add-inscritos,
+        body.modo-telao #navegadorFases { display: none !important; }
         
         body.modo-telao main { padding: 1rem 3% !important; max-width: 100% !important; }
         body.modo-telao .panel-grid { grid-template-columns: 1fr !important; gap: 0 !important; }
         body.modo-telao .panel-card { border: none !important; box-shadow: none !important; background: transparent !important; padding: 0 !important; }
         
+        /* Exibe TODAS as seções (Grupos, Mata-Mata e Pódio) juntas na tela */
+        body.modo-telao #chavesGeradasUI, 
+        body.modo-telao #mataMataUI, 
+        body.modo-telao #podioUI { display: block !important; }
+        
+        /* Exibe TODAS as fases do Mata-Mata ao mesmo tempo (Quartas, Semi, Final) */
+        body.modo-telao .bracket-round { display: flex !important; flex-direction: column !important; margin-bottom: 35px; }
+
         /* Ocultar botões de controle e edição */
         body.modo-telao button[onclick^="salvarPlacar"],
         body.modo-telao button[onclick^="declararWO"],
@@ -168,17 +177,34 @@
         body.modo-telao #btnExcluirTorneio { display: none !important; }
 
         /* Deixar inputs de placar parecendo texto estático gigante */
-        body.modo-telao input { pointer-events: none; border-color: transparent !important; background: transparent !important; font-size: 2rem; font-weight: 800; box-shadow: none !important; color: var(--dark) !important; }
+        body.modo-telao input { pointer-events: none; border-color: transparent !important; background: transparent !important; font-size: 2.2rem; font-weight: 800; box-shadow: none !important; color: var(--dark) !important; }
         
-        /* Ajustes de Título e Tamanho */
-        body.modo-telao #detalhe-nome-torneio { font-size: 3rem; text-align: center; color: var(--primary); margin-top: 20px; }
-        body.modo-telao #detalhe-formato-torneio { text-align: center; font-size: 1.3rem; margin-bottom: 2.5rem; }
-        body.modo-telao .tabela-container { zoom: 1.15; margin-bottom: 30px; }
-        body.modo-telao .match-box, body.modo-telao .bracket-match { box-shadow: 0 5px 15px rgba(0,0,0,0.08); border-width: 2px; zoom: 1.1; }
+        /* Ajustes de Título e Tamanho para TV */
+        body.modo-telao #detalhe-nome-torneio { font-size: 3.2rem; text-align: center; color: var(--primary); margin-top: 10px; font-weight: 800; }
+        body.modo-telao #detalhe-formato-torneio { text-align: center; font-size: 1.4rem; margin-bottom: 2rem; }
+        body.modo-telao .tabela-container { zoom: 1.1; margin-bottom: 25px; }
+        body.modo-telao .match-box, body.modo-telao .bracket-match { box-shadow: 0 4px 12px rgba(0,0,0,0.06); border-width: 2px; zoom: 1.05; }
 
-        /* Botão Flutuante para sair */
+        /* Botão discreto no canto superior direito para sair do Telão */
         #btnSairTelao { display: none; }
-        body.modo-telao #btnSairTelao { display: flex !important; }
+        body.modo-telao #btnSairTelao { 
+            display: flex !important; 
+            position: fixed; 
+            top: 15px; 
+            right: 20px; 
+            z-index: 10000; 
+            background: rgba(31, 41, 55, 0.85); 
+            color: white; 
+            border: 1px solid rgba(255,255,255,0.2); 
+            border-radius: 8px; 
+            font-size: 0.85rem; 
+            padding: 8px 15px; 
+            cursor: pointer;
+            backdrop-filter: blur(4px);
+            opacity: 0.6;
+            transition: opacity 0.2s;
+        }
+        body.modo-telao #btnSairTelao:hover { opacity: 1; }
 
         
     </style>
@@ -1324,6 +1350,7 @@
                 nomesFases.push(nome);
 
                 html += `<div class="bracket-round">`;
+                html += `<h3 style="text-align:center; color: var(--dark); font-size: 1.4rem; font-weight: 800; margin: 15px 0 10px 0;">${nome}</h3>`;
                 
                 if (window.fasesMataMata && window.fasesMataMata[rodadaIndex]) {
                     if (window.fasesPrata && window.fasesPrata.length > 0) { html += `<h4 style="color: #d97706; text-align: center; margin: 15px 0; font-size: 1.1rem; font-weight: 700;">🏆 Chave Ouro</h4>`; }
