@@ -143,6 +143,44 @@
             .match-box, .bracket-match { padding: 15px 10px; }
             .t-a, .t-b { font-size: 0.95rem; }
         }
+
+        /* --- MODO TELÃO --- */
+        body.modo-telao header, 
+        body.modo-telao #painel-inscritos, 
+        body.modo-telao #painelTrocaGrupos, 
+        body.modo-telao #area-add-inscritos { display: none !important; }
+        
+        body.modo-telao main { padding: 1rem 3% !important; max-width: 100% !important; }
+        body.modo-telao .panel-grid { grid-template-columns: 1fr !important; gap: 0 !important; }
+        body.modo-telao .panel-card { border: none !important; box-shadow: none !important; background: transparent !important; padding: 0 !important; }
+        
+        /* Ocultar botões de controle e edição */
+        body.modo-telao button[onclick^="salvarPlacar"],
+        body.modo-telao button[onclick^="declararWO"],
+        body.modo-telao button[onclick^="abrirRepescagem"],
+        body.modo-telao button[onclick^="confirmarRepescagem"],
+        body.modo-telao button[onclick^="cancelarRepescagem"],
+        body.modo-telao button[onclick^="editarNomeDuplaMataMata"],
+        body.modo-telao #btnGerarChaves,
+        body.modo-telao #btnMontarMataMata,
+        body.modo-telao #btnEncerrarTorneio,
+        body.modo-telao #btnVoltar,
+        body.modo-telao #btnExcluirTorneio { display: none !important; }
+
+        /* Deixar inputs de placar parecendo texto estático gigante */
+        body.modo-telao input { pointer-events: none; border-color: transparent !important; background: transparent !important; font-size: 2rem; font-weight: 800; box-shadow: none !important; color: var(--dark) !important; }
+        
+        /* Ajustes de Título e Tamanho */
+        body.modo-telao #detalhe-nome-torneio { font-size: 3rem; text-align: center; color: var(--primary); margin-top: 20px; }
+        body.modo-telao #detalhe-formato-torneio { text-align: center; font-size: 1.3rem; margin-bottom: 2.5rem; }
+        body.modo-telao .tabela-container { zoom: 1.15; margin-bottom: 30px; }
+        body.modo-telao .match-box, body.modo-telao .bracket-match { box-shadow: 0 5px 15px rgba(0,0,0,0.08); border-width: 2px; zoom: 1.1; }
+
+        /* Botão Flutuante para sair */
+        #btnSairTelao { display: none; }
+        body.modo-telao #btnSairTelao { display: flex !important; }
+
+        
     </style>
 </head>
 <body>
@@ -448,9 +486,12 @@
         </section>
 
         <section id="details-section" class="hidden">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 10px;" id="header-detalhes-botoes">
                 <button id="btnVoltar" class="btn btn-outline" style="border: none; padding-left: 0; color: var(--blue-link) !important; font-weight: 600;">← Voltar</button>
-                <button id="btnExcluirTorneio" class="btn hidden" style="background: #ef4444; color: white;">🗑 Excluir Torneio</button>
+                <div style="display: flex; gap: 10px;">
+                    <button id="btnModoTelao" class="btn" style="background: #8b5cf6; color: white; box-shadow: 0 4px 10px rgba(139, 92, 246, 0.3);">📺 Modo Telão</button>
+                    <button id="btnExcluirTorneio" class="btn hidden" style="background: #ef4444; color: white;">🗑 Excluir Torneio</button>
+                </div>
             </div>
             
             <h2 class="section-title" id="detalhe-nome-torneio" style="margin-bottom: 0.2rem; font-size: 1.6rem;">Nome do Torneio</h2>
@@ -538,6 +579,8 @@
         </p>
         <button id="btnFecharIosPopup" class="btn btn-outline" style="width: 100%; padding: 8px;">Fechar</button>
     </div>
+
+    <button id="btnSairTelao" class="btn" style="position: fixed; bottom: 30px; right: 30px; z-index: 10000; background: #ef4444; color: white; border-radius: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); font-size: 1.1rem; padding: 12px 25px; align-items: center; gap: 8px;">❌ Sair do Telão</button>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
@@ -2188,6 +2231,27 @@
 
             avancarVencedorMataMata(); // Avança a dupla vencedora na chave
         };
+
+        // --- FUNÇÕES DO MODO TELÃO ---
+        document.getElementById('btnModoTelao').addEventListener('click', () => {
+            document.body.classList.add('modo-telao');
+            document.getElementById('header-detalhes-botoes').style.display = 'none';
+            
+            // Pede ao navegador para entrar em Fullscreen (Ecrã inteiro)
+            if (document.documentElement.requestFullscreen) {
+                document.documentElement.requestFullscreen().catch(err => console.log(err));
+            }
+        });
+
+        document.getElementById('btnSairTelao').addEventListener('click', () => {
+            document.body.classList.remove('modo-telao');
+            document.getElementById('header-detalhes-botoes').style.display = 'flex';
+            
+            // Pede ao navegador para sair do Fullscreen
+            if (document.fullscreenElement) {
+                document.exitFullscreen().catch(err => console.log(err));
+            }
+        });
 
         
     </script>
