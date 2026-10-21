@@ -1417,7 +1417,7 @@
             let todosPrimeiros = []; let todosSegundos = [];
             let todosTerceiros = []; let todosQuartos = [];
 
-            document.querySelectorAll('#chavesGeradasUI .standings-table tbody').forEach(tb => {
+            document.querySelectorAll('#chavesGeradasUI .standings-table tbody').forEach((tb, indexGrupo) => {
                 let trs = tb.querySelectorAll('tr');
                 let jogadoresGrupo = [];
                 trs.forEach(tr => {
@@ -1434,10 +1434,11 @@
 
                 if (isSuper4) {
                     if (super4Modo === 'sortudo') {
-                        if (jogadoresGrupo[0]) todosPrimeiros.push(jogadoresGrupo[0].nome);
-                        if (jogadoresGrupo[1]) todosSegundos.push(jogadoresGrupo[1].nome);
-                        if (jogadoresGrupo[2]) todosTerceiros.push(jogadoresGrupo[2].nome);
-                        if (jogadoresGrupo[3]) todosQuartos.push(jogadoresGrupo[3].nome);
+                        // AGORA GUARDAMOS O NOME DO JOGADOR E O ID DO SEU GRUPO (gId)
+                        if (jogadoresGrupo[0]) todosPrimeiros.push({nome: jogadoresGrupo[0].nome, gId: indexGrupo});
+                        if (jogadoresGrupo[1]) todosSegundos.push({nome: jogadoresGrupo[1].nome, gId: indexGrupo});
+                        if (jogadoresGrupo[2]) todosTerceiros.push({nome: jogadoresGrupo[2].nome, gId: indexGrupo});
+                        if (jogadoresGrupo[3]) todosQuartos.push({nome: jogadoresGrupo[3].nome, gId: indexGrupo});
                     } else {
                         let metade = Math.ceil(jogadoresGrupo.length / 2);
                         let ouroJogadores = jogadoresGrupo.slice(0, metade);
@@ -1478,12 +1479,23 @@
             });
 
             if (isSuper4 && super4Modo === 'sortudo') {
-                todosSegundos.sort(() => Math.random() - 0.5);
-                todosQuartos.sort(() => Math.random() - 0.5);
+                let segEmb = [...todosSegundos];
+                // TRAVA OURO: Mistura até ninguém cair com o parceiro do mesmo grupo
+                if (todosPrimeiros.length > 1) {
+                    let valido = false; let tent = 0;
+                    while (!valido && tent < 50) {
+                        segEmb.sort(() => Math.random() - 0.5);
+                        valido = true;
+                        for (let i = 0; i < todosPrimeiros.length; i++) {
+                            if (segEmb[i] && todosPrimeiros[i].gId === segEmb[i].gId) { valido = false; break; }
+                        }
+                        tent++;
+                    }
+                } else { segEmb.sort(() => Math.random() - 0.5); }
 
                 for (let i = 0; i < todosPrimeiros.length; i++) {
-                    let p1 = todosPrimeiros[i];
-                    let p2 = todosSegundos[i] || todosPrimeiros[0]; 
+                    let p1 = todosPrimeiros[i].nome;
+                    let p2 = segEmb[i] ? segEmb[i].nome : (todosPrimeiros[0] ? todosPrimeiros[0].nome : null); 
                     
                     if (p1 && p2) {
                         let s1 = playerStatsMap[p1] || {v:0, ss:0, sg:0}; 
@@ -1492,9 +1504,23 @@
                     }
                 }
 
+                let quaEmb = [...todosQuartos];
+                // TRAVA PRATA: Mistura até ninguém cair com o parceiro do mesmo grupo
+                if (todosTerceiros.length > 1) {
+                    let valido = false; let tent = 0;
+                    while (!valido && tent < 50) {
+                        quaEmb.sort(() => Math.random() - 0.5);
+                        valido = true;
+                        for (let i = 0; i < todosTerceiros.length; i++) {
+                            if (quaEmb[i] && todosTerceiros[i].gId === quaEmb[i].gId) { valido = false; break; }
+                        }
+                        tent++;
+                    }
+                } else { quaEmb.sort(() => Math.random() - 0.5); }
+
                 for (let i = 0; i < todosTerceiros.length; i++) {
-                    let p1 = todosTerceiros[i];
-                    let p2 = todosQuartos[i] || todosTerceiros[0]; 
+                    let p1 = todosTerceiros[i].nome;
+                    let p2 = quaEmb[i] ? quaEmb[i].nome : (todosTerceiros[0] ? todosTerceiros[0].nome : null); 
                     
                     if (p1 && p2) {
                         let s1 = playerStatsMap[p1] || {v:0, ss:0, sg:0}; 
