@@ -1680,8 +1680,8 @@
             inscritosAtuais.forEach(insc => {
                 let basePts = ptsConfig.participacao !== undefined ? ptsConfig.participacao : 0;
                 // AQUI FOI CRIADA A VARIÁVEL PARA GUARDAR OS PONTOS DO GRUPO
-                if (insc.jogador1) statsIndividuais[insc.jogador1] = { pontos: basePts, pontosOuro: 0, pontosPrata: 0, pontosGrupo: 0, titulos: 0, vitorias: 0, jogos: 0 };
-                if (insc.jogador2) statsIndividuais[insc.jogador2] = { pontos: basePts, pontosOuro: 0, pontosPrata: 0, pontosGrupo: 0, titulos: 0, vitorias: 0, jogos: 0 };
+                if (insc.jogador1) statsIndividuais[insc.jogador1] = { pontos: basePts, pontosOuro: basePts, pontosPrata: basePts, pontosGrupo: 0, titulos: 0, vitorias: 0, jogos: 0 };
+                if (insc.jogador2) statsIndividuais[insc.jogador2] = { pontos: basePts, pontosOuro: basePts, pontosPrata: basePts, pontosGrupo: 0, titulos: 0, vitorias: 0, jogos: 0 };
             });
 
             document.querySelectorAll('#chavesGeradasUI .standings-table tbody').forEach(tb => {
@@ -1700,6 +1700,8 @@
                     jogadores.forEach(j => { 
                         if (statsIndividuais[j]) {
                             statsIndividuais[j].pontos += ptsGrupo;
+                            statsIndividuais[j].pontosOuro += ptsGrupo;
+                            statsIndividuais[j].pontosPrata += ptsGrupo;
                             statsIndividuais[j].pontosGrupo += ptsGrupo; // SALVANDO OS PONTOS AQUI
                         } 
                     });
@@ -1742,15 +1744,12 @@
                         if (statsIndividuais[j]) {
                             statsIndividuais[j].pontos += pontosMataMata;
                             
-                            // AQUI A MÁGICA ACONTECE: SOMA MATA-MATA + GRUPOS + PARTICIPAÇÃO
-                            let ptsTotaisChave = pontosMataMata + statsIndividuais[j].pontosGrupo + (ptsConfig.participacao || 0);
-
                             if (chave === 'Ouro') { 
-                                statsIndividuais[j].pontosOuro += ptsTotaisChave; 
+                                statsIndividuais[j].pontosOuro += pontosMataMata; 
                                 if (pontosMataMata === (ptsConfig.campeao !== undefined ? ptsConfig.campeao : 100)) statsIndividuais[j].titulos = 1; 
                             }
                             if (chave === 'Prata') { 
-                                statsIndividuais[j].pontosPrata += ptsTotaisChave; 
+                                statsIndividuais[j].pontosPrata += pontosMataMata; 
                                 if (pontosMataMata === (ptsConfig.campeaoPrata !== undefined ? ptsConfig.campeaoPrata : 60)) statsIndividuais[j].titulos = 1; 
                             }
                         }
