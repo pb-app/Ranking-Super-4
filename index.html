@@ -701,7 +701,7 @@
         });
 
         document.getElementById('btnVoltar').addEventListener('click', () => {
-            detailsSection.classList.add('hidden'); listSection.classList.remove('hidden');
+            btnAbaCampeonatos.click(); // Simula o clique na aba para limpar tudo
             if (inscritosUnsubscribe) inscritosUnsubscribe();
         });
 
@@ -1595,9 +1595,9 @@
                 .catch(() => { document.getElementById('loginErro').style.display = 'block'; });
         });
 
-        btnLogout.addEventListener('click', () => { signOut(auth).then(() => { detailsSection.classList.add('hidden'); listSection.classList.remove('hidden'); updateAuthUI(); }); });
+        btnLogout.addEventListener('click', () => { signOut(auth).then(() => { btnAbaCampeonatos.click(); updateAuthUI(); }); });
         onAuthStateChanged(auth, (user) => { if (user) { isLogged = true; updateAuthUI(); } else { isLogged = false; updateAuthUI(); } });
-        btnNewTournament.addEventListener('click', () => { createSection.style.display = 'block'; detailsSection.classList.add('hidden'); listSection.classList.remove('hidden'); });
+        btnNewTournament.addEventListener('click', () => { btnAbaCampeonatos.click(); createSection.style.display = 'block'; });
         document.getElementById('btnCancelCreate').addEventListener('click', () => { createSection.style.display = 'none'; form.reset(); });
 
         function verificarEGerarPodio() {
@@ -1784,7 +1784,7 @@
 
         document.getElementById('btnExcluirTorneio').addEventListener('click', async () => {
             if (confirm("🚨 CUIDADO! Deseja excluir este campeonato definitivamente?")) {
-                try { await deleteDoc(doc(db, "campeonatos", torneioAbertoId)); detailsSection.classList.add('hidden'); listSection.classList.remove('hidden'); } 
+                try { await deleteDoc(doc(db, "campeonatos", torneioAbertoId)); btnAbaCampeonatos.click(); } 
                 catch (error) { alert("Erro ao excluir: " + error.message); }
             }
         });
