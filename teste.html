@@ -701,7 +701,7 @@
         });
 
         document.getElementById('btnVoltar').addEventListener('click', () => {
-            detailsSection.classList.add('hidden'); listSection.classList.remove('hidden');
+            btnAbaCampeonatos.click(); // Simula o clique na aba para limpar tudo
             if (inscritosUnsubscribe) inscritosUnsubscribe();
         });
 
@@ -929,7 +929,25 @@
                 }
             });
 
-            let classif = Object.values(stats).sort((a,b) => b.v !== a.v ? b.v - a.v : (b.ss !== a.ss ? b.ss - a.ss : b.sg - a.sg));
+            // Cria um armazenador de sorteio global para evitar que a tabela mude de ordem a cada tecla digitada no placar
+            window.tiebreakerSeeds = window.tiebreakerSeeds || {};
+
+            let classif = Object.values(stats).sort((a, b) => {
+                // 1º Critério: Número de Vitórias (V)
+                if (b.v !== a.v) return b.v - a.v;
+                
+                // 2º Critério: Saldo de Sets (SS)
+                if (b.ss !== a.ss) return b.ss - a.ss;
+                
+                // 3º Critério: Saldo de Games (SG)
+                if (b.sg !== a.sg) return b.sg - a.sg;
+                
+                // 4º Critério: Sorteio Aleatório
+                if (!window.tiebreakerSeeds[a.nome]) window.tiebreakerSeeds[a.nome] = Math.random();
+                if (!window.tiebreakerSeeds[b.nome]) window.tiebreakerSeeds[b.nome] = Math.random();
+                
+                return window.tiebreakerSeeds[b.nome] - window.tiebreakerSeeds[a.nome];
+            });
             
             let htmlTab = `<table class="standings-table"><thead><tr><th style="text-align:left; padding-left:15px;">Jogador(a)</th><th style="width:40px;">J</th><th style="width:40px;">V</th><th style="width:40px;">SS</th><th style="width:40px;">SG</th><th style="width:60px;">Posição</th></tr></thead><tbody>`;
             classif.forEach((t, i) => {
@@ -1192,6 +1210,7 @@
             const titulo = document.getElementById('tituloFaseAtual');
             const btnAnt = document.getElementById('btnFaseAnterior');
             const btnProx = document.getElementById('btnFaseProxima');
+            const painelTroca = document.getElementById('painelTrocaGrupos'); // Pegamos o painel aqui
             
             if (nomesFases.length === 0) { navegador.classList.add('hidden'); return; }
             navegador.classList.remove('hidden'); titulo.textContent = nomesFases[faseAtualUI];
@@ -1205,19 +1224,32 @@
                 if (faseAtualUI === 0) {
                     document.getElementById('chavesGeradasUI').style.display = 'block';
                     document.getElementById('mataMataUI').style.display = 'none';
+                    
                     let jaTemMataMata = torneioAbertoData.fasesMataMata && torneioAbertoData.fasesMataMata.length > 0;
+                    
+                    // Exibe o painel de troca APENAS na Fase de Grupos se o mata-mata ainda não foi gerado
+                    if (isLogged && !jaTemMataMata) { painelTroca.classList.remove('hidden'); }
+                    
                     if (isLogged && torneioAbertoData.status !== "encerrado" && !jaTemMataMata) { document.getElementById('btnMontarMataMata').classList.remove('hidden'); } 
                     else { document.getElementById('btnMontarMataMata').classList.add('hidden'); }
                 } else {
                     document.getElementById('chavesGeradasUI').style.display = 'none';
                     document.getElementById('mataMataUI').style.display = 'block';
                     document.getElementById('btnMontarMataMata').classList.add('hidden');
+                    
+                    // Esconde o painel de troca quando estiver no Mata-Mata
+                    painelTroca.classList.add('hidden'); 
+                    
                     mostrarRodadaMataMata(faseAtualUI - 1); 
                 }
             } else {
                 document.getElementById('chavesGeradasUI').style.display = 'none';
                 document.getElementById('mataMataUI').style.display = 'block';
                 document.getElementById('btnMontarMataMata').classList.add('hidden');
+                
+                // Esconde o painel de troca para torneios que são apenas Mata-Mata
+                painelTroca.classList.add('hidden'); 
+                
                 mostrarRodadaMataMata(faseAtualUI);
             }
         };
@@ -1289,13 +1321,17 @@
                 let matchId = `${prefix}${rodadaIndex}_${tA_data.replace(/\s+/g, '')}_vs_${tB_data.replace(/\s+/g, '')}`;
                 let isBye = tA_data.includes("BYE") || tB_data.includes("BYE");
 
+                // Adiciona a possibilidade de clicar no nome para editar (se for organizador)
+                let cliqueEdicaoA = isLogged && !isBye && !tA_data.includes("Aguardando") ? `onclick="editarNomeDuplaMataMata(this, '${tA_data}', '${matchId}', ${rodadaIndex}, '${chave}')" style="cursor:pointer;" title="Clique para substituição de emergência"` : '';
+                let cliqueEdicaoB = isLogged && !isBye && !tB_data.includes("Aguardando") ? `onclick="editarNomeDuplaMataMata(this, '${tB_data}', '${matchId}', ${rodadaIndex}, '${chave}')" style="cursor:pointer;" title="Clique para substituição de emergência"` : '';
+
                 if (isBye) {
                     let btnRepescagem = isLogged ? `<button onclick="abrirRepescagem(this, ${rodadaIndex}, '${matchId}')" class="btn btn-outline btn-puxar" style="width: 100%; margin-top: 10px; font-size: 0.8rem; border-color: #d97706; color: #d97706 !important; padding:6px;">🔄 Repescagem</button>` : '';
                     html += `
                         <div class="bracket-match mata-mata-match resolvido" id="box-${matchId}" style="background: #f0fdf4; border-left-color: #10b981;">
-                            <strong class="t-a" data-name="${tA_data}">${tA_display}</strong>
+                            <strong class="t-a" data-name="${tA_data}" ${cliqueEdicaoA}>${tA_display}</strong>
                             <div style="margin: 10px 0; color: var(--blue-link); font-size: 0.85rem; font-weight: 600; background: #eff6ff; padding: 8px; border-radius: 6px; border: 1px dashed var(--blue-link);">🚀 Avança Direto</div>
-                            <strong class="t-b" data-name="${tB_data}">${tB_display}</strong>
+                            <strong class="t-b" data-name="${tB_data}" ${cliqueEdicaoB}>${tB_display}</strong>
                             <div class="repescagem-area hidden" style="margin-top: 15px; background: var(--white); padding: 12px; border-radius: 8px; border: 1px solid var(--border);">
                                 <select class="form-control select-repescagem" style="margin-bottom: 10px; padding: 8px; font-size: 0.9rem; background: #f9fafb;"></select>
                                 <div style="display: flex; gap: 8px;">
@@ -1309,13 +1345,20 @@
                     let hideBtn = (tA_data.includes("Aguardando") || tB_data.includes("Aguardando") || !isLogged) ? "hidden" : "";
                     let isResolvido = jogosSalvos[matchId] ? 'resolvido' : '';
                     let btnStyle = jogosSalvos[matchId] ? 'background: #ecfdf5; color: #10b981; border: 1px solid #10b981;' : 'background: transparent; color: var(--blue-link); border: 1px solid var(--blue-link);';
-                    let btnText = jogosSalvos[matchId] ? '✅ Salvo!' : '💾 Salvar Placar';
+                    let btnText = jogosSalvos[matchId] ? (jogosSalvos[matchId].isWO ? '✅ W.O. Aplicado!' : '✅ Salvo!') : '💾 Salvar Placar';
+                    
+                    // Botão de W.O. que só aparece se o jogo ainda não estiver salvo
+                    let btnWO = isLogged && !isBye && !jogosSalvos[matchId] && !hideBtn ? `<button onclick="declararWO(this, '${matchId}', '${tA_data}', '${tB_data}')" class="btn btn-outline" style="background: #fef2f2; color: #ef4444; border: 1px solid #fecaca; margin-top:5px; width:100%; max-width:180px; padding: 6px;">🛑 Aplicar W.O.</button>` : '';
+
                     html += `
                         <div class="bracket-match mata-mata-match ${isResolvido}">
-                            <strong class="t-a" data-name="${tA_data}">${tA_display}</strong>
+                            <strong class="t-a" data-name="${tA_data}" ${cliqueEdicaoA}>${tA_display}</strong>
                             ${gerarInputsPlacar(setsAberto, matchId)}
-                            <strong class="t-b" data-name="${tB_data}">${tB_display}</strong>
-                            <br><button onclick="salvarPlacar(this)" data-matchid="${matchId}" class="btn btn-outline ${hideBtn}" style="${btnStyle}; margin-top:10px; width:100%; max-width:180px; padding: 6px;">${btnText}</button>
+                            <strong class="t-b" data-name="${tB_data}" ${cliqueEdicaoB}>${tB_display}</strong>
+                            <div style="display:flex; flex-direction:column; align-items:center;">
+                                <button onclick="salvarPlacar(this)" data-matchid="${matchId}" class="btn btn-outline ${hideBtn}" style="${btnStyle}; margin-top:10px; width:100%; max-width:180px; padding: 6px;">${btnText}</button>
+                                ${btnWO}
+                            </div>
                         </div>`;
                 }
             });
@@ -1374,7 +1417,7 @@
             let todosPrimeiros = []; let todosSegundos = [];
             let todosTerceiros = []; let todosQuartos = [];
 
-            document.querySelectorAll('#chavesGeradasUI .standings-table tbody').forEach(tb => {
+            document.querySelectorAll('#chavesGeradasUI .standings-table tbody').forEach((tb, indexGrupo) => {
                 let trs = tb.querySelectorAll('tr');
                 let jogadoresGrupo = [];
                 trs.forEach(tr => {
@@ -1391,10 +1434,11 @@
 
                 if (isSuper4) {
                     if (super4Modo === 'sortudo') {
-                        if (jogadoresGrupo[0]) todosPrimeiros.push(jogadoresGrupo[0].nome);
-                        if (jogadoresGrupo[1]) todosSegundos.push(jogadoresGrupo[1].nome);
-                        if (jogadoresGrupo[2]) todosTerceiros.push(jogadoresGrupo[2].nome);
-                        if (jogadoresGrupo[3]) todosQuartos.push(jogadoresGrupo[3].nome);
+                        // AGORA GUARDAMOS O NOME DO JOGADOR E O ID DO SEU GRUPO (gId)
+                        if (jogadoresGrupo[0]) todosPrimeiros.push({nome: jogadoresGrupo[0].nome, gId: indexGrupo});
+                        if (jogadoresGrupo[1]) todosSegundos.push({nome: jogadoresGrupo[1].nome, gId: indexGrupo});
+                        if (jogadoresGrupo[2]) todosTerceiros.push({nome: jogadoresGrupo[2].nome, gId: indexGrupo});
+                        if (jogadoresGrupo[3]) todosQuartos.push({nome: jogadoresGrupo[3].nome, gId: indexGrupo});
                     } else {
                         let metade = Math.ceil(jogadoresGrupo.length / 2);
                         let ouroJogadores = jogadoresGrupo.slice(0, metade);
@@ -1435,12 +1479,23 @@
             });
 
             if (isSuper4 && super4Modo === 'sortudo') {
-                todosSegundos.sort(() => Math.random() - 0.5);
-                todosQuartos.sort(() => Math.random() - 0.5);
+                let segEmb = [...todosSegundos];
+                // TRAVA OURO: Mistura até ninguém cair com o parceiro do mesmo grupo
+                if (todosPrimeiros.length > 1) {
+                    let valido = false; let tent = 0;
+                    while (!valido && tent < 50) {
+                        segEmb.sort(() => Math.random() - 0.5);
+                        valido = true;
+                        for (let i = 0; i < todosPrimeiros.length; i++) {
+                            if (segEmb[i] && todosPrimeiros[i].gId === segEmb[i].gId) { valido = false; break; }
+                        }
+                        tent++;
+                    }
+                } else { segEmb.sort(() => Math.random() - 0.5); }
 
                 for (let i = 0; i < todosPrimeiros.length; i++) {
-                    let p1 = todosPrimeiros[i];
-                    let p2 = todosSegundos[i] || todosPrimeiros[0]; 
+                    let p1 = todosPrimeiros[i].nome;
+                    let p2 = segEmb[i] ? segEmb[i].nome : (todosPrimeiros[0] ? todosPrimeiros[0].nome : null); 
                     
                     if (p1 && p2) {
                         let s1 = playerStatsMap[p1] || {v:0, ss:0, sg:0}; 
@@ -1449,9 +1504,23 @@
                     }
                 }
 
+                let quaEmb = [...todosQuartos];
+                // TRAVA PRATA: Mistura até ninguém cair com o parceiro do mesmo grupo
+                if (todosTerceiros.length > 1) {
+                    let valido = false; let tent = 0;
+                    while (!valido && tent < 50) {
+                        quaEmb.sort(() => Math.random() - 0.5);
+                        valido = true;
+                        for (let i = 0; i < todosTerceiros.length; i++) {
+                            if (quaEmb[i] && todosTerceiros[i].gId === quaEmb[i].gId) { valido = false; break; }
+                        }
+                        tent++;
+                    }
+                } else { quaEmb.sort(() => Math.random() - 0.5); }
+
                 for (let i = 0; i < todosTerceiros.length; i++) {
-                    let p1 = todosTerceiros[i];
-                    let p2 = todosQuartos[i] || todosTerceiros[0]; 
+                    let p1 = todosTerceiros[i].nome;
+                    let p2 = quaEmb[i] ? quaEmb[i].nome : (todosTerceiros[0] ? todosTerceiros[0].nome : null); 
                     
                     if (p1 && p2) {
                         let s1 = playerStatsMap[p1] || {v:0, ss:0, sg:0}; 
@@ -1520,17 +1589,20 @@
                 let formatoSelecionado = document.querySelector('input[name="formato"]:checked').parentElement.textContent.trim();
                 let super4ModoVal = document.querySelector('input[name="super4Modo"]:checked')?.value || 'normal';
 
+                // Função auxiliar para aceitar 0 como valor válido
+                const getVal = (id, def) => { let v = parseInt(document.getElementById(id).value); return isNaN(v) ? def : v; };
+
                 await addDoc(collection(db, "campeonatos"), {
                     nome: document.getElementById('nomeTorneio').value,
                     ranking: document.getElementById('rankingVinculado').options[document.getElementById('rankingVinculado').selectedIndex].text,
                     formato: formatoSelecionado, super4Modo: super4ModoVal,
                     sets: document.getElementById('qtdSets').options[document.getElementById('qtdSets').selectedIndex].text,
                     pontosConfig: {
-                        campeao: parseInt(document.getElementById('ptsCampeao').value)||100, vice: parseInt(document.getElementById('ptsVice').value)||80, terceiro: parseInt(document.getElementById('ptsTerceiro').value)||60,
-                        semi: parseInt(document.getElementById('ptsSemi').value)||50, quartas: parseInt(document.getElementById('ptsQuartas').value)||40, oitavas: parseInt(document.getElementById('ptsOitavas').value)||30, participacao: parseInt(document.getElementById('ptsGrupos').value)||15,
-                        primeiroGrupo: parseInt(document.getElementById('ptsPrimeiroGrupo').value)||15, segundoGrupo: parseInt(document.getElementById('ptsSegundoGrupo').value)||10, terceiroGrupo: parseInt(document.getElementById('ptsTerceiroGrupo').value)||5, quartoGrupo: parseInt(document.getElementById('ptsQuartoGrupo').value)||2,
-                        campeaoPrata: parseInt(document.getElementById('ptsCampeaoPrata').value)||60, vicePrata: parseInt(document.getElementById('ptsVicePrata').value)||40, terceiroPrata: parseInt(document.getElementById('ptsTerceiroPrata').value)||30,
-                        semiPrata: parseInt(document.getElementById('ptsSemiPrata').value)||20, quartasPrata: parseInt(document.getElementById('ptsQuartasPrata').value)||10, oitavasPrata: parseInt(document.getElementById('ptsOitavasPrata').value)||5
+                        campeao: getVal('ptsCampeao', 100), vice: getVal('ptsVice', 80), terceiro: getVal('ptsTerceiro', 60),
+                        semi: getVal('ptsSemi', 50), quartas: getVal('ptsQuartas', 40), oitavas: getVal('ptsOitavas', 30), participacao: getVal('ptsGrupos', 0),
+                        primeiroGrupo: getVal('ptsPrimeiroGrupo', 15), segundoGrupo: getVal('ptsSegundoGrupo', 10), terceiroGrupo: getVal('ptsTerceiroGrupo', 5), quartoGrupo: getVal('ptsQuartoGrupo', 2),
+                        campeaoPrata: getVal('ptsCampeaoPrata', 60), vicePrata: getVal('ptsVicePrata', 40), terceiroPrata: getVal('ptsTerceiroPrata', 30),
+                        semiPrata: getVal('ptsSemiPrata', 20), quartasPrata: getVal('ptsQuartasPrata', 10), oitavasPrata: getVal('ptsOitavasPrata', 5)
                     },
                     dataCriacao: serverTimestamp()
                 });
@@ -1549,9 +1621,9 @@
                 .catch(() => { document.getElementById('loginErro').style.display = 'block'; });
         });
 
-        btnLogout.addEventListener('click', () => { signOut(auth).then(() => { detailsSection.classList.add('hidden'); listSection.classList.remove('hidden'); updateAuthUI(); }); });
+        btnLogout.addEventListener('click', () => { signOut(auth).then(() => { btnAbaCampeonatos.click(); updateAuthUI(); }); });
         onAuthStateChanged(auth, (user) => { if (user) { isLogged = true; updateAuthUI(); } else { isLogged = false; updateAuthUI(); } });
-        btnNewTournament.addEventListener('click', () => { createSection.style.display = 'block'; detailsSection.classList.add('hidden'); listSection.classList.remove('hidden'); });
+        btnNewTournament.addEventListener('click', () => { btnAbaCampeonatos.click(); createSection.style.display = 'block'; });
         document.getElementById('btnCancelCreate').addEventListener('click', () => { createSection.style.display = 'none'; form.reset(); });
 
         function verificarEGerarPodio() {
@@ -1632,8 +1704,9 @@
 
             let statsIndividuais = {};
             inscritosAtuais.forEach(insc => {
-                if (insc.jogador1) statsIndividuais[insc.jogador1] = { pontos: ptsConfig.participacao, pontosOuro: 0, pontosPrata: 0, titulos: 0, vitorias: 0, jogos: 0 };
-                if (insc.jogador2) statsIndividuais[insc.jogador2] = { pontos: ptsConfig.participacao, pontosOuro: 0, pontosPrata: 0, titulos: 0, vitorias: 0, jogos: 0 };
+                let basePts = ptsConfig.participacao !== undefined ? ptsConfig.participacao : 0;
+                if (insc.jogador1) statsIndividuais[insc.jogador1] = { pontos: basePts, pontosOuro: 0, pontosPrata: 0, pontosGrupo: 0, titulos: 0, vitorias: 0, jogos: 0 };
+                if (insc.jogador2) statsIndividuais[insc.jogador2] = { pontos: basePts, pontosOuro: 0, pontosPrata: 0, pontosGrupo: 0, titulos: 0, vitorias: 0, jogos: 0 };
             });
 
             document.querySelectorAll('#chavesGeradasUI .standings-table tbody').forEach(tb => {
@@ -1644,9 +1717,17 @@
                     let jogadores = nomeTime.split('&').map(j => j.trim()).filter(Boolean);
                     
                     let ptsGrupo = 0;
-                    if (index === 0) ptsGrupo = ptsConfig.primeiroGrupo || 0; else if (index === 1) ptsGrupo = ptsConfig.segundoGrupo || 0;
-                    else if (index === 2) ptsGrupo = ptsConfig.terceiroGrupo || 0; else if (index >= 3) ptsGrupo = ptsConfig.quartoGrupo || 0;
-                    jogadores.forEach(j => { if (statsIndividuais[j]) statsIndividuais[j].pontos += ptsGrupo; });
+                    if (index === 0) ptsGrupo = ptsConfig.primeiroGrupo !== undefined ? ptsConfig.primeiroGrupo : 15;
+                    else if (index === 1) ptsGrupo = ptsConfig.segundoGrupo !== undefined ? ptsConfig.segundoGrupo : 10;
+                    else if (index === 2) ptsGrupo = ptsConfig.terceiroGrupo !== undefined ? ptsConfig.terceiroGrupo : 5;
+                    else if (index >= 3) ptsGrupo = ptsConfig.quartoGrupo !== undefined ? ptsConfig.quartoGrupo : 2;
+                    
+                    jogadores.forEach(j => { 
+                        if (statsIndividuais[j]) {
+                            statsIndividuais[j].pontos += ptsGrupo;
+                            statsIndividuais[j].pontosGrupo += ptsGrupo; // Salva apenas no grupo para distribuir depois na chave correta
+                        } 
+                    });
                 });
             });
 
@@ -1655,13 +1736,22 @@
                 let maxPontosEquipe = {};
 
                 fasesArray.forEach((faseData, index) => {
-                    let jogos = faseData.jogos ? faseData.jogos : faseData; let isFinal = index === fasesArray.length - 1; let isSemi = index === fasesArray.length - 2; let isQuartas = index === fasesArray.length - 3; let isOitavas = index === fasesArray.length - 4;
+                    let jogos = faseData.jogos ? faseData.jogos : faseData; 
+                    let isFinal = index === fasesArray.length - 1; let isSemi = index === fasesArray.length - 2; let isQuartas = index === fasesArray.length - 3; let isOitavas = index === fasesArray.length - 4;
 
                     jogos.forEach(jogo => {
                         let prefix = chave === 'Prata' ? "MM_Prata_" : "MM_";
                         let matchId = `${prefix}${index}_${jogo.timeA.replace(/\s+/g, '')}_vs_${jogo.timeB.replace(/\s+/g, '')}`;
                         let salvo = jogosSalvos[matchId];
                         
+                        // Garante que TODOS os que entraram nesta chave recebem os pontos do grupo, mesmo que percam no 1º jogo
+                        if (jogo.timeA && !jogo.timeA.includes("BYE") && !jogo.timeA.includes("Aguardando")) {
+                            maxPontosEquipe[jogo.timeA] = maxPontosEquipe[jogo.timeA] || 0;
+                        }
+                        if (jogo.timeB && !jogo.timeB.includes("BYE") && !jogo.timeB.includes("Aguardando")) {
+                            maxPontosEquipe[jogo.timeB] = maxPontosEquipe[jogo.timeB] || 0;
+                        }
+
                         if (salvo && salvo.vencedor) {
                             let vencedor = salvo.vencedor; let perdedor = (vencedor === jogo.timeA) ? jogo.timeB : jogo.timeA;
                             let ptsOitavas = chave === 'Prata' ? (ptsConfig.oitavasPrata||0) : (ptsConfig.oitavas||0); let ptsQuartas = chave === 'Prata' ? (ptsConfig.quartasPrata||0) : (ptsConfig.quartas||0); let ptsSemi = chave === 'Prata' ? (ptsConfig.semiPrata||0) : (ptsConfig.semi||0); let ptsVice = chave === 'Prata' ? (ptsConfig.vicePrata||0) : (ptsConfig.vice||0); let ptsCampeao = chave === 'Prata' ? (ptsConfig.campeaoPrata||0) : (ptsConfig.campeao||0); let ptsTerceiro = chave === 'Prata' ? (ptsConfig.terceiroPrata||0) : (ptsConfig.terceiro||0);
@@ -1684,8 +1774,17 @@
                     jogadores.forEach(j => {
                         if (statsIndividuais[j]) {
                             statsIndividuais[j].pontos += pontosMataMata;
-                            if (chave === 'Ouro') { statsIndividuais[j].pontosOuro += pontosMataMata; if (pontosMataMata === ptsConfig.campeao) statsIndividuais[j].titulos = 1; }
-                            if (chave === 'Prata') { statsIndividuais[j].pontosPrata += pontosMataMata; if (pontosMataMata === ptsConfig.campeaoPrata) statsIndividuais[j].titulos = 1; }
+                            
+                            let ptsTotaisChave = pontosMataMata + statsIndividuais[j].pontosGrupo + (ptsConfig.participacao || 0);
+
+                            if (chave === 'Ouro') { 
+                                statsIndividuais[j].pontosOuro += ptsTotaisChave; 
+                                if (pontosMataMata > 0 && pontosMataMata === (ptsConfig.campeao !== undefined ? ptsConfig.campeao : 100)) statsIndividuais[j].titulos = 1; 
+                            }
+                            if (chave === 'Prata') { 
+                                statsIndividuais[j].pontosPrata += ptsTotaisChave; 
+                                if (pontosMataMata > 0 && pontosMataMata === (ptsConfig.campeaoPrata !== undefined ? ptsConfig.campeaoPrata : 60)) statsIndividuais[j].titulos = 1; 
+                            }
                         }
                     });
                 }
@@ -1718,7 +1817,7 @@
 
         document.getElementById('btnExcluirTorneio').addEventListener('click', async () => {
             if (confirm("🚨 CUIDADO! Deseja excluir este campeonato definitivamente?")) {
-                try { await deleteDoc(doc(db, "campeonatos", torneioAbertoId)); detailsSection.classList.add('hidden'); listSection.classList.remove('hidden'); } 
+                try { await deleteDoc(doc(db, "campeonatos", torneioAbertoId)); btnAbaCampeonatos.click(); } 
                 catch (error) { alert("Erro ao excluir: " + error.message); }
             }
         });
@@ -2031,6 +2130,66 @@
                 await updateDoc(doc(db, "campeonatos", torneioAbertoId), updatePayload); renderizarMataMata(true);
             } catch (error) { alert("Erro ao aplicar repescagem."); botao.textContent = "Trocar"; botao.disabled = false; }
         };
+
+        // FUNÇÃO 1: TROCA DE EMERGÊNCIA NO MATA-MATA
+        window.editarNomeDuplaMataMata = async function(elemento, timeAntigo, matchId, indexRodada, chave) {
+            let novoNome = prompt("Troca de Emergência!\nDigite o novo nome da dupla (Ex: Maria & Ana):", timeAntigo);
+            if (!novoNome || novoNome === timeAntigo) return;
+
+            // Atualiza o visual na tela
+            elemento.setAttribute('data-name', novoNome);
+            elemento.innerHTML = novoNome.includes('&') 
+                ? `<span>${novoNome.split('&')[0].trim()}${window.getBadgeSeed(novoNome.split('&')[0].trim())}</span><br><span style="color:var(--gray); font-size:0.85rem; font-weight:400;">${novoNome.split('&')[1].trim()}${window.getBadgeSeed(novoNome.split('&')[1].trim())}</span>` 
+                : `<span>${novoNome}${window.getBadgeSeed(novoNome)}</span>`;
+
+            // Atualiza no banco de dados para o novo nome progredir caso vençam
+            let fases = chave === 'Prata' ? window.fasesPrata : window.fasesMataMata;
+            let rodada = fases[indexRodada].jogos || fases[indexRodada];
+            
+            rodada.forEach(jogo => {
+                if (jogo.timeA === timeAntigo) jogo.timeA = novoNome;
+                if (jogo.timeB === timeAntigo) jogo.timeB = novoNome;
+            });
+
+            let updatePayload = { fasesMataMata: window.fasesMataMata }; 
+            if (window.fasesPrata && window.fasesPrata.length > 0) updatePayload.fasesPrata = window.fasesPrata;
+            await updateDoc(doc(db, "campeonatos", torneioAbertoId), updatePayload);
+            
+            alert(`Dupla atualizada com sucesso!\nOs pontos finais irão para: ${novoNome}`);
+        };
+
+        // FUNÇÃO 2: BOTÃO RÁPIDO DE W.O.
+        window.declararWO = async function(botao, matchId, timeA, timeB) {
+            let vencedor = prompt(`🛑 DECLARAR W.O.\nQuem FICOU na quadra e VENCEU a partida?\n\nDigite 1 para: ${timeA}\nDigite 2 para: ${timeB}`);
+            if (vencedor !== "1" && vencedor !== "2") { alert("W.O. Cancelado."); return; }
+            
+            let nomeVencedor = vencedor === "1" ? timeA : timeB;
+            // Cria um placar padrão de 6x0
+            let pA = vencedor === "1" ? [6] : [0];
+            let pB = vencedor === "1" ? [0] : [6];
+
+            botao.textContent = 'Aguarde...'; botao.disabled = true;
+
+            let dadosDoJogo = { timeA, timeB, placarA: pA, placarB: pB, vencedor: nomeVencedor, fase: "Eliminatória", dataRegistro: serverTimestamp(), isWO: true };
+            
+            await setDoc(doc(db, "campeonatos", torneioAbertoId, "jogos", matchId), dadosDoJogo);
+            jogosSalvos[matchId] = dadosDoJogo; 
+
+            // Atualiza os botões na tela
+            let matchBox = botao.closest('.bracket-match');
+            matchBox.classList.add('resolvido');
+            let btnSalvar = matchBox.querySelector('button[onclick^="salvarPlacar"]');
+            if(btnSalvar) {
+                btnSalvar.textContent = '✅ W.O. Aplicado!'; 
+                btnSalvar.style.background = '#ecfdf5'; btnSalvar.style.color = '#10b981'; btnSalvar.style.border = '1px solid #10b981';
+                btnSalvar.disabled = true;
+            }
+            botao.style.display = 'none'; // Some com o botão de WO
+
+            avancarVencedorMataMata(); // Avança a dupla vencedora na chave
+        };
+
+        
     </script>
 </body>
 </html>
