@@ -144,216 +144,99 @@
             .t-a, .t-b { font-size: 0.95rem; }
         }
 
-        /* --- MODO TELÃO: PAINEL FIXO EM TELA ÚNICA (16:9) --- */
+        /* --- MODO TELÃO (DASHBOARD 16:9 COM CSS GRID) --- */
         body.modo-telao { 
-            overflow: hidden !important; /* Remove barra de rolagem obrigatoriamente */
-            height: 100vh !important; 
-            width: 100vw !important; 
-            margin: 0 !important; 
-            padding: 0 !important; 
+            overflow: hidden !important; 
+            height: 100vh !important; width: 100vw !important; 
+            margin: 0 !important; padding: 0 !important; 
             background: #f3f4f6 !important; 
         }
         
-        /* Ocultar barra superior, botões secundários e painéis não informativos */
-        body.modo-telao header, 
-        body.modo-telao #painel-inscritos, 
-        body.modo-telao #painelTrocaGrupos, 
-        body.modo-telao #area-add-inscritos, 
-        body.modo-telao #navegadorFases, 
-        body.modo-telao #avisoChaves,
-        body.modo-telao #painel-chaves > h3,
-        body.modo-telao button[onclick*="previousElementSibling"],
-        body.modo-telao .jogos-do-grupo,
-        body.modo-telao .tabela-container p { 
-            display: none !important; 
-        }
+        /* 1. Ocultar menus, botões e secções desnecessárias */
+        body.modo-telao header, body.modo-telao #painel-inscritos, body.modo-telao #painelTrocaGrupos, 
+        body.modo-telao #area-add-inscritos, body.modo-telao #navegadorFases, body.modo-telao #avisoChaves,
+        body.modo-telao #painel-chaves > h3, body.modo-telao .jogos-do-grupo, 
+        body.modo-telao button[onclick*="previousElementSibling"] { display: none !important; }
         
-        /* Estrutura Principal de Layout */
-        body.modo-telao main { 
-            padding: 10px 15px !important; 
-            max-width: 100vw !important; 
-            height: 100vh !important; 
-            display: flex !important; 
-            flex-direction: column !important; 
-            box-sizing: border-box !important;
-        }
+        /* 2. Ocultar todos os botões de controle de edição/jogos */
+        body.modo-telao #painel-chaves button { display: none !important; }
         
-        /* Cabeçalho do Torneio Fixo no Topo */
-        body.modo-telao #detalhe-nome-torneio { 
-            font-size: 2.2rem !important; 
-            text-align: center !important; 
-            color: var(--primary) !important; 
-            margin: 0 0 5px 0 !important; 
-            font-weight: 800 !important; 
-        }
-        body.modo-telao #detalhe-formato-torneio { 
-            text-align: center !important; 
-            font-size: 1rem !important; 
-            margin-bottom: 15px !important; 
-        }
+        /* 3. Estrutura Principal */
+        body.modo-telao main { padding: 15px 20px !important; max-width: 100vw !important; height: 100vh !important; display: flex !important; flex-direction: column !important; box-sizing: border-box !important; }
         
-        body.modo-telao #details-section { 
-            flex: 1 !important; 
-            display: flex !important; 
-            flex-direction: column !important; 
-            border: none !important; 
-            padding: 0 !important; 
-            background: transparent !important; 
-            box-shadow: none !important; 
+        /* 4. Cabeçalho Minimalista */
+        body.modo-telao #detalhe-nome-torneio { font-size: 2.2rem !important; text-align: center !important; color: var(--primary) !important; margin: 0 0 10px 0 !important; font-weight: 800 !important; }
+        body.modo-telao #detalhe-formato-torneio { display: none !important; } /* Escondido para dar espaço às chaves */
+        body.modo-telao #details-section { flex: 1 !important; padding: 0 !important; border: none !important; background: transparent !important; box-shadow: none !important; display: flex; flex-direction: column; overflow: hidden; }
+        body.modo-telao .panel-grid { display: block !important; margin: 0 !important; height: 100%; }
+        body.modo-telao .panel-card { padding: 0 !important; border: none !important; background: transparent !important; box-shadow: none !important; height: 100%; }
+
+        /* 5. A MAGIA: CSS GRID COM 3 COLUNAS PERFEITAS E IMUTÁVEIS */
+        body.modo-telao #painel-chaves {
+            display: grid !important;
+            grid-template-columns: 1fr 1.5fr 1fr !important; /* Esquerda(Grupos), Centro(Mata-Mata Maior), Direita(Pódio) */
+            gap: 15px !important;
+            height: calc(100vh - 80px) !important;
+            align-items: start !important;
+        }
+
+        /* Cartões brancos para cada Coluna */
+        body.modo-telao #chavesGeradasUI, body.modo-telao #mataMataUI, body.modo-telao #podioUI { 
             height: 100% !important;
+            background: white !important;
+            border-radius: 12px !important;
+            border: 1px solid var(--border) !important;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02) !important;
+            overflow: hidden !important;
         }
-        body.modo-telao .panel-grid { 
-            flex: 1 !important; 
-            display: flex !important; 
-            height: 100% !important; 
-            margin: 0 !important; 
-        }
-        
-        /* MAGIA DO ECRÃ DIVIDIDO: As 3 secções lado a lado */
-        body.modo-telao #painel-chaves { 
-            display: flex !important; 
-            flex-direction: row !important; 
-            justify-content: space-between !important; 
-            align-items: stretch !important; 
-            width: 100% !important; 
-            height: 100% !important; 
-            gap: 15px !important; 
-            background: transparent !important; 
-            border: none !important; 
-            padding: 0 !important; 
-            box-shadow: none !important; 
-        }
-        
+
         /* COLUNA 1: Grupos */
         body.modo-telao #chavesGeradasUI { 
-            flex: 1 !important; 
-            display: flex !important; 
-            flex-direction: column !important; 
-            flex-wrap: wrap !important; /* Se houver muitos grupos, distribui em colunas internamente */
-            align-content: flex-start !important; 
-            gap: 10px !important; 
-            border-right: 2px dashed #cbd5e1 !important; 
-            padding-right: 10px !important; 
-            height: calc(100vh - 100px) !important;
+            display: flex !important; flex-direction: row !important; flex-wrap: wrap !important; 
+            align-content: flex-start !important; justify-content: space-around !important; gap: 5px !important; padding: 10px !important; 
         }
-        body.modo-telao .grupo-container { 
-            width: 48% !important; 
-            margin: 0 !important; 
-        }
-        body.modo-telao .grupo-container h5 { 
-            font-size: 0.9rem !important; 
-            margin-bottom: 2px !important; 
-            padding: 2px 0 !important;
-        }
-        body.modo-telao .standings-table th, 
-        body.modo-telao .standings-table td { 
-            padding: 4px !important; 
-            font-size: 0.75rem !important; 
-        }
-        
-        /* COLUNA 2: Mata-Mata (Quartas -> Semi -> Final em colunas contínuas) */
+        body.modo-telao .grupo-container { width: 48% !important; margin: 0 !important; zoom: 0.8; }
+        body.modo-telao .grupo-container h5 { font-size: 1rem !important; margin-bottom: 2px !important; }
+
+        /* COLUNA 2: Mata-Mata (Da esquerda para a direita) */
         body.modo-telao #mataMataUI { 
-            flex: 1.5 !important; 
-            display: flex !important; 
-            flex-direction: column !important; 
-            justify-content: center !important; 
-            border-right: 2px dashed #cbd5e1 !important; 
-            padding-right: 10px !important; 
-            height: calc(100vh - 100px) !important;
+            display: flex !important; flex-direction: column !important; justify-content: center !important; padding: 15px !important; 
         }
-        body.modo-telao .bracket-container { 
-            display: flex !important; 
-            flex-direction: row !important; 
-            width: 100% !important; 
-            height: 100% !important; 
-            gap: 10px !important; 
-            margin: 0 !important;
-        }
-        body.modo-telao .bracket-round { 
-            flex: 1 !important; 
-            display: flex !important; 
-            flex-direction: column !important; 
-            justify-content: space-around !important; 
-            height: 100% !important; 
-            margin: 0 !important; 
-        }
-        body.modo-telao .bracket-round h3 { 
-            font-size: 1rem !important; 
-            margin: 0 0 5px 0 !important; 
-            text-align: center;
-        }
-        body.modo-telao .bracket-round h4 { 
-            font-size: 0.85rem !important; 
-            margin: 5px 0 !important; 
-        }
+        body.modo-telao .bracket-container { display: flex !important; flex-direction: row !important; width: 100% !important; height: 100% !important; gap: 10px !important; margin: 0 !important; }
+        body.modo-telao .bracket-round { flex: 1 !important; display: flex !important; flex-direction: column !important; justify-content: space-around !important; height: 100% !important; margin: 0 !important; }
+        body.modo-telao .bracket-round h3 { font-size: 1.1rem !important; margin: 0 0 10px 0 !important; display: block !important; text-align: center; color: var(--dark); font-weight: 800; }
         
         /* COLUNA 3: Pódio */
         body.modo-telao #podioUI { 
-            flex: 0.8 !important; 
-            display: flex !important; 
-            flex-direction: column !important; 
-            justify-content: center !important; 
-            gap: 15px !important; 
-            height: calc(100vh - 100px) !important;
+            display: flex !important; flex-direction: column !important; justify-content: flex-start !important; padding: 15px !important; gap: 15px !important; zoom: 0.85; 
         }
-        body.modo-telao #podioUI > div { padding: 15px !important; }
-        body.modo-telao #podioUI h3 { font-size: 1.1rem !important; margin-bottom: 10px !important; }
-        body.modo-telao #podioUI div { font-size: 0.95rem !important; margin: 5px 0 !important; }
+        body.modo-telao #podioUI > div { width: 100% !important; margin: 0 !important; padding: 20px !important; }
+
+        /* Estilização Geral dos Elementos Internos */
+        body.modo-telao .match-box, body.modo-telao .bracket-match { padding: 8px !important; margin: 4px 0 !important; box-shadow: 0 2px 4px rgba(0,0,0,0.05) !important; zoom: 0.85; }
+        body.modo-telao .t-a, body.modo-telao .t-b { font-size: 0.9rem !important; }
+        body.modo-telao input.score-input { pointer-events: none !important; border: none !important; background: transparent !important; font-size: 1.6rem !important; font-weight: 800 !important; color: var(--dark) !important; width: 30px !important; height: 30px !important; padding: 0 !important; }
         
-        /* Compactar Caixas de Jogos para caber no ecrã */
-        body.modo-telao .match-box, 
-        body.modo-telao .bracket-match { 
-            padding: 6px !important; 
-            margin: 3px 0 !important; 
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05) !important; 
-        }
-        body.modo-telao .t-a, body.modo-telao .t-b { font-size: 0.8rem !important; }
-        body.modo-telao .match-score { margin: 4px 0 !important; }
-        body.modo-telao .score-input { 
-            width: 25px !important; 
-            height: 25px !important; 
-            font-size: 1rem !important; 
-            padding: 0 !important; 
-            pointer-events: none; 
-            border-color: transparent !important; 
-            background: transparent !important; 
-        }
-        
-        /* Limpar todos os botões operacionais da tela (W.O, Salvar, Editar, etc) */
-        body.modo-telao button[onclick^="salvarPlacar"], 
-        body.modo-telao button[onclick^="declararWO"], 
-        body.modo-telao button[onclick^="abrirRepescagem"], 
-        body.modo-telao button[onclick^="confirmarRepescagem"], 
-        body.modo-telao button[onclick^="cancelarRepescagem"], 
-        body.modo-telao button[onclick^="editarNomeDuplaMataMata"], 
-        body.modo-telao #btnGerarChaves, 
-        body.modo-telao #btnMontarMataMata, 
-        body.modo-telao #btnEncerrarTorneio, 
-        body.modo-telao #btnVoltar, 
-        body.modo-telao #btnExcluirTorneio,
-        body.modo-telao .repescagem-area { 
-            display: none !important; 
-        }
-        
-        /* BOTÃO DE SAÍDA FIXO E CORRIGIDO (O Fim do Botão Gigante Vermelho) */
+        /* BOTÃO DE SAÍDA (Totalmente Imune a bugs de esticamento) */
         #btnSairTelao { display: none; }
-        body.modo-telao #btnSairTelao { 
-            display: flex !important; 
+        body.modo-telao button#btnSairTelao { 
+            display: inline-block !important; 
             position: fixed !important; 
-            top: 15px !important; 
-            right: 15px !important; 
-            bottom: auto !important; /* ISTO É O QUE IMPEDE DELE ESTICAR PARA BAIXO */
-            left: auto !important;
-            background: rgba(239, 68, 68, 0.9) !important; 
+            top: 20px !important; 
+            right: 20px !important; 
+            height: 40px !important;
+            width: auto !important;
+            background: #ef4444 !important; 
             color: white !important; 
-            border: none !important; 
-            border-radius: 8px !important; 
-            font-size: 0.85rem !important; 
-            padding: 8px 15px !important; 
-            cursor: pointer !important; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2) !important; 
-            z-index: 10000 !important;
-            height: auto !important;
+            padding: 0 15px !important;
+            line-height: 40px !important;
+            border-radius: 8px !important;
+            font-size: 14px !important;
+            font-weight: 600 !important;
+            z-index: 99999 !important;
+            border: none !important;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3) !important;
+            cursor: pointer !important;
         }
         
     </style>
@@ -755,7 +638,7 @@
         <button id="btnFecharIosPopup" class="btn btn-outline" style="width: 100%; padding: 8px;">Fechar</button>
     </div>
 
-    <button id="btnSairTelao" class="btn" style="position: fixed; bottom: 30px; right: 30px; z-index: 10000; background: #ef4444; color: white; border-radius: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); font-size: 1.1rem; padding: 12px 25px; align-items: center; gap: 8px;">❌ Sair do Telão</button>
+    <button id="btnSairTelao">❌ Sair do Telão</button>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
