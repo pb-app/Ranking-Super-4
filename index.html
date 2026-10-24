@@ -265,6 +265,18 @@
         </div>
     </div>
 
+    <!-- Modal Pontuação do Torneio -->
+    <div id="modalPontuacaoTorneio" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2000; display: flex; justify-content: center; align-items: center; background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(3px);">
+        <div style="background: var(--white); padding: 2rem; border-radius: 16px; width: 90%; max-width: 380px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); position: relative; max-height: 90vh; overflow-y: auto;">
+            <button type="button" onclick="document.getElementById('modalPontuacaoTorneio').classList.add('hidden')" style="position: absolute; top: 15px; right: 20px; background: transparent; border: none; font-size: 1.8rem; cursor: pointer; color: var(--gray);">&times;</button>
+            <h3 style="margin-bottom: 1.5rem; color: var(--dark); font-size: 1.4rem; text-align: center;">🏆 Pontuação Oficial</h3>
+            
+            <div id="conteudoPontuacao" style="font-size: 0.95rem; color: var(--dark);"></div>
+            
+            <button type="button" onclick="document.getElementById('modalPontuacaoTorneio').classList.add('hidden')" class="btn" style="width: 100%; margin-top: 15px;">Fechar</button>
+        </div>
+    </div>
+
     <!-- Gerenciar Categorias Modal -->
     <div id="modalRankings" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; display: flex; justify-content: center; align-items: center;">
         <div style="background: var(--white); padding: 2.5rem; border-radius: 16px; width: 90%; max-width: 420px; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
@@ -644,7 +656,13 @@
                     extraInfo = `<span style="display:inline-block; background:#eff6ff; color:#3b82f6; padding: 4px 8px; border-radius:6px; font-size:0.85rem; font-weight:600; margin-top: 15px; border: 1px solid #bfdbfe;">🔥 Em Andamento</span>`;
                 }
 
-                card.innerHTML = `<h3>${camp.nome}</h3><p style="margin-bottom: 3px;">Ranking: ${camp.ranking}</p><p>Formato: ${camp.formato}</p>${extraInfo}`;
+                // Armazena no cache global para o Pop-up conseguir aceder
+                window.torneiosDataCache[docSnap.id] = camp;
+                
+                // Botão de ver pontuação (o event.stopPropagation evita abrir o torneio por baixo)
+                let linkPontos = `<div style="margin-top: 5px;"><button onclick="event.stopPropagation(); abrirModalPontuacao('${docSnap.id}')" style="background: none; border: none; color: var(--blue-link); text-decoration: underline; cursor: pointer; font-size: 0.85rem; font-weight: 600; padding: 0;">ℹ️ Ver Pontuação</button></div>`;
+
+                card.innerHTML = `<h3>${camp.nome}</h3><p style="margin-bottom: 3px;">Ranking: ${camp.ranking}</p><p style="margin-bottom: 3px;">Formato: ${camp.formato}</p>${linkPontos}${extraInfo}`;
                 tournamentsContainer.appendChild(card);
             });
         });
@@ -2246,6 +2264,51 @@
             botao.style.display = 'none'; // Some com o botão de WO
 
             avancarVencedorMataMata(); // Avança a dupla vencedora na chave
+        };
+
+          // --- FUNÇÃO PARA EXIBIR PONTUAÇÃO DO TORNEIO NA TELA INICIAL ---
+        window.torneiosDataCache = {}; // Guarda os dados dos torneios para consulta rápida
+
+        window.abrirModalPontuacao = function(id) {
+            const camp = window.torneiosDataCache[id];
+            if (!camp || !camp.pontosConfig) return;
+            const pts = camp.pontosConfig;
+            
+            let html = `<h4 style="color: #d97706; margin-bottom: 8px; border-bottom: 1px solid var(--border); padding-bottom: 5px; font-size: 1.1rem;">🥇 Chave Geral / Ouro</h4>`;
+            html += `<ul style="list-style: none; margin-bottom: 15px; padding-left: 0;">
+                <li style="display:flex; justify-content:space-between; margin-bottom: 4px;"><span>Campeão:</span> <strong>${pts.campeao || 0} pts</strong></li>
+                <li style="display:flex; justify-content:space-between; margin-bottom: 4px;"><span>Vice:</span> <strong>${pts.vice || 0} pts</strong></li>
+                <li style="display:flex; justify-content:space-between; margin-bottom: 4px;"><span>3º Lugar:</span> <strong>${pts.terceiro || 0} pts</strong></li>
+                <li style="display:flex; justify-content:space-between; margin-bottom: 4px;"><span>Semifinal:</span> <strong>${pts.semi || 0} pts</strong></li>
+                <li style="display:flex; justify-content:space-between; margin-bottom: 4px;"><span>Quartas:</span> <strong>${pts.quartas || 0} pts</strong></li>
+                <li style="display:flex; justify-content:space-between; margin-bottom: 4px;"><span>Oitavas:</span> <strong>${pts.oitavas || 0} pts</strong></li>
+            </ul>`;
+
+            let temGrupos = camp.formato && (camp.formato.includes("Grupos") || camp.formato.includes("Super 4"));
+            if (temGrupos) {
+                html += `<h4 style="color: var(--primary); margin-bottom: 8px; border-bottom: 1px solid var(--border); padding-bottom: 5px; font-size: 1.1rem;">🎾 Fase de Grupos</h4>`;
+                html += `<ul style="list-style: none; margin-bottom: 15px; padding-left: 0;">
+                    <li style="display:flex; justify-content:space-between; margin-bottom: 4px; color: var(--gray);"><span>Participação:</span> <strong>+${pts.participacao || 0} pts</strong></li>
+                    <li style="display:flex; justify-content:space-between; margin-bottom: 4px;"><span>1º do Grupo:</span> <strong>+${pts.primeiroGrupo || 0} pts</strong></li>
+                    <li style="display:flex; justify-content:space-between; margin-bottom: 4px;"><span>2º do Grupo:</span> <strong>+${pts.segundoGrupo || 0} pts</strong></li>
+                    <li style="display:flex; justify-content:space-between; margin-bottom: 4px;"><span>3º do Grupo:</span> <strong>+${pts.terceiroGrupo || 0} pts</strong></li>
+                    <li style="display:flex; justify-content:space-between; margin-bottom: 4px;"><span>4º do Grupo:</span> <strong>+${pts.quartoGrupo || 0} pts</strong></li>
+                </ul>`;
+            }
+
+            if (camp.formato && camp.formato.includes("Super 4")) {
+                html += `<h4 style="color: #64748b; margin-bottom: 8px; border-bottom: 1px solid var(--border); padding-bottom: 5px; font-size: 1.1rem;">🥈 Chave Prata</h4>`;
+                html += `<ul style="list-style: none; margin-bottom: 15px; padding-left: 0;">
+                    <li style="display:flex; justify-content:space-between; margin-bottom: 4px;"><span>Campeão Prata:</span> <strong>${pts.campeaoPrata || 0} pts</strong></li>
+                    <li style="display:flex; justify-content:space-between; margin-bottom: 4px;"><span>Vice Prata:</span> <strong>${pts.vicePrata || 0} pts</strong></li>
+                    <li style="display:flex; justify-content:space-between; margin-bottom: 4px;"><span>3º Prata:</span> <strong>${pts.terceiroPrata || 0} pts</strong></li>
+                    <li style="display:flex; justify-content:space-between; margin-bottom: 4px;"><span>Semifinal Prata:</span> <strong>${pts.semiPrata || 0} pts</strong></li>
+                    <li style="display:flex; justify-content:space-between; margin-bottom: 4px;"><span>Quartas Prata:</span> <strong>${pts.quartasPrata || 0} pts</strong></li>
+                </ul>`;
+            }
+
+            document.getElementById('conteudoPontuacao').innerHTML = html;
+            document.getElementById('modalPontuacaoTorneio').classList.remove('hidden');
         };
 
         
