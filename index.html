@@ -204,10 +204,14 @@
         <div style="background: var(--white); padding: 2.5rem; border-radius: 16px; width: 90%; max-width: 450px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); position: relative;">
             <button type="button" onclick="document.getElementById('modalEditPlayer').classList.add('hidden')" style="position: absolute; top: 15px; right: 20px; background: transparent; border: none; font-size: 1.8rem; cursor: pointer; color: var(--gray);">&times;</button>
             <h3 style="margin-bottom: 1.5rem; color: var(--dark); font-size: 1.4rem;">✏️ Editar Jogador</h3>
-            <h4 id="editNomeTitle" style="color: var(--blue-link); margin-bottom: 1.5rem;">Nome</h4>
             <form id="formEditPlayer">
                 <input type="hidden" id="editPlayerId">
                 <input type="hidden" id="editPlayerCategoria">
+                
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label style="color: var(--blue-link);">Nome do Jogador</label>
+                    <input type="text" id="editNomeInput" class="form-control" required style="font-weight: bold; font-size: 1.1rem; color: var(--dark);">
+                </div>
                 
                 <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
                     <div class="form-group" style="margin-bottom: 1rem;">
@@ -1988,7 +1992,7 @@
 
         window.abrirModalEditarJogador = function(id, nome, ptsGeral, ptsOuro, ptsPrata, torneios, titulos, vitorias, jogos) {
             document.getElementById('editPlayerId').value = id; document.getElementById('editPlayerCategoria').value = filtroRanking.options[filtroRanking.selectedIndex].text;
-            document.getElementById('editNomeTitle').textContent = nome; document.getElementById('editPtsGeral').value = ptsGeral; document.getElementById('editPtsOuro').value = ptsOuro;
+            document.getElementById('editNomeInput').value = nome; document.getElementById('editPtsGeral').value = ptsGeral; document.getElementById('editPtsOuro').value = ptsOuro;
             document.getElementById('editPtsPrata').value = ptsPrata; document.getElementById('editTorneios').value = torneios; document.getElementById('editTitulos').value = titulos;
             document.getElementById('editVitorias').value = vitorias; document.getElementById('editJogos').value = jogos;
             document.getElementById('modalEditPlayer').classList.remove('hidden');
@@ -1998,7 +2002,16 @@
             e.preventDefault(); const id = document.getElementById('editPlayerId').value; const categoria = document.getElementById('editPlayerCategoria').value; const btn = e.target.querySelector('button[type="submit"]');
             btn.textContent = "A gravar..."; btn.disabled = true;
             try {
-                await updateDoc(doc(db, "rankings", categoria, "jogadores", id), { pontos: parseInt(document.getElementById('editPtsGeral').value)||0, pontosOuro: parseInt(document.getElementById('editPtsOuro').value)||0, pontosPrata: parseInt(document.getElementById('editPtsPrata').value)||0, torneios: parseInt(document.getElementById('editTorneios').value)||0, titulos: parseInt(document.getElementById('editTitulos').value)||0, vitorias: parseInt(document.getElementById('editVitorias').value)||0, jogos: parseInt(document.getElementById('editJogos').value)||0 });
+                await updateDoc(doc(db, "rankings", categoria, "jogadores", id), { 
+                    nome: document.getElementById('editNomeInput').value.trim(),
+                    pontos: parseInt(document.getElementById('editPtsGeral').value)||0, 
+                    pontosOuro: parseInt(document.getElementById('editPtsOuro').value)||0, 
+                    pontosPrata: parseInt(document.getElementById('editPtsPrata').value)||0, 
+                    torneios: parseInt(document.getElementById('editTorneios').value)||0, 
+                    titulos: parseInt(document.getElementById('editTitulos').value)||0, 
+                    vitorias: parseInt(document.getElementById('editVitorias').value)||0, 
+                    jogos: parseInt(document.getElementById('editJogos').value)||0 
+                });
                 document.getElementById('modalEditPlayer').classList.add('hidden'); carregarRanking();
             } catch (err) { alert("Erro ao editar."); } finally { btn.textContent = "Salvar Alterações"; btn.disabled = false; }
         });
@@ -2006,7 +2019,7 @@
         window.excluirJogadorRanking = async function() {
             const id = document.getElementById('editPlayerId').value;
             const categoria = document.getElementById('editPlayerCategoria').value;
-            const nome = document.getElementById('editNomeTitle').textContent;
+            const nome = document.getElementById('editNomeInput').value;
             
             if (confirm(`🚨 AÇÃO DEFINITIVA!\n\nTem certeza que deseja EXCLUIR DEFINITIVAMENTE o jogador "${nome}" do ranking ${categoria}?\nTodos os pontos serão perdidos.`)) {
                 try {
