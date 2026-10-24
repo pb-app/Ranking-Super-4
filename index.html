@@ -626,7 +626,25 @@
                 const card = document.createElement('div');
                 card.className = 'tournament-card';
                 card.onclick = () => abrirPainelTorneio(docSnap.id, camp);
-                card.innerHTML = `<h3>${camp.nome}</h3><p>Ranking: ${camp.ranking}</p><p>Formato: ${camp.formato}</p><span class="badge">🎾 ${camp.sets}</span>`;
+                
+                let extraInfo = '';
+                if (camp.status === 'encerrado') {
+                    extraInfo = `<div style="margin-top: 15px; padding-top: 12px; border-top: 1px dashed var(--border);">`;
+                    if (camp.campeaoOuro) {
+                        extraInfo += `<div style="font-size: 0.95rem; color: var(--dark); margin-bottom: 5px;">🏆 <b style="color: #d97706;">Ouro:</b> ${camp.campeaoOuro.replace(/\s*&\s*/g, ' e ')}</div>`;
+                    }
+                    if (camp.campeaoPrata) {
+                        extraInfo += `<div style="font-size: 0.95rem; color: var(--dark);">🥈 <b style="color: #475569;">Prata:</b> ${camp.campeaoPrata.replace(/\s*&\s*/g, ' e ')}</div>`;
+                    }
+                    if (!camp.campeaoOuro && !camp.campeaoPrata) {
+                        extraInfo += `<span style="display:inline-block; background:#f0fdf4; color:#10b981; padding: 4px 8px; border-radius:6px; font-size:0.85rem; font-weight:600;">✅ Finalizado</span>`;
+                    }
+                    extraInfo += `</div>`;
+                } else {
+                    extraInfo = `<span style="display:inline-block; background:#eff6ff; color:#3b82f6; padding: 4px 8px; border-radius:6px; font-size:0.85rem; font-weight:600; margin-top: 15px; border: 1px solid #bfdbfe;">🔥 Em Andamento</span>`;
+                }
+
+                card.innerHTML = `<h3>${camp.nome}</h3><p style="margin-bottom: 3px;">Ranking: ${camp.ranking}</p><p>Formato: ${camp.formato}</p>${extraInfo}`;
                 tournamentsContainer.appendChild(card);
             });
         });
