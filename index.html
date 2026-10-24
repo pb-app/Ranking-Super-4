@@ -1411,9 +1411,21 @@
             atualizarChave(window.fasesMataMata, 'Ouro');
             if (window.fasesPrata && window.fasesPrata.length > 0) { atualizarChave(window.fasesPrata, 'Prata'); }
             
-            let updatePayload = { fasesMataMata: window.fasesMataMata };
+            let updatePayload = { fasesMataMata: window.fasesMataMata }; 
             if (window.fasesPrata && window.fasesPrata.length > 0) updatePayload.fasesPrata = window.fasesPrata;
             
+            // NOVO: Se o torneio já estiver encerrado e o nome alterado for o de um campeão, atualiza o card também!
+            if (torneioAbertoData.status === "encerrado") {
+                if (torneioAbertoData.campeaoOuro === timeAntigo) {
+                    updatePayload.campeaoOuro = novoNome;
+                    torneioAbertoData.campeaoOuro = novoNome;
+                }
+                if (torneioAbertoData.campeaoPrata === timeAntigo) {
+                    updatePayload.campeaoPrata = novoNome;
+                    torneioAbertoData.campeaoPrata = novoNome;
+                }
+            }
+
             await updateDoc(doc(db, "campeonatos", torneioAbertoId), updatePayload);
             renderizarMataMata(true); 
         };
