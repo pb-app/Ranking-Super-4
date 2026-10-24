@@ -1828,8 +1828,37 @@
                         await setDoc(ref, { nome: jogador, pontos: (dados.pontos || 0) + stats.pontos, pontosOuro: (dados.pontosOuro || 0) + stats.pontosOuro, pontosPrata: (dados.pontosPrata || 0) + stats.pontosPrata, torneios: (dados.torneios || 0) + 1, titulos: (dados.titulos || 0) + stats.titulos, vitorias: (dados.vitorias || 0) + stats.vitorias, jogos: (dados.jogos || 0) + stats.jogos });
                     } else { await setDoc(ref, { nome: jogador, pontos: stats.pontos, pontosOuro: stats.pontosOuro, pontosPrata: stats.pontosPrata, torneios: 1, titulos: stats.titulos, vitorias: stats.vitorias, jogos: stats.jogos }); }
                 }
-                await updateDoc(doc(db, "campeonatos", torneioAbertoId), { status: "encerrado" }); torneioAbertoData.status = "encerrado";
-                btn.textContent = "✅ Torneio Encerrado e Salvo!"; btn.style.background = "#10b981";
+                    
+                    // --- NOVA LÓGICA: CAPTURAR OS CAMPEÕES ---
+                    let champOuro = null;
+                    if (window.fasesMataMata && window.fasesMataMata.length > 0) {
+                        let fRound = window.fasesMataMata.length - 1;
+                        let fMatch = window.fasesMataMata[fRound].jogos ? window.fasesMataMata[fRound].jogos[0] : window.fasesMataMata[fRound][0];
+                        if (fMatch && fMatch.timeA) {
+                            let fId = `MM_${fRound}_${fMatch.timeA.replace(/\s+/g, '')}_vs_${fMatch.timeB.replace(/\s+/g, '')}`;
+                            if (jogosSalvos[fId] && jogosSalvos[fId].vencedor) champOuro = jogosSalvos[fId].vencedor;
+                        }
+                    }
+
+                    let champPrata = null;
+                    if (window.fasesPrata && window.fasesPrata.length > 0) {
+                        let fRound = window.fasesPrata.length - 1;
+                        let fMatch = window.fasesPrata[fRound].jogos ? window.fasesPrata[fRound].jogos[0] : window.fasesPrata[fRound][0];
+                        if (fMatch && fMatch.timeA) {
+                            let fId = `MM_Prata_${fRound}_${fMatch.timeA.replace(/\s+/g, '')}_vs_${fMatch.timeB.replace(/\s+/g, '')}`;
+                            if (jogosSalvos[fId] && jogosSalvos[fId].vencedor) champPrata = jogosSalvos[fId].vencedor;
+                        }
+                    }
+
+                    // Grava o status e os nomes dos campeões na base de dados
+                    await updateDoc(doc(db, "campeonatos", torneioAbertoId), { 
+                        status: "encerrado",
+                        campeaoOuro: champOuro,
+                        campeaoPrata: champPrata
+                    }); 
+                    torneioAbertoData.status = "encerrado";
+                    
+                    btn.textContent = "✅ Torneio Encerrado e Salvo!"; btn.style.background = "#10b981";
             } catch(e) { alert("Erro ao salvar pontos."); btn.textContent = "Tentar Novamente"; btn.disabled = false; }
         });
 
