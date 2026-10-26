@@ -768,6 +768,8 @@
             }
 
             carregarJogosSalvos(id).then(() => {
+                let temGrupos = camp.formato && (camp.formato.includes("Grupos") || camp.formato.includes("Super 4"));
+                
                 if (camp.sorteados && camp.sorteados.length > 0) {
                     document.getElementById('painel-inscritos').classList.add('hidden');
                     document.getElementById('painel-grid').classList.add('grid-expandido');
@@ -780,7 +782,13 @@
                 if (camp.fasesMataMata && camp.fasesMataMata.length > 0) {
                     window.fasesMataMata = camp.fasesMataMata;
                     window.fasesPrata = camp.fasesPrata || [];
-                    renderizarMataMata(false);
+                    
+                    // Renderiza o mata-mata em segundo plano sem mudar a aba ativa
+                    renderizarMataMata(true); 
+                    
+                    // FORÇA ABRIR SEMPRE NA PRIMEIRA FASE (Grupos se houver, ou Eliminatórias se for só mata-mata)
+                    faseAtualUI = 0;
+                    atualizarUIFases();
                 }
             });
         }
