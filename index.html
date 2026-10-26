@@ -194,6 +194,17 @@
                     <div style="font-size: 0.7rem; color: var(--gray); text-transform: uppercase; font-weight: 600; margin-top: 3px;">Derrotas ❌</div>
                 </div>
             </div>
+
+            <!-- NOVA SEÇÃO H2H -->
+            <div style="margin-bottom: 20px; background: #f9fafb; padding: 15px; border-radius: 12px; border: 1px solid var(--border); text-align: left;">
+                <h4 style="font-size: 0.95rem; color: var(--dark); margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">⚔️ Histórico de Confrontos (H2H)</h4>
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="inputH2H" list="sugestoesH2H" class="form-control" placeholder="Adversário (Ex: João)" style="padding: 8px 12px; font-size: 0.9rem; flex: 1; background: var(--white);">
+                    <button type="button" onclick="buscarH2H()" class="btn" style="padding: 8px 15px; font-size: 0.85rem; background: var(--blue-link);">Buscar</button>
+                </div>
+                <datalist id="sugestoesH2H"></datalist>
+                <div id="resultadoH2H" class="hidden" style="margin-top: 15px; text-align: center;"></div>
+            </div>
             
             <button type="button" id="btnFecharPerfil" class="btn btn-outline" style="width: 100%;">Fechar Painel</button>
         </div>
@@ -557,7 +568,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, doc, updateDoc, getDocs, setDoc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, doc, updateDoc, getDocs, setDoc, getDoc, deleteDoc, collectionGroup } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
         const firebaseConfig = {
@@ -2135,6 +2146,20 @@
             let derrotas = jogos - vitorias; let aproveitamento = jogos > 0 ? Math.round((vitorias / jogos) * 100) : 0;
             document.getElementById('perfilNome').textContent = nome; document.getElementById('perfilPontos').textContent = pontos; document.getElementById('perfilTorneios').textContent = torneios;
             document.getElementById('perfilTitulos').textContent = titulos; document.getElementById('perfilVitorias').textContent = vitorias; document.getElementById('perfilDerrotas').textContent = derrotas; document.getElementById('perfilAproveitamento').textContent = aproveitamento + '%';
+            
+            // Limpa a busca anterior do H2H
+            document.getElementById('inputH2H').value = '';
+            document.getElementById('resultadoH2H').classList.add('hidden');
+            
+            // Preenche as sugestões de adversários com base no ranking atual
+            const datalist = document.getElementById('sugestoesH2H');
+            datalist.innerHTML = '';
+            document.querySelectorAll('#rankingTabelaBody a').forEach(a => {
+                if (a.textContent !== nome) {
+                    let opt = document.createElement('option'); opt.value = a.textContent; datalist.appendChild(opt);
+                }
+            });
+
             modalPerfilJogador.classList.remove('hidden');
         };
         document.getElementById('btnFecharPerfil').addEventListener('click', () => modalPerfilJogador.classList.add('hidden')); document.getElementById('btnFecharPerfilTop').addEventListener('click', () => modalPerfilJogador.classList.add('hidden'));
@@ -2370,6 +2395,76 @@
             } catch (e) {
                 alert("Erro ao atribuir quadra.");
                 btn.textContent = quadraAtual ? `📍 Quadra ${quadraAtual}` : "+ Atribuir Quadra";
+            }
+        };
+
+        // --- FUNÇÃO PARA BUSCAR E CALCULAR H2H ---
+        window.buscarH2H = async function() {
+            const p1 = document.getElementById('perfilNome').textContent;
+            const p2 = document.getElementById('inputH2H').value.trim();
+            if (!p2) { alert("Digite o nome do adversário!"); return; }
+            if (p1 === p2) { alert("Você não pode comparar o jogador com ele mesmo!"); return; }
+
+            const resDiv = document.getElementById('resultadoH2H');
+            resDiv.innerHTML = '<p style="color:var(--gray); font-size:0.85rem; margin:0;">A analisar histórico nas quadras...</p>';
+            resDiv.classList.remove('hidden');
+
+            try {
+                // Traz todos os jogos já registrados no banco
+                const snap = await getDocs(collectionGroup(db, "jogos"));
+                let vitoriasP1 = 0; let vitoriasP2 = 0; let totalJogos = 0;
+
+                snap.forEach(docSnap => {
+                    let j = docSnap.data();
+                    if (!j.vencedor) return; // Ignora jogos não encerrados
+                    
+                    // Separa os nomes para garantir que encontra o jogador certo (mesmo em duplas)
+                    let jogadoresA = (j.timeA || "").split('&').map(n => n.trim());
+                    let jogadoresB = (j.timeB || "").split('&').map(n => n.trim());
+                    
+                    let p1NoA = jogadoresA.includes(p1); let p1NoB = jogadoresB.includes(p1);
+                    let p2NoA = jogadoresA.includes(p2); let p2NoB = jogadoresB.includes(p2);
+
+                    // Só contabiliza se jogaram em lados opostos
+                    if ((p1NoA && p2NoB) || (p1NoB && p2NoA)) {
+                        totalJogos++;
+                        let vencedores = j.vencedor.split('&').map(n => n.trim());
+                        if (vencedores.includes(p1)) vitoriasP1++;
+                        else if (vencedores.includes(p2)) vitoriasP2++;
+                    }
+                });
+
+                if (totalJogos === 0) {
+                    resDiv.innerHTML = `<p style="color:var(--gray); font-size:0.85rem; margin:0;">Nenhum confronto oficial encontrado entre <b>${p1}</b> e <b>${p2}</b>.</p>`;
+                } else {
+                    let winRateP1 = Math.round((vitoriasP1 / totalJogos) * 100);
+                    let winRateP2 = Math.round((vitoriasP2 / totalJogos) * 100);
+                    
+                    let corP1 = vitoriasP1 > vitoriasP2 ? '#10b981' : (vitoriasP1 < vitoriasP2 ? '#ef4444' : '#9ca3af');
+                    let corP2 = vitoriasP2 > vitoriasP1 ? '#10b981' : (vitoriasP2 < vitoriasP1 ? '#ef4444' : '#9ca3af');
+
+                    resDiv.innerHTML = `
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                            <div style="text-align:center; width: 40%;">
+                                <div style="font-weight:800; font-size:1.8rem; color:${corP1};">${vitoriasP1}</div>
+                                <div style="font-size:0.75rem; color:var(--dark); font-weight:600; line-height:1.2;">Vitórias<br><span style="color:var(--gray); font-weight:400;">(${winRateP1}%)</span></div>
+                            </div>
+                            <div style="font-weight:800; font-size:1.2rem; color:#d1d5db;">X</div>
+                            <div style="text-align:center; width: 40%;">
+                                <div style="font-weight:800; font-size:1.8rem; color:${corP2};">${vitoriasP2}</div>
+                                <div style="font-size:0.75rem; color:var(--dark); font-weight:600; line-height:1.2;">Vitórias<br><span style="color:var(--gray); font-weight:400;">(${winRateP2}%)</span></div>
+                            </div>
+                        </div>
+                        <div style="background: #e5e7eb; height: 8px; border-radius: 4px; display:flex; overflow:hidden; margin-top:8px;">
+                            <div style="width: ${winRateP1}%; background: ${corP1}; height: 100%; transition: width 0.5s ease;"></div>
+                            <div style="width: ${winRateP2}%; background: ${corP2}; height: 100%; transition: width 0.5s ease;"></div>
+                        </div>
+                        <p style="font-size:0.8rem; color:var(--gray); margin:10px 0 0 0;">Total de embates oficiais: <b>${totalJogos}</b></p>
+                    `;
+                }
+            } catch(e) {
+                console.error(e);
+                resDiv.innerHTML = '<p style="color:#ef4444; font-size:0.85rem; margin:0;">Erro ao buscar histórico. Verifique a conexão.</p>';
             }
         };
 
