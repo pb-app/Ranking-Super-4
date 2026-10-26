@@ -148,66 +148,35 @@
         @media (min-width: 992px) {
             #mataMataUI { padding: 10px 20px !important; }
 
-            /* 1. O SEGREDO DO ALINHAMENTO (Stretch + Space-Around) */
             .bracket-container {
-                display: flex !important;
-                flex-direction: row !important;
-                width: 100% !important;
-                align-items: stretch !important; /* Força todas as colunas a terem a mesma altura */
-                background: #ffffff !important;
-                border-radius: 16px !important;
-                padding: 40px 15px 20px 15px !important; /* Espaço extra no topo para o nome da fase */
-                margin-bottom: 60px !important; /* Separa a Ouro da Prata com muita clareza */
-                box-shadow: 0 4px 15px rgba(0,0,0,0.04) !important;
-                border: 1px solid #f1f5f9 !important;
+                display: flex !important; flex-direction: row !important; width: 100% !important;
+                align-items: stretch !important; background: #ffffff !important; border-radius: 16px !important;
+                padding: 40px 15px 20px 15px !important; margin-bottom: 60px !important;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.04) !important; border: 1px solid #f1f5f9 !important;
+                overflow-x: auto;
             }
 
-            /* 2. COLUNAS DA ÁRVORE */
             .bracket-round {
-                flex: 1 !important;
-                min-width: 200px !important;
-                display: flex !important;
-                flex-direction: column !important;
-                justify-content: space-around !important; /* Posiciona o jogo exatamente no meio do espaço */
-                margin: 0 !important;
-                border-right: 2px dashed #e2e8f0 !important;
-                padding: 0 15px !important;
-                position: relative !important; /* Necessário para fixar o título no topo */
+                flex: 1 !important; min-width: 220px !important; display: flex !important; flex-direction: column !important;
+                margin: 0 !important; border-right: 2px dashed #e2e8f0 !important; padding: 0 15px !important; position: relative !important;
             }
             .bracket-round:last-child { border-right: none !important; }
 
-            /* 3. O FIM DA CASCATA: Fixando o título da fase no topo absoluto */
-            .bracket-round h3, .bracket-round h4 {
-                position: absolute !important;
-                top: -25px !important; /* Prende o texto lá em cima, fora do alinhamento dos jogos */
-                left: 0 !important;
-                width: 100% !important;
-                text-align: center !important;
-                font-size: 0.9rem !important;
-                color: var(--gray) !important;
-                margin: 0 !important;
+            /* Título da fase (Oitavas, Quartas) fixado no topo */
+            .bracket-round h3 {
+                position: absolute !important; top: -25px !important; left: 0 !important; width: 100% !important;
+                text-align: center !important; font-size: 0.95rem !important; color: var(--gray) !important; margin: 0 !important;
             }
 
-            /* Esconde repetições indesejadas de "Chave Ouro" que ficaram presas nas colunas */
-            .bracket-round h3[style*="Chave"], 
-            .bracket-round h2[style*="Chave"] {
-                display: none !important;
-            }
+            /* O SEGREDO CONTRA A CASCATA: Mostra o título "Chave Ouro" SÓ na primeira coluna! */
+            .bracket-round:not(:first-child) .chave-title { display: none !important; }
 
-            /* 4. CARTÃO DO JOGO COMPACTO E ELEGANTE */
             .bracket-match {
-                padding: 8px 12px !important;
-                margin: 0 !important; /* Retira a margem para o space-around trabalhar perfeitamente */
-                border-radius: 8px !important;
-                background: #f8fafc !important;
-                border: 1px solid #cbd5e1 !important;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.02) !important;
-                z-index: 2;
-                transition: transform 0.2s;
+                padding: 8px 12px !important; margin: 5px 0 !important; border-radius: 8px !important;
+                background: #f8fafc !important; border: 1px solid #cbd5e1 !important;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.02) !important; transition: transform 0.2s;
             }
             .bracket-match:hover { transform: scale(1.02); border-color: #94a3b8 !important; }
-
-            /* Ajustes finos de texto e botões para não esticar a caixa */
             .bracket-match .t-a, .bracket-match .t-b { font-size: 0.85rem !important; line-height: 1.2 !important; }
             .bracket-match .score-input { width: 26px !important; height: 26px !important; font-size: 0.9rem !important; padding: 0 !important; }
             .bracket-match button, .bracket-match div[onclick*="atribuirQuadra"] { padding: 3px 8px !important; font-size: 0.75rem !important; margin-top: 5px !important; }
@@ -1400,12 +1369,7 @@
 
         function renderizarMataMata(manterAba = false) {
             const mataMataUI = document.getElementById('mataMataUI');
-            // Verifica se é a chave prata para mudar a cor e o texto
-let tituloChave = isPrata ? "🥈 Chave Prata" : "🏆 Chave Ouro";
-let corChave = isPrata ? "#64748b" : "#d97706";
-
-html += `<div style="width: 100%; text-align: center; font-size: 1.8rem; font-weight: 800; color: ${corChave}; margin: 20px 0 10px 0; text-transform: uppercase; letter-spacing: 1px;">${tituloChave}</div>`;
-html += `<div class="bracket-container">`;
+            let html = '<div class="bracket-container">';
             
             nomesFases = [];
             if (formatoAberto.includes("Grupos") || formatoAberto.includes("Super 4")) { nomesFases = ["Fase de Grupos"]; }
@@ -1421,15 +1385,24 @@ html += `<div class="bracket-container">`;
                 nomesFases.push(nome);
 
                 html += `<div class="bracket-round">`;
+                html += `<h3>${nome}</h3>`; // O título da fase que fica no topo
                 
+                // --- BLOCO DA CHAVE OURO ---
                 if (window.fasesMataMata && window.fasesMataMata[rodadaIndex]) {
-                    if (window.fasesPrata && window.fasesPrata.length > 0) { html += `<h4 style="color: #d97706; text-align: center; margin: 15px 0; font-size: 1.1rem; font-weight: 700;">🏆 Chave Ouro</h4>`; }
+                    html += `<div class="bloco-chave-ouro" style="display:flex; flex-direction:column; justify-content:space-around; flex:1;">`;
+                    if (window.fasesPrata && window.fasesPrata.length > 0) { 
+                        html += `<h4 class="chave-title" style="color: #d97706; text-align: center; margin: 0 0 10px 0; font-size: 1.1rem; font-weight: 700;">🏆 Chave Ouro</h4>`; 
+                    }
                     html += gerarJogosRodada(window.fasesMataMata[rodadaIndex], rodadaIndex, 'Ouro');
+                    html += `</div>`;
                 }
                 
+                // --- BLOCO DA CHAVE PRATA ---
                 if (window.fasesPrata && window.fasesPrata[rodadaIndex]) {
-                    html += `<h4 style="color: #64748b; text-align: center; margin: 25px 0 15px 0; font-size: 1.1rem; font-weight: 700; border-top: 1px solid var(--border); padding-top: 15px;">🥈 Chave Prata</h4>`;
+                    html += `<div class="bloco-chave-prata" style="display:flex; flex-direction:column; justify-content:space-around; flex:1; border-top: 1px dashed var(--border); margin-top: 15px; padding-top: 15px;">`;
+                    html += `<h4 class="chave-title" style="color: #64748b; text-align: center; margin: 0 0 10px 0; font-size: 1.1rem; font-weight: 700;">🥈 Chave Prata</h4>`;
                     html += gerarJogosRodada(window.fasesPrata[rodadaIndex], rodadaIndex, 'Prata');
+                    html += `</div>`;
                 }
                 
                 html += `</div>`;
