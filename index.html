@@ -143,6 +143,47 @@
             .match-box, .bracket-match { padding: 15px 10px; }
             .t-a, .t-b { font-size: 0.95rem; }
         }
+
+         /* --- MELHORIA: MATA-MATA LADO A LADO NO COMPUTADOR (VISÃO ADMIN) --- */
+        @media (min-width: 992px) {
+            /* Transforma o contêiner do mata-mata numa linha contínua */
+            .bracket-container {
+                display: flex !important;
+                flex-direction: row !important; /* Colunas lado a lado */
+                justify-content: space-around;
+                align-items: stretch;
+                gap: 20px;
+                width: 100%;
+                overflow-x: auto; /* Se houver muitas fases (Ex: Oitavas), permite rolar para o lado */
+                padding: 10px 0 20px 0;
+            }
+            
+            /* Cada fase (Oitavas, Quartas, etc) vira uma coluna */
+            .bracket-round {
+                flex: 1;
+                min-width: 280px; /* Largura mínima para os cartões de jogo não ficarem esmagados */
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: space-around; /* Espaça os jogos verticalmente para alinhar com a próxima fase */
+                margin-bottom: 0 !important;
+                border-right: 2px dashed var(--border); /* Linha divisória charmosa entre as fases */
+                padding-right: 20px;
+            }
+            
+            /* Remove a linha divisória da última coluna (Final) */
+            .bracket-round:last-child {
+                border-right: none;
+                padding-right: 0;
+            }
+
+            /* Centraliza os títulos (Quartas, Semifinal, etc) dentro de cada coluna */
+            .bracket-round h3, .bracket-round h4 {
+                text-align: center;
+                margin-bottom: 15px;
+            }
+        }
+
+        
     </style>
 </head>
 <body>
