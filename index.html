@@ -897,7 +897,10 @@
                 
                 botao.textContent = 'Salvando...'; botao.disabled = true;
 
+                let quadraExistente = jogosSalvos[matchId] ? jogosSalvos[matchId].quadra : "";
                 let dadosDoJogo = { timeA, timeB, placarA: pA, placarB: pB, vencedor, fase: isMataMata ? "Eliminatória" : "Grupos", dataRegistro: serverTimestamp() };
+                if (quadraExistente) dadosDoJogo.quadra = quadraExistente; // Mantém a quadra a salvo!
+                
                 await setDoc(doc(db, "campeonatos", torneioAbertoId, "jogos", matchId), dadosDoJogo);
                 jogosSalvos[matchId] = dadosDoJogo; 
 
@@ -1057,7 +1060,12 @@
                             let btnStyle = jogosSalvos[matchId] ? 'background: #ecfdf5; color: #10b981; border: 1px solid #10b981;' : 'background: transparent; color: var(--blue-link); border: 1px solid var(--blue-link);';
                             let btnText = jogosSalvos[matchId] ? '✅ Salvo!' : '💾 Salvar Placar';
                             let hideSave = isLogged ? '' : 'hidden';
-                            html += `<div class="match-box ${isResolvido}"><strong class="t-a" data-name="${comb.tA_data}">${comb.tA_display}</strong>${gerarInputsPlacar(setsAberto, matchId)}<strong class="t-b" data-name="${comb.tB_data}">${comb.tB_display}</strong><br><button onclick="salvarPlacar(this)" data-matchid="${matchId}" class="btn btn-outline ${hideSave}" style="${btnStyle}; margin-top: 10px; width: 100%; max-width: 180px; padding: 6px;">${btnText}</button></div>`;
+                            let quadra = jogosSalvos[matchId] ? jogosSalvos[matchId].quadra : '';
+                                let quadraHtml = '';
+                                if (quadra) { quadraHtml = `<div onclick="atribuirQuadra(this, '${matchId}', '${comb.tA_data}', '${comb.tB_data}', false)" style="background: #e0e7ff; color: #4338ca; font-size: 0.75rem; padding: 3px 10px; border-radius: 12px; cursor: pointer; display: inline-block; margin-bottom: 10px; font-weight: 700;">📍 Quadra ${quadra}</div><br>`; }
+                                else if (isLogged) { quadraHtml = `<div onclick="atribuirQuadra(this, '${matchId}', '${comb.tA_data}', '${comb.tB_data}', false)" style="background: transparent; border: 1px dashed #94a3b8; color: #94a3b8; font-size: 0.7rem; padding: 2px 8px; border-radius: 12px; cursor: pointer; display: inline-block; margin-bottom: 10px;">+ Atribuir Quadra</div><br>`; }
+
+                                html += `<div class="match-box ${isResolvido}">${quadraHtml}<strong class="t-a" data-name="${comb.tA_data}">${comb.tA_display}</strong>${gerarInputsPlacar(setsAberto, matchId)}<strong class="t-b" data-name="${comb.tB_data}">${comb.tB_display}</strong><br><button onclick="salvarPlacar(this)" data-matchid="${matchId}" class="btn btn-outline ${hideSave}" style="${btnStyle}; margin-top: 10px; width: 100%; max-width: 180px; padding: 6px;">${btnText}</button></div>`;
                         });
                     } else {
                         for (let i = 0; i < grupo.length; i++) {
@@ -1078,7 +1086,12 @@
                                 let btnStyle = jogosSalvos[matchId] ? 'background: #ecfdf5; color: #10b981; border: 1px solid #10b981;' : 'background: transparent; color: var(--blue-link); border: 1px solid var(--blue-link);';
                                 let btnText = jogosSalvos[matchId] ? '✅ Salvo!' : '💾 Salvar Placar';
                                 let hideSave = isLogged ? '' : 'hidden'; 
-                                html += `<div class="match-box ${isResolvido}"><strong class="t-a" data-name="${tA_data}">${tA_display}</strong>${gerarInputsPlacar(setsAberto, matchId)}<strong class="t-b" data-name="${tB_data}">${tB_display}</strong><br><button onclick="salvarPlacar(this)" data-matchid="${matchId}" class="btn btn-outline ${hideSave}" style="${btnStyle}; margin-top: 10px; width: 100%; max-width: 180px; padding: 6px;">${btnText}</button></div>`;
+                                let quadra = jogosSalvos[matchId] ? jogosSalvos[matchId].quadra : '';
+                                let quadraHtml = '';
+                                if (quadra) { quadraHtml = `<div onclick="atribuirQuadra(this, '${matchId}', '${tA_data}', '${tB_data}', false)" style="background: #e0e7ff; color: #4338ca; font-size: 0.75rem; padding: 3px 10px; border-radius: 12px; cursor: pointer; display: inline-block; margin-bottom: 10px; font-weight: 700;">📍 Quadra ${quadra}</div><br>`; }
+                                else if (isLogged) { quadraHtml = `<div onclick="atribuirQuadra(this, '${matchId}', '${tA_data}', '${tB_data}', false)" style="background: transparent; border: 1px dashed #94a3b8; color: #94a3b8; font-size: 0.7rem; padding: 2px 8px; border-radius: 12px; cursor: pointer; display: inline-block; margin-bottom: 10px;">+ Atribuir Quadra</div><br>`; }
+
+                                html += `<div class="match-box ${isResolvido}">${quadraHtml}<strong class="t-a" data-name="${tA_data}">${tA_display}</strong>${gerarInputsPlacar(setsAberto, matchId)}<strong class="t-b" data-name="${tB_data}">${tB_display}</strong><br><button onclick="salvarPlacar(this)" data-matchid="${matchId}" class="btn btn-outline ${hideSave}" style="${btnStyle}; margin-top: 10px; width: 100%; max-width: 180px; padding: 6px;">${btnText}</button></div>`;
                             }
                         }
                     }
@@ -1390,8 +1403,14 @@
                     // Botão de W.O. que só aparece se o jogo ainda não estiver salvo
                     let btnWO = isLogged && !isBye && !jogosSalvos[matchId] && !hideBtn ? `<button onclick="declararWO(this, '${matchId}', '${tA_data}', '${tB_data}')" class="btn btn-outline" style="background: #fef2f2; color: #ef4444; border: 1px solid #fecaca; margin-top:5px; width:100%; max-width:180px; padding: 6px;">🛑 Aplicar W.O.</button>` : '';
 
+                    let quadra = jogosSalvos[matchId] ? jogosSalvos[matchId].quadra : '';
+                    let quadraHtml = '';
+                    if (quadra) { quadraHtml = `<div onclick="atribuirQuadra(this, '${matchId}', '${tA_data}', '${tB_data}', true)" style="background: #e0e7ff; color: #4338ca; font-size: 0.75rem; padding: 3px 10px; border-radius: 12px; cursor: pointer; display: inline-block; margin-bottom: 10px; font-weight: 700;">📍 Quadra ${quadra}</div><br>`; }
+                    else if (isLogged && !tA_data.includes("Aguardando") && !tB_data.includes("Aguardando")) { quadraHtml = `<div onclick="atribuirQuadra(this, '${matchId}', '${tA_data}', '${tB_data}', true)" style="background: transparent; border: 1px dashed #94a3b8; color: #94a3b8; font-size: 0.7rem; padding: 2px 8px; border-radius: 12px; cursor: pointer; display: inline-block; margin-bottom: 10px;">+ Atribuir Quadra</div><br>`; }
+
                     html += `
                         <div class="bracket-match mata-mata-match ${isResolvido}">
+                            ${quadraHtml}
                             <strong class="t-a" data-name="${tA_data}" ${cliqueEdicaoA}>${tA_display}</strong>
                             ${gerarInputsPlacar(setsAberto, matchId)}
                             <strong class="t-b" data-name="${tB_data}" ${cliqueEdicaoB}>${tB_display}</strong>
@@ -2322,6 +2341,36 @@
 
             document.getElementById('conteudoPontuacao').innerHTML = html;
             document.getElementById('modalPontuacaoTorneio').classList.remove('hidden');
+        };
+
+        // --- FUNÇÃO DE GESTÃO DE QUADRAS ---
+        window.atribuirQuadra = async function(btn, matchId, timeA, timeB, isMataMata) {
+            if (!isLogged) return;
+            let quadraAtual = jogosSalvos[matchId] ? jogosSalvos[matchId].quadra : '';
+            let numQuadra = prompt("Qual o número ou nome da quadra para este jogo?\n(Para remover, deixe em branco)", quadraAtual);
+            if (numQuadra === null) return; // Cancelou a janela
+
+            btn.textContent = "⌛...";
+            let dadosQuadra = { quadra: numQuadra.trim(), timeA: timeA, timeB: timeB, fase: isMataMata ? "Eliminatória" : "Grupos" };
+            
+            try {
+                // merge: true garante que só atualiza a quadra e não apaga o resto
+                await setDoc(doc(db, "campeonatos", torneioAbertoId, "jogos", matchId), dadosQuadra, { merge: true });
+                
+                if (!jogosSalvos[matchId]) jogosSalvos[matchId] = {};
+                jogosSalvos[matchId].quadra = numQuadra.trim();
+                
+                if (numQuadra.trim() === '') {
+                    btn.style.background = 'transparent'; btn.style.border = '1px dashed #94a3b8'; btn.style.color = '#94a3b8';
+                    btn.textContent = '+ Atribuir Quadra';
+                } else {
+                    btn.style.background = '#e0e7ff'; btn.style.border = 'none'; btn.style.color = '#4338ca';
+                    btn.textContent = '📍 Quadra ' + numQuadra.trim();
+                }
+            } catch (e) {
+                alert("Erro ao atribuir quadra.");
+                btn.textContent = quadraAtual ? `📍 Quadra ${quadraAtual}` : "+ Atribuir Quadra";
+            }
         };
 
         
