@@ -19,6 +19,8 @@
     <!-- Biblioteca para gerar a Imagem do Ranking -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
+    <!-- NOVA: Biblioteca para gerar Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Poppins:wght@400;500;600;700&display=swap');
 
@@ -517,7 +519,10 @@
         <section id="details-section" class="hidden">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 10px;">
                 <button id="btnVoltar" class="btn btn-outline" style="border: none; padding-left: 0; color: var(--blue-link) !important; font-weight: 600;">← Voltar</button>
-                <button id="btnExcluirTorneio" class="btn hidden" style="background: #ef4444; color: white;">🗑 Excluir Torneio</button>
+                <div style="display: flex; gap: 10px;">
+                    <button id="btnExportarExcel" onclick="exportarDadosExcel()" class="btn hidden" style="background: #10b981; color: white;">📊 Exportar Excel</button>
+                    <button id="btnExcluirTorneio" class="btn hidden" style="background: #ef4444; color: white;">🗑 Excluir Torneio</button>
+                </div>
             </div>
             
             <h2 class="section-title" id="detalhe-nome-torneio" style="margin-bottom: 0.2rem; font-size: 1.6rem;">Nome do Torneio</h2>
@@ -761,10 +766,12 @@
                 document.getElementById('area-add-inscritos').classList.remove('hidden');
                 document.getElementById('btnGerarChaves').classList.remove('hidden');
                 document.getElementById('btnExcluirTorneio').classList.remove('hidden');
+                document.getElementById('btnExportarExcel').classList.remove('hidden');
             } else {
                 document.getElementById('area-add-inscritos').classList.add('hidden');
                 document.getElementById('btnGerarChaves').classList.add('hidden');
                 document.getElementById('btnExcluirTorneio').classList.add('hidden');
+                document.getElementById('btnExportarExcel').classList.add('hidden');
             }
 
             carregarJogosSalvos(id).then(() => {
@@ -2058,7 +2065,7 @@
 
             document.querySelectorAll('.col-acao-admin').forEach(el => el.style.display = 'none');
 
-            html2canvas(cartao, { scale: 2, backgroundColor: "#ffffff" }).then(canvas => {
+            (cartao, { scale: 2, backgroundColor: "#ffffff" }).then(canvas => {
                 let link = document.createElement('a');
                 link.download = `Ranking_${cat.replace(/\s+/g, '_')}_${tipo.replace(/\s+/g, '_')}.png`;
                 link.href = canvas.toDataURL('image/png');
@@ -2520,6 +2527,140 @@
             } catch(e) {
                 console.error(e);
                 resDiv.innerHTML = '<p style="color:#ef4444; font-size:0.85rem; margin:0;">Erro ao buscar histórico. Verifique a conexão.</p>';
+            }
+        };
+
+
+          // --- FUNÇÃO PARA EXPORTAR DADOS PARA EXCEL ---
+        window.exportarDadosExcel = function() {
+            if (!torneioAbertoData) return;
+            
+            const btn = document.getElementById('btnExportarExcel');
+            let textoOriginal = btn.innerHTML;
+            btn.innerHTML = "⏳ A gerar...";
+            btn.disabled = true;
+
+            try {
+                let wb = XLSX.utils.book_new();
+
+                // 1. ABA DE INSCRITOS
+                let insc = inscritosAtuais.map(i => ({
+                    "Jogador 1": i.jogador1,
+                    "Jogador 2": i.jogador2 || "-",
+                    "Cabeça de Chave": i.nivelSeed === 1 ? "C1" : (i.nivelSeed === 2 ? "C2" : "-")
+                }));
+                let wsInscritos = XLSX.utils.json_to_sheet(insc);
+                wsInscritos['!cols'] = [{wch: 25}, {wch: 25}, {wch: 15}]; // Largura das colunas
+                XLSX.utils.book_append_sheet(wb, wsInscritos, "Inscritos");
+
+                // 2. ABA DE JOGOS E RESULTADOS
+                let jogosArr = [];
+                for (let id in jogosSalvos) {
+                    let j = jogosSalvos[id];
+                    jogosArr.push({
+                        "Fase": j.fase,
+                        "Quadra": j.quadra || "-",
+                        "Time A": j.timeA,
+                        "Time B": j.timeB,
+                        "Placar A": j.placarA ? j.placarA.join(' / ') : "-",
+                        "Placar B": j.placarB ? j.placarB.join(' / ') : "-",
+                        "Vencedor": j.vencedor || (j.isWO ? "W.O." : "Pendente")
+                    });
+                }
+                let wsJogos = XLSX.utils.json_to_sheet(jogosArr);
+                wsJogos['!cols'] = [{wch: 15}, {wch: 10}, {wch: 30}, {wch: 30}, {wch: 10}, {wch: 10}, {wch: 30}];
+                XLSX.utils.book_append_sheet(wb, wsJogos, "Jogos");
+
+                // 3. ABA DE PONTUAÇÃO (SIMULAÇÃO AO VIVO)
+                let ptsConfig = torneioAbertoData.pontosConfig || {};
+                let stats = {};
+                inscritosAtuais.forEach(i => {
+                    let base = ptsConfig.participacao || 0;
+                    if (i.jogador1) stats[i.jogador1] = { g: base, o: 0, p: 0 };
+                    if (i.jogador2) stats[i.jogador2] = { g: base, o: 0, p: 0 };
+                });
+
+                // Soma Grupos
+                document.querySelectorAll('#chavesGeradasUI .standings-table tbody').forEach(tb => {
+                    tb.querySelectorAll('tr').forEach((tr, idx) => {
+                        if(!tr.cells[0]) return;
+                        let nome = tr.cells[0].getAttribute('data-name') || tr.cells[0].innerText.replace(/👤/g, '').replace(/[🥇🥈🥉]/g, '').trim();
+                        let jgs = nome.split('&').map(j => j.trim()).filter(Boolean);
+                        let p = idx === 0 ? (ptsConfig.primeiroGrupo || 15) : (idx === 1 ? (ptsConfig.segundoGrupo || 10) : (idx === 2 ? (ptsConfig.terceiroGrupo || 5) : (ptsConfig.quartoGrupo || 2)));
+                        jgs.forEach(j => { if (stats[j]) stats[j].g += p; });
+                    });
+                });
+
+                // Soma Mata-Mata
+                function extrairMataMata(fasesArray, chave) {
+                    if (!fasesArray) return;
+                    let mPts = {};
+                    fasesArray.forEach((fase, idx) => {
+                        let jgs = fase.jogos || fase;
+                        let isF = idx === fasesArray.length - 1; let isS = idx === fasesArray.length - 2; let isQ = idx === fasesArray.length - 3; let isO = idx === fasesArray.length - 4;
+                        jgs.forEach(jogo => {
+                            let pfx = chave === 'Prata' ? "MM_Prata_" : "MM_";
+                            let matchId = `${pfx}${idx}_${jogo.timeA.replace(/\s+/g, '')}_vs_${jogo.timeB.replace(/\s+/g, '')}`;
+                            let salvo = jogosSalvos[matchId];
+                            
+                            if (jogo.timeA && !jogo.timeA.includes("BYE") && !jogo.timeA.includes("Aguardando")) mPts[jogo.timeA] = mPts[jogo.timeA] || 0;
+                            if (jogo.timeB && !jogo.timeB.includes("BYE") && !jogo.timeB.includes("Aguardando")) mPts[jogo.timeB] = mPts[jogo.timeB] || 0;
+
+                            if (salvo && salvo.vencedor) {
+                                let v = salvo.vencedor; let p = (v === jogo.timeA) ? jogo.timeB : jogo.timeA;
+                                let ptsO = chave==='Prata'?(ptsConfig.oitavasPrata||0):(ptsConfig.oitavas||0);
+                                let ptsQ = chave==='Prata'?(ptsConfig.quartasPrata||0):(ptsConfig.quartas||0);
+                                let ptsS = chave==='Prata'?(ptsConfig.semiPrata||0):(ptsConfig.semi||0);
+                                let ptsV = chave==='Prata'?(ptsConfig.vicePrata||0):(ptsConfig.vice||0);
+                                let ptsC = chave==='Prata'?(ptsConfig.campeaoPrata||0):(ptsConfig.campeao||0);
+                                let ptsT = chave==='Prata'?(ptsConfig.terceiroPrata||0):(ptsConfig.terceiro||0);
+
+                                if(isO) mPts[p] = Math.max(mPts[p]||0, ptsO); if(isQ) mPts[p] = Math.max(mPts[p]||0, ptsQ); if(isS) mPts[p] = Math.max(mPts[p]||0, ptsS);
+                                if(isF) {
+                                    mPts[v] = Math.max(mPts[v]||0, ptsC); mPts[p] = Math.max(mPts[p]||0, ptsV);
+                                    if(fasesArray.length >= 2) {
+                                        let sj = fasesArray[fasesArray.length - 2].jogos || fasesArray[fasesArray.length - 2]; 
+                                        let jc = sj.find(j => j.timeA === v || j.timeB === v);
+                                        if (jc) { let terc = (jc.timeA === v) ? jc.timeB : jc.timeA; mPts[terc] = Math.max(mPts[terc]||0, ptsT); }
+                                    }
+                                }
+                            }
+                        });
+                    });
+                    for (let eq in mPts) {
+                        let jgs = eq.split('&').map(j => j.trim()).filter(Boolean);
+                        jgs.forEach(j => { if (stats[j]) { if (chave === 'Ouro') stats[j].o += mPts[eq]; if (chave === 'Prata') stats[j].p += mPts[eq]; } });
+                    }
+                }
+                extrairMataMata(window.fasesMataMata, 'Ouro');
+                extrairMataMata(window.fasesPrata, 'Prata');
+
+                let rankingArr = [];
+                for (let j in stats) {
+                    let st = stats[j];
+                    rankingArr.push({
+                        "Jogador": j,
+                        "Pts Fase Grupos": st.g,
+                        "Pts Mata-Mata Ouro": st.o,
+                        "Pts Mata-Mata Prata": st.p,
+                        "TOTAL PONTOS": st.g + st.o + st.p
+                    });
+                }
+                rankingArr.sort((a,b) => b["TOTAL PONTOS"] - a["TOTAL PONTOS"]);
+                
+                let wsPts = XLSX.utils.json_to_sheet(rankingArr);
+                wsPts['!cols'] = [{wch: 25}, {wch: 18}, {wch: 22}, {wch: 22}, {wch: 18}];
+                XLSX.utils.book_append_sheet(wb, wsPts, "Pontuação (Raio-X)");
+
+                // Dispara o Download
+                XLSX.writeFile(wb, `Relatorio_Confra_${torneioAbertoData.nome.replace(/\s+/g, '_')}.xlsx`);
+
+            } catch(e) {
+                console.error(e);
+                alert("Erro ao gerar Excel. Verifique os dados.");
+            } finally {
+                btn.innerHTML = textoOriginal;
+                btn.disabled = false;
             }
         };
 
