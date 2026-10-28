@@ -146,44 +146,25 @@
             .t-a, .t-b { font-size: 0.95rem; }
         }
 
-        /* --- MELHORIA: ÁRVORE DE MATA-MATA PERFEITA NO COMPUTADOR --- */
-        @media (min-width: 992px) {
-            #mataMataUI { padding: 10px 20px !important; }
-
-            .bracket-container {
-                display: flex !important; flex-direction: row !important; width: 100% !important;
-                align-items: stretch !important; background: #ffffff !important; border-radius: 16px !important;
-                padding: 40px 15px 20px 15px !important; margin-bottom: 60px !important;
-                box-shadow: 0 4px 15px rgba(0,0,0,0.04) !important; border: 1px solid #f1f5f9 !important;
-                overflow-x: auto;
+        /* --- MELHORIA: FASE DE GRUPOS EM COLUNAS NO COMPUTADOR --- */
+            #chavesGeradasUI {
+                display: grid !important;
+                /* O auto-fit cria quantas colunas couberem (geralmente 4 num monitor padrão) */
+                grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)) !important; 
+                gap: 20px !important;
+                align-items: start !important; /* Impede que grupos curtos estiquem de forma feia */
+                padding: 10px 0 !important;
             }
 
-            .bracket-round {
-                flex: 1 !important; min-width: 220px !important; display: flex !important; flex-direction: column !important;
-                margin: 0 !important; border-right: 2px dashed #e2e8f0 !important; padding: 0 15px !important; position: relative !important;
+            #chavesGeradasUI > .grupo-container {
+                margin-bottom: 0 !important; /* O espaço passa a ser gerido pelo 'gap' do grid */
+                background: #ffffff !important;
+                border: 1px solid #e2e8f0 !important;
+                border-radius: 16px !important;
+                padding: 15px !important;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.03) !important;
+                height: 100% !important; /* Mantém os cartões alinhados */
             }
-            .bracket-round:last-child { border-right: none !important; }
-
-            /* Título da fase (Oitavas, Quartas) fixado no topo */
-            .bracket-round h3 {
-                position: absolute !important; top: -25px !important; left: 0 !important; width: 100% !important;
-                text-align: center !important; font-size: 0.95rem !important; color: var(--gray) !important; margin: 0 !important;
-            }
-
-            /* O SEGREDO CONTRA A CASCATA: Mostra o título "Chave Ouro" SÓ na primeira coluna! */
-            .bracket-round:not(:first-child) .chave-title { display: none !important; }
-
-            .bracket-match {
-                padding: 8px 12px !important; margin: 5px 0 !important; border-radius: 8px !important;
-                background: #f8fafc !important; border: 1px solid #cbd5e1 !important;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.02) !important; transition: transform 0.2s;
-            }
-            .bracket-match:hover { transform: scale(1.02); border-color: #94a3b8 !important; }
-            .bracket-match .t-a, .bracket-match .t-b { font-size: 0.85rem !important; line-height: 1.2 !important; }
-            .bracket-match .score-input { width: 26px !important; height: 26px !important; font-size: 0.9rem !important; padding: 0 !important; }
-            .bracket-match button, .bracket-match div[onclick*="atribuirQuadra"] { padding: 3px 8px !important; font-size: 0.75rem !important; margin-top: 5px !important; }
-        }
-
         
     </style>
 </head>
