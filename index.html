@@ -149,11 +149,15 @@
         /* --- MELHORIA: FASE DE GRUPOS EM COLUNAS E COMPACTA NO COMPUTADOR --- */
             #chavesGeradasUI {
                 display: grid !important;
-                /* Aumentamos de 260px para 290px para a tabela respirar, mantendo 3 ou 4 colunas */
                 grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)) !important; 
                 gap: 15px !important;
                 align-items: start !important;
                 padding: 10px 0 !important;
+            }
+
+            /* 🚨 CORREÇÃO: Força o painel de grupos a ocultar quando mudar para o Mata-Mata */
+            #chavesGeradasUI[style*="display: none"] {
+                display: none !important;
             }
 
             #chavesGeradasUI > .grupo-container {
@@ -161,7 +165,7 @@
                 background: #ffffff !important;
                 border: 1px solid #e2e8f0 !important;
                 border-radius: 12px !important;
-                padding: 10px 8px !important; /* Margem interna da caixa bem mais justa */
+                padding: 10px 8px !important; 
                 box-shadow: 0 4px 15px rgba(0,0,0,0.03) !important;
                 height: 100% !important;
             }
