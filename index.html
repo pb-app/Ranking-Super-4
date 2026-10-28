@@ -146,24 +146,59 @@
             .t-a, .t-b { font-size: 0.95rem; }
         }
 
-        /* --- MELHORIA: FASE DE GRUPOS EM COLUNAS NO COMPUTADOR --- */
+        /* --- MELHORIA: FASE DE GRUPOS EM COLUNAS E COMPACTA NO COMPUTADOR --- */
             #chavesGeradasUI {
                 display: grid !important;
-                /* O auto-fit cria quantas colunas couberem (geralmente 4 num monitor padrão) */
-                grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)) !important; 
-                gap: 20px !important;
-                align-items: start !important; /* Impede que grupos curtos estiquem de forma feia */
+                /* Aumentamos de 260px para 290px para a tabela respirar, mantendo 3 ou 4 colunas */
+                grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)) !important; 
+                gap: 15px !important;
+                align-items: start !important;
                 padding: 10px 0 !important;
             }
 
             #chavesGeradasUI > .grupo-container {
-                margin-bottom: 0 !important; /* O espaço passa a ser gerido pelo 'gap' do grid */
+                margin-bottom: 0 !important;
                 background: #ffffff !important;
                 border: 1px solid #e2e8f0 !important;
-                border-radius: 16px !important;
-                padding: 15px !important;
+                border-radius: 12px !important;
+                padding: 10px 8px !important; /* Margem interna da caixa bem mais justa */
                 box-shadow: 0 4px 15px rgba(0,0,0,0.03) !important;
-                height: 100% !important; /* Mantém os cartões alinhados */
+                height: 100% !important;
+            }
+
+            /* 1. COMPACTAÇÃO EXTREMA DA TABELA (Apenas no PC) */
+            #chavesGeradasUI .standings-table th, 
+            #chavesGeradasUI .standings-table td {
+                padding: 6px 3px !important; /* Remove quase todo o espaço vazio lateral */
+                font-size: 0.75rem !important; /* Fonte menor para os dados */
+            }
+
+            #chavesGeradasUI .standings-table th {
+                font-size: 0.65rem !important; /* Títulos (J, V, SS, SG) bem pequenos */
+                padding-left: 5px !important;
+            }
+
+            /* 2. ENCOLHER O ÍCONE DO AVATAR (👤) */
+            #chavesGeradasUI .standings-table td > div[style*="border-radius:50%"] {
+                width: 20px !important;
+                height: 20px !important;
+                font-size: 0.65rem !important;
+            }
+
+            /* 3. APROXIMAR O NOME DO AVATAR */
+            #chavesGeradasUI .standings-table td[data-name] {
+                gap: 4px !important;
+            }
+
+            /* 4. REDUZIR O LINK "VER INFOS" ABAIXO DA POSIÇÃO */
+            #chavesGeradasUI .standings-table a {
+                font-size: 0.6rem !important;
+            }
+            
+            /* 5. CAIXAS DE JOGOS DENTRO DO GRUPO (quando expandidos) */
+            #chavesGeradasUI .match-box {
+                padding: 10px !important;
+                margin: 8px 0 !important;
             }
         
     </style>
