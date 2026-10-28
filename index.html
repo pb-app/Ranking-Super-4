@@ -1122,11 +1122,10 @@
 
                 grupos.forEach((grupo, index) => {
                     let numStr = (index+1).toString().padStart(2, '0');
-                    html += `<div class="grupo-container" style="margin-bottom: 20px;">
-                                <h5 style="background: transparent; color: var(--gray); font-weight: 600; font-size: 0.9rem; text-transform: uppercase; padding: 5px 0 10px 0; margin-bottom: 0;">Grupo ${numStr}</h5>
-                                <div class="tabela-container" style="margin-bottom: 15px;"></div>
-                                <div class="jogos-do-grupo" style="background: #f9fafb; padding: 15px; border-radius: 8px; border: 1px solid var(--border); display:none;">`;
-                    
+                    let matchIdsGrupo = [];
+                    let quadraGrupo = '';
+                    let htmlJogos = '';
+
                     if (formatoAberto.includes("Super 4")) {
                         let p = grupo.map(g => g.jogador1);
                         while (p.length < 4) p.push("Vaga " + (p.length + 1));
@@ -1138,16 +1137,16 @@
                         
                         combinacoes.forEach(comb => {
                             let matchId = comb.tA_data.replace(/\s+/g, '') + "_vs_" + comb.tB_data.replace(/\s+/g, '');
+                            matchIdsGrupo.push(matchId);
+                            // Se encontrar uma quadra já salva neste jogo, assume como a quadra do grupo
+                            if (!quadraGrupo && jogosSalvos[matchId] && jogosSalvos[matchId].quadra) quadraGrupo = jogosSalvos[matchId].quadra;
+                            
                             let isResolvido = jogosSalvos[matchId] ? 'resolvido' : '';
                             let btnStyle = jogosSalvos[matchId] ? 'background: #ecfdf5; color: #10b981; border: 1px solid #10b981;' : 'background: transparent; color: var(--blue-link); border: 1px solid var(--blue-link);';
                             let btnText = jogosSalvos[matchId] ? '✅ Salvo!' : '💾 Salvar Placar';
                             let hideSave = isLogged ? '' : 'hidden';
-                            let quadra = jogosSalvos[matchId] ? jogosSalvos[matchId].quadra : '';
-                                let quadraHtml = '';
-                                if (quadra) { quadraHtml = `<div onclick="atribuirQuadra(this, '${matchId}', '${comb.tA_data}', '${comb.tB_data}', false)" style="background: #e0e7ff; color: #4338ca; font-size: 0.75rem; padding: 3px 10px; border-radius: 12px; cursor: pointer; display: inline-block; margin-bottom: 10px; font-weight: 700;">📍 Quadra ${quadra}</div><br>`; }
-                                else if (isLogged) { quadraHtml = `<div onclick="atribuirQuadra(this, '${matchId}', '${comb.tA_data}', '${comb.tB_data}', false)" style="background: transparent; border: 1px dashed #94a3b8; color: #94a3b8; font-size: 0.7rem; padding: 2px 8px; border-radius: 12px; cursor: pointer; display: inline-block; margin-bottom: 10px;">+ Atribuir Quadra</div><br>`; }
 
-                                html += `<div class="match-box ${isResolvido}">${quadraHtml}<strong class="t-a" data-name="${comb.tA_data}">${comb.tA_display}</strong>${gerarInputsPlacar(setsAberto, matchId)}<strong class="t-b" data-name="${comb.tB_data}">${comb.tB_display}</strong><br><button onclick="salvarPlacar(this)" data-matchid="${matchId}" class="btn btn-outline ${hideSave}" style="${btnStyle}; margin-top: 10px; width: 100%; max-width: 180px; padding: 6px;">${btnText}</button></div>`;
+                            htmlJogos += `<div class="match-box ${isResolvido}"><strong class="t-a" data-name="${comb.tA_data}">${comb.tA_display}</strong>${gerarInputsPlacar(setsAberto, matchId)}<strong class="t-b" data-name="${comb.tB_data}">${comb.tB_display}</strong><br><button onclick="salvarPlacar(this)" data-matchid="${matchId}" class="btn btn-outline ${hideSave}" style="${btnStyle}; margin-top: 10px; width: 100%; max-width: 180px; padding: 6px;">${btnText}</button></div>`;
                         });
                     } else {
                         for (let i = 0; i < grupo.length; i++) {
@@ -1155,31 +1154,43 @@
                                 let tA_data = grupo[i].jogador2 ? `${grupo[i].jogador1} & ${grupo[i].jogador2}` : grupo[i].jogador1;
                                 let tB_data = grupo[j].jogador2 ? `${grupo[j].jogador1} & ${grupo[j].jogador2}` : grupo[j].jogador1;
                                 
-                                let tA_display = grupo[i].jogador2 
-                                    ? `<span>${grupo[i].jogador1}${window.getBadgeSeed(grupo[i].jogador1)}</span><br><span style="color:var(--gray); font-size:0.85rem; font-weight:400;">${grupo[i].jogador2}${window.getBadgeSeed(grupo[i].jogador2)}</span>` 
-                                    : `<span>${grupo[i].jogador1}${window.getBadgeSeed(grupo[i].jogador1)}</span>`;
-                                    
-                                let tB_display = grupo[j].jogador2 
-                                    ? `<span>${grupo[j].jogador1}${window.getBadgeSeed(grupo[j].jogador1)}</span><br><span style="color:var(--gray); font-size:0.85rem; font-weight:400;">${grupo[j].jogador2}${window.getBadgeSeed(grupo[j].jogador2)}</span>` 
-                                    : `<span>${grupo[j].jogador1}${window.getBadgeSeed(grupo[j].jogador1)}</span>`;
+                                let tA_display = grupo[i].jogador2 ? `<span>${grupo[i].jogador1}${window.getBadgeSeed(grupo[i].jogador1)}</span><br><span style="color:var(--gray); font-size:0.85rem; font-weight:400;">${grupo[i].jogador2}${window.getBadgeSeed(grupo[i].jogador2)}</span>` : `<span>${grupo[i].jogador1}${window.getBadgeSeed(grupo[i].jogador1)}</span>`;
+                                let tB_display = grupo[j].jogador2 ? `<span>${grupo[j].jogador1}${window.getBadgeSeed(grupo[j].jogador1)}</span><br><span style="color:var(--gray); font-size:0.85rem; font-weight:400;">${grupo[j].jogador2}${window.getBadgeSeed(grupo[j].jogador2)}</span>` : `<span>${grupo[j].jogador1}${window.getBadgeSeed(grupo[j].jogador1)}</span>`;
                                 
                                 let matchId = tA_data.replace(/\s+/g, '') + "_vs_" + tB_data.replace(/\s+/g, '');
+                                matchIdsGrupo.push(matchId);
+                                if (!quadraGrupo && jogosSalvos[matchId] && jogosSalvos[matchId].quadra) quadraGrupo = jogosSalvos[matchId].quadra;
+
                                 let isResolvido = jogosSalvos[matchId] ? 'resolvido' : '';
                                 let btnStyle = jogosSalvos[matchId] ? 'background: #ecfdf5; color: #10b981; border: 1px solid #10b981;' : 'background: transparent; color: var(--blue-link); border: 1px solid var(--blue-link);';
                                 let btnText = jogosSalvos[matchId] ? '✅ Salvo!' : '💾 Salvar Placar';
                                 let hideSave = isLogged ? '' : 'hidden'; 
-                                let quadra = jogosSalvos[matchId] ? jogosSalvos[matchId].quadra : '';
-                                let quadraHtml = '';
-                                if (quadra) { quadraHtml = `<div onclick="atribuirQuadra(this, '${matchId}', '${tA_data}', '${tB_data}', false)" style="background: #e0e7ff; color: #4338ca; font-size: 0.75rem; padding: 3px 10px; border-radius: 12px; cursor: pointer; display: inline-block; margin-bottom: 10px; font-weight: 700;">📍 Quadra ${quadra}</div><br>`; }
-                                else if (isLogged) { quadraHtml = `<div onclick="atribuirQuadra(this, '${matchId}', '${tA_data}', '${tB_data}', false)" style="background: transparent; border: 1px dashed #94a3b8; color: #94a3b8; font-size: 0.7rem; padding: 2px 8px; border-radius: 12px; cursor: pointer; display: inline-block; margin-bottom: 10px;">+ Atribuir Quadra</div><br>`; }
 
-                                html += `<div class="match-box ${isResolvido}">${quadraHtml}<strong class="t-a" data-name="${tA_data}">${tA_display}</strong>${gerarInputsPlacar(setsAberto, matchId)}<strong class="t-b" data-name="${tB_data}">${tB_display}</strong><br><button onclick="salvarPlacar(this)" data-matchid="${matchId}" class="btn btn-outline ${hideSave}" style="${btnStyle}; margin-top: 10px; width: 100%; max-width: 180px; padding: 6px;">${btnText}</button></div>`;
+                                htmlJogos += `<div class="match-box ${isResolvido}"><strong class="t-a" data-name="${tA_data}">${tA_display}</strong>${gerarInputsPlacar(setsAberto, matchId)}<strong class="t-b" data-name="${tB_data}">${tB_display}</strong><br><button onclick="salvarPlacar(this)" data-matchid="${matchId}" class="btn btn-outline ${hideSave}" style="${btnStyle}; margin-top: 10px; width: 100%; max-width: 180px; padding: 6px;">${btnText}</button></div>`;
                             }
                         }
                     }
-                    html += `</div>
-                            <button onclick="this.previousElementSibling.style.display = this.previousElementSibling.style.display === 'none' ? 'block' : 'none'; this.textContent = this.textContent.includes('Exibir') ? 'Ocultar jogos do Grupo' : 'Exibir jogos do Grupo';" style="background:transparent; border:none; color:var(--blue-link); font-size:0.9rem; margin-top:10px; cursor:pointer; font-weight:500; text-align:left; padding:5px 0;">Exibir jogos do Grupo ${numStr}</button>
-                    </div>`;
+
+                    // --- CRIAÇÃO DO BOTÃO ÚNICO NO CABEÇALHO DO GRUPO ---
+                    let matchIdsStr = matchIdsGrupo.join(',');
+                    let quadraBtnHtml = '';
+                    if (quadraGrupo) { 
+                        quadraBtnHtml = `<span onclick="atribuirQuadraGrupo(this, '${matchIdsStr}')" style="background: #e0e7ff; color: #4338ca; font-size: 0.75rem; padding: 4px 10px; border-radius: 12px; cursor: pointer; font-weight: 700; white-space: nowrap;">📍 Quadra ${quadraGrupo}</span>`; 
+                    } else if (isLogged) { 
+                        quadraBtnHtml = `<span onclick="atribuirQuadraGrupo(this, '${matchIdsStr}')" style="background: transparent; border: 1px dashed #94a3b8; color: #94a3b8; font-size: 0.7rem; padding: 3px 8px; border-radius: 12px; cursor: pointer; white-space: nowrap;">+ Atribuir Quadra</span>`; 
+                    }
+
+                    html += `<div class="grupo-container" style="margin-bottom: 20px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; padding: 5px 5px 10px 5px; border-bottom: 1px solid var(--border); margin-bottom: 10px;">
+                                    <h5 style="color: var(--dark); font-weight: 700; font-size: 1rem; margin: 0;">Grupo ${numStr}</h5>
+                                    ${quadraBtnHtml}
+                                </div>
+                                <div class="tabela-container" style="margin-bottom: 15px;"></div>
+                                <div class="jogos-do-grupo" style="background: #f9fafb; padding: 15px; border-radius: 8px; border: 1px solid var(--border); display:none;">
+                                    ${htmlJogos}
+                                </div>
+                                <button onclick="this.previousElementSibling.style.display = this.previousElementSibling.style.display === 'none' ? 'block' : 'none'; this.textContent = this.textContent.includes('Exibir') ? 'Ocultar jogos do Grupo' : 'Exibir jogos do Grupo';" style="background:transparent; border:none; color:var(--blue-link); font-size:0.9rem; margin-top:10px; cursor:pointer; font-weight:600; text-align:center; padding:5px 0; width: 100%;">Exibir jogos do Grupo ${numStr}</button>
+                            </div>`;
                 });
                 if (isLogged) document.getElementById('btnMontarMataMata').classList.remove('hidden');
             } else { html += '<h4 style="text-align: center; padding: 20px; color:var(--gray);">⚔ Apenas Eliminatórias</h4>'; }
@@ -2677,6 +2688,47 @@
             } finally {
                 btn.innerHTML = textoOriginal;
                 btn.disabled = false;
+            }
+        };
+
+          // --- FUNÇÃO PARA ATRIBUIR QUADRA AO GRUPO TODO (LOTE) ---
+        window.atribuirQuadraGrupo = async function(btn, matchIdsStr) {
+            if (!isLogged) return;
+            let matchIds = matchIdsStr.split(',');
+            if (matchIds.length === 0) return;
+
+            let quadraAtual = jogosSalvos[matchIds[0]] ? jogosSalvos[matchIds[0]].quadra : '';
+            let numQuadra = prompt("Qual a quadra para TODOS os jogos deste grupo?\n(Para remover, deixe em branco)", quadraAtual || '');
+            if (numQuadra === null) return; // Cancelou a janela
+
+            btn.textContent = "⌛...";
+            let q = numQuadra.trim();
+
+            try {
+                let promessas = [];
+                matchIds.forEach(matchId => {
+                    let dadosQuadra = { quadra: q, fase: "Grupos" };
+                    // Atualiza no banco sem apagar os placares que já existirem {merge: true}
+                    promessas.push(setDoc(doc(db, "campeonatos", torneioAbertoId, "jogos", matchId), dadosQuadra, { merge: true }));
+                    
+                    if (!jogosSalvos[matchId]) jogosSalvos[matchId] = {};
+                    jogosSalvos[matchId].quadra = q;
+                });
+
+                // Espera gravar tudo no Firebase
+                await Promise.all(promessas);
+
+                // Atualiza visualmente o botão do cabeçalho
+                if (q === '') {
+                    btn.style.background = 'transparent'; btn.style.border = '1px dashed #94a3b8'; btn.style.color = '#94a3b8';
+                    btn.textContent = '+ Atribuir Quadra';
+                } else {
+                    btn.style.background = '#e0e7ff'; btn.style.border = 'none'; btn.style.color = '#4338ca';
+                    btn.textContent = '📍 Quadra ' + q;
+                }
+            } catch (e) {
+                alert("Erro ao atribuir quadra ao grupo. Verifique a conexão.");
+                btn.textContent = quadraAtual ? `📍 Quadra ${quadraAtual}` : "+ Atribuir Quadra";
             }
         };
 
