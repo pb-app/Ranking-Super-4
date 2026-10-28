@@ -146,7 +146,14 @@
             .t-a, .t-b { font-size: 0.95rem; }
         }
 
-        /* --- MELHORIA: FASE DE GRUPOS EM COLUNAS E COMPACTA NO COMPUTADOR --- */
+        /* ================================================================= */
+        /* --- MELHORIA: TELAS OTIMIZADAS PARA COMPUTADOR E NOTEBOOK --- */
+        /* ================================================================= */
+        @media (min-width: 992px) {
+            
+            /* --------------------------------------------------- */
+            /* 1. FASE DE GRUPOS (Grelha de Colunas e Compacta)    */
+            /* --------------------------------------------------- */
             #chavesGeradasUI {
                 display: grid !important;
                 grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)) !important; 
@@ -155,8 +162,8 @@
                 padding: 10px 0 !important;
             }
 
-            /* 🚨 CORREÇÃO: Força o painel de grupos a ocultar quando mudar para o Mata-Mata */
-            #chavesGeradasUI[style*="display: none"] {
+            /* Correção: Força o painel a ocultar no Mata-Mata */
+            #chavesGeradasUI[style*="none"] {
                 display: none !important;
             }
 
@@ -170,40 +177,64 @@
                 height: 100% !important;
             }
 
-            /* 1. COMPACTAÇÃO EXTREMA DA TABELA (Apenas no PC) */
+            /* Compactação extrema da Tabela de Grupos */
             #chavesGeradasUI .standings-table th, 
             #chavesGeradasUI .standings-table td {
-                padding: 6px 3px !important; /* Remove quase todo o espaço vazio lateral */
-                font-size: 0.75rem !important; /* Fonte menor para os dados */
+                padding: 6px 3px !important; 
+                font-size: 0.75rem !important; 
             }
-
             #chavesGeradasUI .standings-table th {
-                font-size: 0.65rem !important; /* Títulos (J, V, SS, SG) bem pequenos */
+                font-size: 0.65rem !important; 
                 padding-left: 5px !important;
             }
-
-            /* 2. ENCOLHER O ÍCONE DO AVATAR (👤) */
             #chavesGeradasUI .standings-table td > div[style*="border-radius:50%"] {
                 width: 20px !important;
                 height: 20px !important;
                 font-size: 0.65rem !important;
             }
+            #chavesGeradasUI .standings-table td[data-name] { gap: 4px !important; }
+            #chavesGeradasUI .standings-table a { font-size: 0.6rem !important; }
+            #chavesGeradasUI .match-box { padding: 10px !important; margin: 8px 0 !important; }
 
-            /* 3. APROXIMAR O NOME DO AVATAR */
-            #chavesGeradasUI .standings-table td[data-name] {
-                gap: 4px !important;
+
+            /* --------------------------------------------------- */
+            /* 2. FASE DE MATA-MATA (Árvore de Torneio Perfeita)   */
+            /* --------------------------------------------------- */
+            #mataMataUI { padding: 10px 20px !important; }
+
+            .bracket-container {
+                display: flex !important; flex-direction: row !important; width: 100% !important;
+                align-items: stretch !important; background: #ffffff !important; border-radius: 16px !important;
+                padding: 40px 15px 20px 15px !important; margin-bottom: 60px !important;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.04) !important; border: 1px solid #f1f5f9 !important;
+                overflow-x: auto;
             }
 
-            /* 4. REDUZIR O LINK "VER INFOS" ABAIXO DA POSIÇÃO */
-            #chavesGeradasUI .standings-table a {
-                font-size: 0.6rem !important;
+            .bracket-round {
+                flex: 1 !important; min-width: 220px !important; display: flex !important; flex-direction: column !important;
+                margin: 0 !important; border-right: 2px dashed #e2e8f0 !important; padding: 0 15px !important; position: relative !important;
             }
-            
-            /* 5. CAIXAS DE JOGOS DENTRO DO GRUPO (quando expandidos) */
-            #chavesGeradasUI .match-box {
-                padding: 10px !important;
-                margin: 8px 0 !important;
+            .bracket-round:last-child { border-right: none !important; }
+
+            /* Título da fase (Oitavas, Quartas) fixado no topo */
+            .bracket-round h3 {
+                position: absolute !important; top: -25px !important; left: 0 !important; width: 100% !important;
+                text-align: center !important; font-size: 0.95rem !important; color: var(--gray) !important; margin: 0 !important;
             }
+
+            /* Mostra "Chave Ouro" SÓ na primeira coluna para evitar repetições feias */
+            .bracket-round:not(:first-child) .chave-title { display: none !important; }
+
+            .bracket-match {
+                padding: 8px 12px !important; margin: 5px 0 !important; border-radius: 8px !important;
+                background: #f8fafc !important; border: 1px solid #cbd5e1 !important;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.02) !important; transition: transform 0.2s;
+            }
+            .bracket-match:hover { transform: scale(1.02); border-color: #94a3b8 !important; }
+            .bracket-match .t-a, .bracket-match .t-b { font-size: 0.85rem !important; line-height: 1.2 !important; }
+            .bracket-match .score-input { width: 26px !important; height: 26px !important; font-size: 0.9rem !important; padding: 0 !important; }
+            .bracket-match button, .bracket-match div[onclick*="atribuirQuadra"] { padding: 3px 8px !important; font-size: 0.75rem !important; margin-top: 5px !important; }
+        }
         
     </style>
 </head>
