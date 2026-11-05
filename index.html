@@ -807,8 +807,6 @@
         // -----------------------------------------------------------
 
         const q = query(collection(db, "campeonatos"), orderBy("dataCriacao", "desc"));
-
-        const q = query(collection(db, "campeonatos"), orderBy("dataCriacao", "desc"));
         onSnapshot(q, (snapshot) => {
             tournamentsContainer.innerHTML = ''; 
             if (snapshot.empty) { tournamentsContainer.innerHTML = '<p style="color: var(--gray);">Nenhum campeonato aberto.</p>'; return; }
