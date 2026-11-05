@@ -992,7 +992,10 @@
         }
 
         function gerarInputsPlacar(formatoSets, matchId) {
-            let dados = jogosSalvos[matchId] || { placarA: [], placarB: [] };
+            // Correção: Garante que os arrays de placar existem mesmo se apenas a quadra foi salva
+            let dados = jogosSalvos[matchId] || {};
+            let pA = dados.placarA || [];
+            let pB = dados.placarB || [];
             let bloqueio = isLogged ? "" : "disabled";
 
             if (formatoSets && formatoSets.includes("Melhor de 3")) {
@@ -1001,13 +1004,13 @@
                         ${[1, 2, 3].map((set, i) => `
                         <div style="display: flex; align-items: center; gap: 10px;">
                             <span style="font-size: 0.75rem; width: 35px; color: var(--gray); font-weight: 600; text-transform:uppercase;">${set===3 ? 'Tie' : set+'º Set'}</span>
-                            <input type="number" class="score-input p-timeA" min="0" oninput="liberarBotaoSalvar(this)" value="${dados.placarA[i] !== undefined ? dados.placarA[i] : ''}" ${bloqueio}> 
+                            <input type="number" class="score-input p-timeA" min="0" oninput="liberarBotaoSalvar(this)" value="${pA[i] !== undefined ? pA[i] : ''}" ${bloqueio}> 
                             <span style="font-weight: 400; color: #d1d5db; font-size:1.2rem;">×</span> 
-                            <input type="number" class="score-input p-timeB" min="0" oninput="liberarBotaoSalvar(this)" value="${dados.placarB[i] !== undefined ? dados.placarB[i] : ''}" ${bloqueio}>
+                            <input type="number" class="score-input p-timeB" min="0" oninput="liberarBotaoSalvar(this)" value="${pB[i] !== undefined ? pB[i] : ''}" ${bloqueio}>
                         </div>`).join('')}
                     </div>`;
             } else {
-                return `<div class="match-score"><input type="number" class="score-input p-timeA" min="0" oninput="liberarBotaoSalvar(this)" value="${dados.placarA[0] !== undefined ? dados.placarA[0] : ''}" ${bloqueio}> <span style="font-weight: 400; color: #d1d5db; font-size:1.5rem;">×</span> <input type="number" class="score-input p-timeB" min="0" oninput="liberarBotaoSalvar(this)" value="${dados.placarB[0] !== undefined ? dados.placarB[0] : ''}" ${bloqueio}></div>`;
+                return `<div class="match-score"><input type="number" class="score-input p-timeA" min="0" oninput="liberarBotaoSalvar(this)" value="${pA[0] !== undefined ? pA[0] : ''}" ${bloqueio}> <span style="font-weight: 400; color: #d1d5db; font-size:1.5rem;">×</span> <input type="number" class="score-input p-timeB" min="0" oninput="liberarBotaoSalvar(this)" value="${pB[0] !== undefined ? pB[0] : ''}" ${bloqueio}></div>`;
             }
         }
 
