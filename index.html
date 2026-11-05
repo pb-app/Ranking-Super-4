@@ -2220,11 +2220,26 @@
             if (lista.length === 0) { tbodyRanking.innerHTML = '<tr><td colspan="5" style="padding: 30px;">Nenhum jogador pontuou ainda nesta chave.</td></tr>'; return; }
 
             let html = '';
+            
+            // --- NOVO: Variáveis para controlar o empate estilo ITF ---
+            let posicaoExibida = 1;
+            let pontosAnteriores = -1;
+
             lista.forEach((jog, index) => {
                 let ptsToShow = jog.pontos; let corPts = "var(--dark)";
                 if (tipoRanking === 'ouro') { ptsToShow = jog.pontosOuro || 0; corPts = "#d97706"; }
                 if (tipoRanking === 'prata') { ptsToShow = jog.pontosPrata || 0; corPts = "#475569"; }
-                let icone = index === 0 ? '🥇' : (index === 1 ? '🥈' : (index === 2 ? '🥉' : (index + 1 + 'º')));
+                
+                // --- NOVO: Lógica de empate de pontos ---
+                // Se a pontuação for diferente do jogador anterior, ele assume a posição real da fila (index + 1)
+                if (ptsToShow !== pontosAnteriores) {
+                    posicaoExibida = index + 1;
+                    pontosAnteriores = ptsToShow;
+                }
+                
+                // O ícone agora respeita a "posicaoExibida" e não apenas o index
+                let icone = posicaoExibida === 1 ? '🥇' : (posicaoExibida === 2 ? '🥈' : (posicaoExibida === 3 ? '🥉' : (posicaoExibida + 'º')));
+                
                 let titulos = jog.titulos || 0; let vitorias = jog.vitorias || 0; let jogos = jog.jogos || 0;
                 let hideAdmin = isLogged ? "" : "hidden";
 
