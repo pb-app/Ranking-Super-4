@@ -764,6 +764,50 @@
             }
         }
 
+        // --- NOVA FUNÇÃO: RECUPERAR CAMPEÕES DE TORNEIOS ANTIGOS ---
+        window.recuperarCampeoesAntigos = async function(torneioId, camp) {
+            try {
+                let champOuro = null; let champPrata = null;
+
+                // Tenta achar o vencedor do jogo da Final Ouro
+                if (camp.fasesMataMata && camp.fasesMataMata.length > 0) {
+                    let fRound = camp.fasesMataMata.length - 1;
+                    let fMatch = camp.fasesMataMata[fRound].jogos ? camp.fasesMataMata[fRound].jogos[0] : camp.fasesMataMata[fRound][0];
+                    if (fMatch && fMatch.timeA) {
+                        let matchId = `MM_${fRound}_${fMatch.timeA.replace(/\s+/g, '')}_vs_${fMatch.timeB.replace(/\s+/g, '')}`;
+                        let docJogo = await getDoc(doc(db, "campeonatos", torneioId, "jogos", matchId));
+                        if (docJogo.exists() && docJogo.data().vencedor) champOuro = docJogo.data().vencedor;
+                    }
+                }
+
+                // Tenta achar o vencedor do jogo da Final Prata
+                if (camp.fasesPrata && camp.fasesPrata.length > 0) {
+                    let fRound = camp.fasesPrata.length - 1;
+                    let fMatch = camp.fasesPrata[fRound].jogos ? camp.fasesPrata[fRound].jogos[0] : camp.fasesPrata[fRound][0];
+                    if (fMatch && fMatch.timeA) {
+                        let matchId = `MM_Prata_${fRound}_${fMatch.timeA.replace(/\s+/g, '')}_vs_${fMatch.timeB.replace(/\s+/g, '')}`;
+                        let docJogo = await getDoc(doc(db, "campeonatos", torneioId, "jogos", matchId));
+                        if (docJogo.exists() && docJogo.data().vencedor) champPrata = docJogo.data().vencedor;
+                    }
+                }
+
+                // Atualiza o documento no banco de dados para nunca mais precisar procurar!
+                if (champOuro || champPrata) {
+                    await updateDoc(doc(db, "campeonatos", torneioId), { 
+                        campeaoOuro: champOuro || null,
+                        campeaoPrata: champPrata || null
+                    });
+                } else {
+                    // Se não houver jogo final registado, tira o "A procurar..." e deixa só "Finalizado"
+                    let container = document.getElementById(`champs-${torneioId}`);
+                    if (container) container.innerHTML = `<span style="display:inline-block; background:#f0fdf4; color:#10b981; padding: 4px 8px; border-radius:6px; font-size:0.85rem; font-weight:600;">✅ Finalizado</span>`;
+                }
+            } catch(e) { console.log("Erro na autocura:", e); }
+        };
+        // -----------------------------------------------------------
+
+        const q = query(collection(db, "campeonatos"), orderBy("dataCriacao", "desc"));
+
         const q = query(collection(db, "campeonatos"), orderBy("dataCriacao", "desc"));
         onSnapshot(q, (snapshot) => {
             tournamentsContainer.innerHTML = ''; 
@@ -777,14 +821,13 @@
                 let extraInfo = '';
                 if (camp.status === 'encerrado') {
                     extraInfo = `<div style="margin-top: 15px; padding-top: 12px; border-top: 1px dashed var(--border);">`;
-                    if (camp.campeaoOuro) {
-                        extraInfo += `<div style="font-size: 0.95rem; color: var(--dark); margin-bottom: 5px;">🏆 <b style="color: #d97706;">Ouro:</b> ${camp.campeaoOuro.replace(/\s*&\s*/g, ' e ')}</div>`;
-                    }
-                    if (camp.campeaoPrata) {
-                        extraInfo += `<div style="font-size: 0.95rem; color: var(--dark);">🥈 <b style="color: #475569;">Prata:</b> ${camp.campeaoPrata.replace(/\s*&\s*/g, ' e ')}</div>`;
-                    }
-                    if (!camp.campeaoOuro && !camp.campeaoPrata) {
-                        extraInfo += `<span style="display:inline-block; background:#f0fdf4; color:#10b981; padding: 4px 8px; border-radius:6px; font-size:0.85rem; font-weight:600;">✅ Finalizado</span>`;
+                    if (camp.campeaoOuro || camp.campeaoPrata) {
+                        if (camp.campeaoOuro) extraInfo += `<div style="font-size: 0.95rem; color: var(--dark); margin-bottom: 5px;">🏆 <b style="color: #d97706;">Ouro:</b> ${camp.campeaoOuro.replace(/\s*&\s*/g, ' e ')}</div>`;
+                        if (camp.campeaoPrata) extraInfo += `<div style="font-size: 0.95rem; color: var(--dark);">🥈 <b style="color: #475569;">Prata:</b> ${camp.campeaoPrata.replace(/\s*&\s*/g, ' e ')}</div>`;
+                    } else {
+                        // Se for um campeonato antigo sem os campeões salvos, mostra mensagem de carregamento e dispara a busca!
+                        extraInfo += `<div id="champs-${docSnap.id}"><span style="font-size:0.8rem; color:var(--gray); font-style:italic;">A recuperar campeões no arquivo... ⏳</span></div>`;
+                        recuperarCampeoesAntigos(docSnap.id, camp);
                     }
                     extraInfo += `</div>`;
                 } else {
