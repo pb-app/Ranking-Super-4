@@ -1791,7 +1791,22 @@
 
             function gerarChaveMatematica(times) {
                 if(times.length < 2) return [];
-                times.sort((a,b) => b.v - a.v || b.ss - a.ss || b.sg - a.sg);
+                
+                // NOVO: Aplica também o desempate pelo Ranking Geral para definir as "Seeds" (Cabeças de Chave) no Mata-Mata
+                times.sort((a,b) => {
+                    if (b.v !== a.v) return b.v - a.v;
+                    if (b.ss !== a.ss) return b.ss - a.ss;
+                    if (b.sg !== a.sg) return b.sg - a.sg;
+                    
+                    let ptsA = 0; let ptsB = 0;
+                    if (window.pontosRankingCache) {
+                        a.nome.split('&').forEach(n => ptsA += (window.pontosRankingCache[n.trim()] || 0));
+                        b.nome.split('&').forEach(n => ptsB += (window.pontosRankingCache[n.trim()] || 0));
+                    }
+                    if (ptsA !== ptsB) return ptsB - ptsA;
+                    return Math.random() - 0.5; // Caso extremo: tudo igual
+                });
+
                 let seed1 = times[0].nome; let seed2 = times[1].nome;
                 let resto = times.slice(2).map(t => t.nome).sort(() => Math.random() - 0.5);
 
@@ -1801,17 +1816,24 @@
                 let fases = []; let rod1 = [];
                 for(let i=0; i<totalJogos; i++) rod1.push({timeA: null, timeB: null});
 
-                rod1[0].timeA = seed1; rod1[totalJogos - 1].timeA = seed2;
-                if (numByes > 0) { rod1[0].timeB = "BYE (Avança)"; numByes--; }
-                if (numByes > 0) { rod1[totalJogos - 1].timeB = "BYE (Avança)"; numByes--; }
+                // CORREÇÃO: Evita erro de 'undefined' quando só existem 2 times a classificar (Final direta)
+                if (totalJogos === 1) {
+                    rod1[0].timeA = seed1;
+                    rod1[0].timeB = seed2;
+                } else {
+                    rod1[0].timeA = seed1; rod1[totalJogos - 1].timeA = seed2;
+                    if (numByes > 0) { rod1[0].timeB = "BYE (Avança)"; numByes--; }
+                    if (numByes > 0) { rod1[totalJogos - 1].timeB = "BYE (Avança)"; numByes--; }
 
-                let filaTimes = resto;
-                for (let i = 0; i < totalJogos; i++) {
-                    if (!rod1[i].timeA) rod1[i].timeA = filaTimes.shift();
-                    if (!rod1[i].timeB) {
-                        if (numByes > 0) { rod1[i].timeB = "BYE (Avança)"; numByes--; } else { rod1[i].timeB = filaTimes.shift(); }
+                    let filaTimes = resto;
+                    for (let i = 0; i < totalJogos; i++) {
+                        if (!rod1[i].timeA) rod1[i].timeA = filaTimes.shift();
+                        if (!rod1[i].timeB) {
+                            if (numByes > 0) { rod1[i].timeB = "BYE (Avança)"; numByes--; } else { rod1[i].timeB = filaTimes.shift(); }
+                        }
                     }
                 }
+                
                 fases.push({ jogos: rod1 });
 
                 let prox = totalJogos / 2;
