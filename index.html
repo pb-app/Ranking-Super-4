@@ -833,6 +833,16 @@
             window.fasesMataMata = [];
             window.fasesPrata = [];
             jogosSalvos = {};
+
+            // --- NOVO: BUSCA OS PONTOS DO RANKING EM SEGUNDO PLANO ---
+            window.pontosRankingCache = {};
+            if (camp.ranking) {
+                getDocs(collection(db, "rankings", camp.ranking, "jogadores")).then(snapRank => {
+                    snapRank.forEach(docR => { window.pontosRankingCache[docR.data().nome] = docR.data().pontos || 0; });
+                    // Se os grupos já estiverem na tela, dá um "refresh" para aplicar o desempate
+                    document.querySelectorAll('.grupo-container').forEach(container => { atualizarTabelaDoGrupo(container); });
+                }).catch(e => console.log("Erro ao buscar ranking para desempate:", e));
+            }
             
             carregarInscritos(id);
             carregarSugestoesJogadores(camp.ranking);
@@ -1116,6 +1126,16 @@
             // Cria um armazenador de sorteio global para evitar que a tabela mude de ordem a cada tecla digitada no placar
             window.tiebreakerSeeds = window.tiebreakerSeeds || {};
 
+            // NOVA FUNÇÃO: Calcula os pontos da dupla (ou jogador) consultando o Ranking
+            function getPontosRanking(nomeTime) {
+                if (!window.pontosRankingCache) return 0;
+                let soma = 0;
+                // Divide o nome caso seja uma dupla (Ex: "João & Maria") e soma os pontos dos dois
+                let jogadores = nomeTime.split('&').map(n => n.trim()).filter(Boolean);
+                jogadores.forEach(j => { soma += (window.pontosRankingCache[j] || 0); });
+                return soma;
+            }
+
             let classif = Object.values(stats).sort((a, b) => {
                 // 1º Critério: Número de Vitórias (V)
                 if (b.v !== a.v) return b.v - a.v;
@@ -1126,7 +1146,12 @@
                 // 3º Critério: Saldo de Games (SG)
                 if (b.sg !== a.sg) return b.sg - a.sg;
                 
-                // 4º Critério: Sorteio Aleatório
+                // 4º Critério: RANKING GERAL (Quem tem mais pontos no ranking ganha o desempate)
+                let ptsA = getPontosRanking(a.nome);
+                let ptsB = getPontosRanking(b.nome);
+                if (ptsA !== ptsB) return ptsB - ptsA; // Ordem decrescente (Maior > Menor)
+
+                // 5º Critério: Sorteio Aleatório (Só usado se tudo acima for exatamente igual)
                 if (!window.tiebreakerSeeds[a.nome]) window.tiebreakerSeeds[a.nome] = Math.random();
                 if (!window.tiebreakerSeeds[b.nome]) window.tiebreakerSeeds[b.nome] = Math.random();
                 
