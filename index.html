@@ -16,8 +16,8 @@
     <link rel="apple-touch-icon" sizes="180x180" href="icon-192.png">
     <link rel="apple-touch-icon" sizes="167x167" href="icon-192.png">
 
-    <!-- Biblioteca para gerar a Imagem do Ranking -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+   <!-- Biblioteca para gerar PDF do Ranking -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <!-- NOVA: Biblioteca para gerar Excel -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -541,7 +541,7 @@
         <section id="ranking-section" class="hidden">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 10px;">
                 <h2 class="section-title" style="margin-bottom: 0;">🏆 Ranking</h2>
-                <button id="btnBaixarRanking" class="btn" style="background: #10b981; color: white;">📸 Baixar Imagem</button>
+                <button id="btnBaixarRanking" class="btn" style="background: #10b981; color: white;">📄 Baixar PDF</button>
             </div>
             
             <div style="display: flex; gap: 15px; align-items: flex-end; margin-bottom: 25px; flex-wrap: wrap;">
@@ -2261,37 +2261,44 @@
 
         filtroRanking.addEventListener('change', carregarRanking); tipoFiltroRanking.addEventListener('change', carregarRanking); document.getElementById('btnAbaRankings').addEventListener('click', carregarRanking);
 
-        // --- FUNÇÃO PARA TIRAR O PRINT DO RANKING ---
+        // --- FUNÇÃO PARA GERAR O PDF DO RANKING ---
         document.getElementById('btnBaixarRanking').addEventListener('click', () => {
             const btn = document.getElementById('btnBaixarRanking');
-            btn.textContent = "📸 Capturando...";
+            btn.textContent = "⏳ Gerando PDF...";
             const cartao = document.getElementById('cartaoRanking');
             const cabecalho = document.getElementById('cabecalhoExportacao');
             const titulo = document.getElementById('tituloExportacao');
             
             let cat = document.getElementById('filtroVisualRanking').options[document.getElementById('filtroVisualRanking').selectedIndex]?.text;
             let tipo = document.getElementById('tipoFiltroRanking').options[document.getElementById('tipoFiltroRanking').selectedIndex]?.text;
-            if (!cat) { alert("Selecione um ranking primeiro."); btn.textContent = "📸 Baixar Imagem"; return; }
+            if (!cat) { alert("Selecione um ranking primeiro."); btn.textContent = "📄 Baixar PDF"; return; }
             
             titulo.textContent = `🏆 ${cat} - ${tipo}`;
             cabecalho.style.display = 'block';
 
+            // Oculta os botões de edição de dentro da tabela
             document.querySelectorAll('.col-acao-admin').forEach(el => el.style.display = 'none');
 
-            (cartao, { scale: 2, backgroundColor: "#ffffff" }).then(canvas => {
-                let link = document.createElement('a');
-                link.download = `Ranking_${cat.replace(/\s+/g, '_')}_${tipo.replace(/\s+/g, '_')}.png`;
-                link.href = canvas.toDataURL('image/png');
-                link.click();
-                
+            // Configuração do documento PDF
+            const opt = {
+                margin:       10, // Margem de 10mm
+                filename:     `Ranking_${cat.replace(/\s+/g, '_')}_${tipo.replace(/\s+/g, '_')}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true, backgroundColor: "#ffffff" },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            // Processa, salva o arquivo PDF e volta a tela ao normal
+            html2pdf().set(opt).from(cartao).save().then(() => {
                 cabecalho.style.display = 'none';
                 if(isLogged) document.querySelectorAll('.col-acao-admin').forEach(el => el.style.display = '');
-                btn.innerHTML = "📸 Baixar Imagem";
-            }).catch(() => {
-                alert("Erro ao capturar imagem.");
+                btn.innerHTML = "📄 Baixar PDF";
+            }).catch(err => {
+                console.error(err);
+                alert("Erro ao gerar PDF.");
                 cabecalho.style.display = 'none';
                 if(isLogged) document.querySelectorAll('.col-acao-admin').forEach(el => el.style.display = '');
-                btn.innerHTML = "📸 Baixar Imagem";
+                btn.innerHTML = "📄 Baixar PDF";
             });
         });
 
