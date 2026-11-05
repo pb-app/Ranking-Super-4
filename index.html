@@ -863,11 +863,14 @@
                 let temGrupos = camp.formato && (camp.formato.includes("Grupos") || camp.formato.includes("Super 4"));
                 
                 if (camp.sorteados && camp.sorteados.length > 0) {
+                    // Ocultar painel de inscritos
                     document.getElementById('painel-inscritos').classList.add('hidden');
                     document.getElementById('painel-grid').classList.add('grid-expandido');
                     document.getElementById('btnMostrarInscritos').classList.add('hidden');
                     document.getElementById('avisoChaves').classList.add('hidden');
                     document.getElementById('btnGerarChaves').classList.add('hidden');
+                    
+                    // DESENHAR OS GRUPOS NA TELA
                     renderizarGrupos(camp.sorteados);
                 }
                 
@@ -875,13 +878,17 @@
                     window.fasesMataMata = camp.fasesMataMata;
                     window.fasesPrata = camp.fasesPrata || [];
                     
-                    // Renderiza o mata-mata em segundo plano sem mudar a aba ativa
                     renderizarMataMata(true); 
-                    
-                    // FORÇA ABRIR SEMPRE NA PRIMEIRA FASE (Grupos se houver, ou Eliminatórias se for só mata-mata)
-                    faseAtualUI = 0;
-                    atualizarUIFases();
                 }
+
+                // NOVO: Garantir que a UI é atualizada independentemente de ter Mata-Mata ou não!
+                if (temGrupos) {
+                    nomesFases = ["Fase de Grupos"];
+                    faseAtualUI = 0;
+                } else {
+                    faseAtualUI = 0;
+                }
+                atualizarUIFases(); // Força a tela a desenhar os grupos ou eliminatórias
             });
         }
 
@@ -1459,7 +1466,7 @@
                 if (faseAtualUI === 0) {
                     // Fase de Grupos
                     chavesUI.classList.remove('oculto');
-                    chavesUI.style.display = ''; // Deixa o CSS decidir sozinho (block no telemóvel, grid no PC)
+                    chavesUI.style.display = 'grid'; // Forçamos o Grid aqui temporariamente para garantir que aparece no PC e telemóvel
                     mataUI.style.display = 'none';
                     
                     if (isLogged && !jaTemMataMata) { painelTroca.classList.remove('hidden'); }
