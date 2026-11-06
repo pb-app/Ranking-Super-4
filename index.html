@@ -2353,6 +2353,9 @@ let nomes = `<span style="line-height:1.4;">${nome1Final}${nome2Final}</span>${s
                     }); 
                     torneioAbertoData.status = "encerrado";
                     
+                    window.rankingDadosCache = {}; // Limpa o cache do ranking para mostrar os novos pontos
+                    window.h2hJogosCache = null; // Limpa o histórico H2H para incluir as novas vitórias
+
                     btn.textContent = "✅ Torneio Encerrado e Salvo!"; btn.style.background = "#10b981";
             } catch(e) { alert("Erro ao salvar pontos."); btn.textContent = "Tentar Novamente"; btn.disabled = false; }
         });
@@ -2366,16 +2369,25 @@ let nomes = `<span style="line-height:1.4;">${nome1Final}${nome2Final}</span>${s
 
         const filtroRanking = document.getElementById('filtroVisualRanking'); const tipoFiltroRanking = document.getElementById('tipoFiltroRanking'); const tbodyRanking = document.getElementById('rankingTabelaBody');
 
-        async function carregarRanking() {
+        window.rankingDadosCache = window.rankingDadosCache || {}; // CACHE DO RANKING GLOBAL
+
+        async function carregarRanking(forcarAtualizacao = false) {
             let rankingNome = filtroRanking.options[filtroRanking.selectedIndex]?.text; let tipoRanking = tipoFiltroRanking.value;
             if(!rankingNome) { tbodyRanking.innerHTML = '<tr><td colspan="5" style="padding: 30px;">Selecione uma categoria...</td></tr>'; return; }
             tbodyRanking.innerHTML = '<tr><td colspan="5" style="padding: 30px;">A carregar ranking...</td></tr>';
             
-            const snap = await getDocs(collection(db, "rankings", rankingNome, "jogadores")); let lista = [];
-            
-            snap.forEach(doc => { 
-                let d = doc.data(); 
-                d.id = doc.id; 
+            let listaBase = [];
+            // Se já temos no cache e não estamos a forçar, usamos o cache para poupar o Firebase!
+            if (!forcarAtualizacao && window.rankingDadosCache[rankingNome]) {
+                listaBase = window.rankingDadosCache[rankingNome];
+            } else {
+                const snap = await getDocs(collection(db, "rankings", rankingNome, "jogadores"));
+                snap.forEach(doc => { let d = doc.data(); d.id = doc.id; listaBase.push(d); });
+                window.rankingDadosCache[rankingNome] = listaBase; // Guarda para o próximo clique
+            }
+
+            let lista = [];
+            listaBase.forEach(d => { 
                 
                 if (tipoRanking === 'ouro' && (!d.pontosOuro || d.pontosOuro <= 0)) return;
                 if (tipoRanking === 'prata' && (!d.pontosPrata || d.pontosPrata <= 0)) return;
@@ -2863,12 +2875,19 @@ let nomes = `<span style="line-height:1.4;">${nome1Final}${nome2Final}</span>${s
             resDiv.classList.remove('hidden');
 
             try {
-                // Traz todos os jogos já registrados no banco
-                const snap = await getDocs(collectionGroup(db, "jogos"));
+                // Traz todos os jogos (com CACHE para poupar leituras!)
+                let snapDocs = [];
+                if (window.h2hJogosCache) {
+                    snapDocs = window.h2hJogosCache; // Puxa da memória se já baixou hoje
+                } else {
+                    const snap = await getDocs(collectionGroup(db, "jogos"));
+                    snap.forEach(docSnap => snapDocs.push(docSnap.data()));
+                    window.h2hJogosCache = snapDocs; // Guarda no cache para a próxima pesquisa
+                }
+
                 let vitoriasP1 = 0; let vitoriasP2 = 0; let totalJogos = 0;
 
-                snap.forEach(docSnap => {
-                    let j = docSnap.data();
+                snapDocs.forEach(j => {
                     if (!j.vencedor) return; // Ignora jogos não encerrados
                     
                     // Separa os nomes para garantir que encontra o jogador certo (mesmo em duplas)
