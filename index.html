@@ -980,7 +980,8 @@ let nome2Final = dados.jogador2 ? `<br><span style="color:var(--gray); font-size
 
 let nomes = `<span style="line-height:1.4;">${nome1Final}${nome2Final}</span>${star}`;
                     
-                    let btnExcluir = isLogged ? `<button onclick="deletarInscrito('${idInscrito}')" class="btn btn-outline" style="padding: 4px 8px; font-size: 0.75rem; border-color: #ef4444; color: #ef4444 !important;">✕</button>` : '';
+                    let torneioSorteado = torneioAbertoData && torneioAbertoData.sorteados && torneioAbertoData.sorteados.length > 0;
+                    let btnExcluir = (isLogged && !torneioSorteado) ? `<button onclick="deletarInscrito('${idInscrito}')" class="btn btn-outline" style="padding: 4px 8px; font-size: 0.75rem; border-color: #ef4444; color: #ef4444 !important;">✕</button>` : '';
 
                     li.innerHTML = `<div style="display:flex; align-items:center; gap:10px;"><div style="width:32px; height:32px; background:#e5e7eb; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1rem;">👤</div>${nomes}</div> ${btnExcluir}`;
                     listaUI.appendChild(li);
