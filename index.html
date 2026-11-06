@@ -764,10 +764,15 @@
             const colsAcao = document.querySelectorAll('.col-acao-admin');
             const btnsZerar = document.getElementById('btnZerarRanking');
             const btnGerenciar = document.getElementById('btnGerenciarRankings');
+            const btnMostrar = document.getElementById('btnMostrarInscritos');
 
             if (isLogged) {
                 btnLogin.classList.add('hidden'); userMenu.classList.remove('hidden');
                 colsAcao.forEach(col => col.classList.remove('hidden'));
+                
+                // Atualiza o botão de visualização dos inscritos (se ele existir na tela)
+                if (btnMostrar) { btnMostrar.textContent = "👀 Editar Lista de Inscritos"; }
+
                 if(!document.getElementById('ranking-section').classList.contains('hidden')){
                     btnsZerar.classList.remove('hidden');
                     btnGerenciar.classList.remove('hidden');
@@ -780,6 +785,9 @@
                 colsAcao.forEach(col => col.classList.add('hidden'));
                 btnsZerar.classList.add('hidden');
                 btnGerenciar.classList.add('hidden');
+                
+                // Atualiza o botão de visualização dos inscritos (se ele existir na tela)
+                if (btnMostrar) { btnMostrar.textContent = "👥 Ver Lista de Inscritos"; }
             }
         }
 
@@ -888,6 +896,12 @@
                     document.getElementById('btnMostrarInscritos').classList.remove('hidden');
                     document.getElementById('avisoChaves').classList.add('hidden');
                     document.getElementById('btnGerarChaves').classList.add('hidden');
+                    // Altera o texto do botão consoante quem está a ver
+                    if (isLogged) {
+                        document.getElementById('btnMostrarInscritos').textContent = "👀 Editar Lista de Inscritos";
+                    } else {
+                        document.getElementById('btnMostrarInscritos').textContent = "👥 Ver Lista de Inscritos";
+                    }
                     
                     // DESENHAR OS GRUPOS NA TELA
                     renderizarGrupos(camp.sorteados);
