@@ -893,14 +893,7 @@
             });
         }
 
-                // NOVO: Garantir que a UI é atualizada independentemente de ter Mata-Mata ou não!
-                if (temGrupos) {
-                    nomesFases = ["Fase de Grupos"];
-                    faseAtualUI = 0;
-                atualizarUIFases(); // Força a tela a desenhar os grupos e as setas
-            });
-        }
-
+               
         document.getElementById('btnMostrarInscritos').addEventListener('click', () => {
             document.getElementById('painel-inscritos').classList.remove('hidden');
             document.getElementById('painel-grid').classList.remove('grid-expandido');
