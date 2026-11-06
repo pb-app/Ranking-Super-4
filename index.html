@@ -878,8 +878,19 @@
                     window.fasesMataMata = camp.fasesMataMata;
                     window.fasesPrata = camp.fasesPrata || [];
                     
-                    renderizarMataMata(true); 
+                    renderizarMataMata(true); // O Mata-Mata já reconstrói todas as setas corretamente
+                } else {
+                    // Se AINDA NÃO tiver Mata-Mata gerado, aí sim, fica só na Fase de Grupos
+                    if (temGrupos) {
+                        nomesFases = ["Fase de Grupos"];
+                    } else {
+                        nomesFases = ["Eliminatórias"];
+                    }
                 }
+
+                faseAtualUI = 0;
+                atualizarUIFases(); // Força a tela a desenhar os grupos e as setas
+            });
 
                 // NOVO: Garantir que a UI é atualizada independentemente de ter Mata-Mata ou não!
                 if (temGrupos) {
