@@ -456,7 +456,7 @@
     </header>
 
     <main>
-        <section id="create-section">
+        <section id="create-section" style="display: none;">
             <h2 class="section-title">Criar Novo Campeonato</h2>
             <form id="tournament-form">
                 <div class="form-group">
@@ -891,6 +891,7 @@
                 faseAtualUI = 0;
                 atualizarUIFases(); // Força a tela a desenhar os grupos e as setas
             });
+        }
 
                 // NOVO: Garantir que a UI é atualizada independentemente de ter Mata-Mata ou não!
                 if (temGrupos) {
