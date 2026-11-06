@@ -707,6 +707,21 @@
         <button id="btnFecharIosPopup" class="btn btn-outline" style="width: 100%; padding: 8px;">Fechar</button>
     </div>
 
+    <!-- Contador Discreto de Visitas e Online -->
+    <div id="contadorVisitasUI" style="position: fixed; bottom: 12px; left: 12px; background: rgba(31, 41, 55, 0.85); backdrop-filter: blur(4px); color: #e5e7eb; padding: 6px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 500; display: flex; gap: 12px; z-index: 1000; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.1); transition: opacity 0.3s ease;">
+        <span title="Total histórico de Visitas" style="display: flex; align-items: center; gap: 6px;">
+            <span style="font-size: 0.95rem;">👁️</span> <span id="txtTotalVisitas">--</span>
+        </span>
+        <span style="width: 1px; background: rgba(255,255,255,0.2); height: 14px; margin: auto 0;"></span>
+        <span title="Pessoas Online Agora" style="display: flex; align-items: center; gap: 6px;">
+            <span style="color: #10b981; font-size: 0.6rem; animation: piscar 2s infinite;">🟢</span> <span id="txtOnline">--</span> online
+        </span>
+    </div>
+
+    <style>
+        @keyframes piscar { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+    </style>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, doc, updateDoc, getDocs, setDoc, getDoc, deleteDoc, collectionGroup } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
@@ -3114,6 +3129,50 @@ let nomes = `<span style="line-height:1.4;">${nome1Final}${nome2Final}</span>${s
                 btn.textContent = quadraAtual ? `📍 Quadra ${quadraAtual}` : "+ Atribuir Quadra";
             }
         };
+
+           // =======================================================
+        // --- SISTEMA DE CONTADOR DE VISITAS E PESSOAS ONLINE ---
+        // =======================================================
+        
+        const sessaoId = 'user_' + Math.random().toString(36).substr(2, 9);
+        const docVisitas = doc(db, "sistema", "estatisticas");
+        const docOnline = doc(db, "sistema_online", sessaoId);
+
+        async function iniciarContadores() {
+            try {
+                if (!sessionStorage.getItem('visitaContabilizada')) {
+                    let snap = await getDoc(docVisitas);
+                    if (snap.exists()) {
+                        await updateDoc(docVisitas, { total: (snap.data().total || 0) + 1 });
+                    } else {
+                        await setDoc(docVisitas, { total: 1 });
+                    }
+                    sessionStorage.setItem('visitaContabilizada', 'true');
+                }
+
+                onSnapshot(docVisitas, (docSnap) => {
+                    if (docSnap.exists()) {
+                        document.getElementById('txtTotalVisitas').innerText = docSnap.data().total.toLocaleString('pt-BR');
+                    }
+                });
+
+                await setDoc(docOnline, { ativo: true, horaEntrada: serverTimestamp() });
+
+                const sairDoSite = () => { deleteDoc(docOnline); };
+                window.addEventListener('beforeunload', sairDoSite);
+                window.addEventListener('pagehide', sairDoSite);
+                
+                onSnapshot(collection(db, "sistema_online"), (snap) => {
+                    document.getElementById('txtOnline').innerText = snap.size;
+                });
+
+            } catch (e) {
+                console.log("Aviso: Contadores não iniciados.", e);
+                document.getElementById('contadorVisitasUI').style.display = 'none';
+            }
+        }
+        
+        setTimeout(iniciarContadores, 2000);
 
         
     </script>
