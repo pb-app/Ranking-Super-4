@@ -421,6 +421,25 @@
             <button type="button" id="btnFecharModalRankings" class="btn btn-outline" style="width: 100%;">Fechar</button>
         </div>
     </div>
+
+    <!-- Modal Substituição Inteligente -->
+    <div id="modalSubstituicao" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2000; display: flex; justify-content: center; align-items: center; background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(3px);">
+        <div style="background: var(--white); padding: 2rem; border-radius: 16px; width: 90%; max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+            <h3 style="margin-bottom: 1rem; color: var(--dark); font-size: 1.4rem;">🔄 Substituir Jogador</h3>
+            <p style="margin-bottom: 15px; color: var(--gray); font-size: 0.9rem;">Quem vai entrar no lugar de <strong id="subOldNameDisplay" style="color: var(--primary);"></strong>?</p>
+            
+            <input type="hidden" id="subOldName">
+            <input type="hidden" id="subInscritoId">
+            <input type="hidden" id="subPosicaoJogador">
+            
+            <input type="text" id="subNewName" list="sugestoesJogadores" class="form-control" placeholder="Digite ou escolha do ranking" style="margin-bottom: 20px;">
+            
+            <div style="display: flex; gap: 10px;">
+                <button onclick="confirmarSubstituicao()" class="btn" style="flex: 2; background: #10b981;">Confirmar Troca</button>
+                <button onclick="document.getElementById('modalSubstituicao').classList.add('hidden')" class="btn btn-outline" style="flex: 1;">Cancelar</button>
+            </div>
+        </div>
+    </div>
     
     <!-- Login Modal -->
     <div id="loginModal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; display: flex; justify-content: center; align-items: center;">
@@ -866,7 +885,7 @@
                     // Ocultar painel de inscritos
                     document.getElementById('painel-inscritos').classList.add('hidden');
                     document.getElementById('painel-grid').classList.add('grid-expandido');
-                    document.getElementById('btnMostrarInscritos').classList.add('hidden');
+                    document.getElementById('btnMostrarInscritos').classList.remove('hidden');
                     document.getElementById('avisoChaves').classList.add('hidden');
                     document.getElementById('btnGerarChaves').classList.add('hidden');
                     
@@ -938,7 +957,13 @@
                     else if (dados.nivelSeed === 2) star = ' <span style="background: #f1f5f9; color:#475569; font-size:0.7rem; font-weight:800; padding: 2px 5px; border-radius: 4px; margin-left: 4px;">🌟 C2</span>';
                     else if (dados.isSeed) star = ' ⭐'; 
                     
-                    let nomes = dados.jogador2 ? `<span>${dados.jogador1}<br><span style="color:var(--gray); font-size:0.85rem; font-weight:400;">${dados.jogador2}</span></span>${star}` : `<span>${dados.jogador1}</span>${star}`;
+                    let btnSub1 = isLogged ? `<button onclick="abrirModalSubstituicao('${idInscrito}', '${dados.jogador1}', 1)" style="background:none; border:none; cursor:pointer; font-size:1rem;" title="Substituir ${dados.jogador1}">🔄</button>` : '';
+let btnSub2 = (isLogged && dados.jogador2) ? `<button onclick="abrirModalSubstituicao('${idInscrito}', '${dados.jogador2}', 2)" style="background:none; border:none; cursor:pointer; font-size:1rem;" title="Substituir ${dados.jogador2}">🔄</button>` : '';
+
+let nome1Final = `<span>${dados.jogador1} ${btnSub1}</span>`;
+let nome2Final = dados.jogador2 ? `<br><span style="color:var(--gray); font-size:0.85rem; font-weight:400;">${dados.jogador2} ${btnSub2}</span>` : '';
+
+let nomes = `<span style="line-height:1.4;">${nome1Final}${nome2Final}</span>${star}`;
                     
                     let btnExcluir = isLogged ? `<button onclick="deletarInscrito('${idInscrito}')" class="btn btn-outline" style="padding: 4px 8px; font-size: 0.75rem; border-color: #ef4444; color: #ef4444 !important;">✕</button>` : '';
 
@@ -947,6 +972,108 @@
                 });
             });
         }
+
+        window.abrirModalSubstituicao = function(idInscrito, nomeAtual, posicao) {
+            document.getElementById('subOldNameDisplay').textContent = nomeAtual;
+            document.getElementById('subOldName').value = nomeAtual;
+            document.getElementById('subInscritoId').value = idInscrito;
+            document.getElementById('subPosicaoJogador').value = posicao;
+            document.getElementById('subNewName').value = '';
+            document.getElementById('modalSubstituicao').classList.remove('hidden');
+        };
+
+        window.confirmarSubstituicao = async function() {
+            const idInscrito = document.getElementById('subInscritoId').value;
+            const oldName = document.getElementById('subOldName').value.trim();
+            const newName = document.getElementById('subNewName').value.trim();
+            const posicao = document.getElementById('subPosicaoJogador').value;
+
+            if (!newName || newName === oldName) { alert("Digite um nome válido e diferente do atual."); return; }
+
+            // Troca a cor e texto do botão para mostrar que está a carregar
+            const btn = document.querySelector('#modalSubstituicao .btn');
+            btn.textContent = "A processar substituição..."; btn.disabled = true;
+
+            try {
+                // 1. Atualiza a inscrição original
+                let updateField = posicao === "1" ? { jogador1: newName } : { jogador2: newName };
+                await updateDoc(doc(db, "campeonatos", torneioAbertoId, "inscritos", idInscrito), updateField);
+
+                // Se o torneio já tiver começado, faz a varredura global
+                if (torneioAbertoData.sorteados && torneioAbertoData.sorteados.length > 0) {
+                    let updatesTorneio = {};
+
+                    // A. Atualiza nos Grupos
+                    let novosSorteados = JSON.parse(JSON.stringify(torneioAbertoData.sorteados));
+                    novosSorteados.forEach(insc => {
+                        if (insc.jogador1 === oldName) insc.jogador1 = newName;
+                        if (insc.jogador2 === oldName) insc.jogador2 = newName;
+                    });
+                    updatesTorneio.sorteados = novosSorteados;
+                    torneioAbertoData.sorteados = novosSorteados;
+
+                    const replaceInDuo = (duoStr) => {
+                        if (!duoStr) return duoStr;
+                        let players = duoStr.split('&').map(p => p.trim());
+                        for (let i = 0; i < players.length; i++) {
+                            let cleanName = players[i].replace(/⭐ C1|🌟 C2|⭐/g, '').trim(); 
+                            if (cleanName === oldName) players[i] = newName;
+                        }
+                        return players.join(' & ');
+                    };
+
+                    // B. Atualiza no Mata-Mata (Ouro e Prata)
+                    if (torneioAbertoData.fasesMataMata && torneioAbertoData.fasesMataMata.length > 0) {
+                        let novasFases = JSON.parse(JSON.stringify(torneioAbertoData.fasesMataMata));
+                        novasFases.forEach(fase => { let jogos = fase.jogos || fase; jogos.forEach(j => { j.timeA = replaceInDuo(j.timeA); j.timeB = replaceInDuo(j.timeB); }); });
+                        updatesTorneio.fasesMataMata = novasFases; window.fasesMataMata = novasFases; torneioAbertoData.fasesMataMata = novasFases;
+                    }
+                    if (torneioAbertoData.fasesPrata && torneioAbertoData.fasesPrata.length > 0) {
+                        let novasFasesP = JSON.parse(JSON.stringify(torneioAbertoData.fasesPrata));
+                        novasFasesP.forEach(fase => { let jogos = fase.jogos || fase; jogos.forEach(j => { j.timeA = replaceInDuo(j.timeA); j.timeB = replaceInDuo(j.timeB); }); });
+                        updatesTorneio.fasesPrata = novasFasesP; window.fasesPrata = novasFasesP; torneioAbertoData.fasesPrata = novasFasesP;
+                    }
+
+                    // C. Atualiza campeões (se finalizado)
+                    if (torneioAbertoData.campeaoOuro) { updatesTorneio.campeaoOuro = replaceInDuo(torneioAbertoData.campeaoOuro); torneioAbertoData.campeaoOuro = updatesTorneio.campeaoOuro; }
+                    if (torneioAbertoData.campeaoPrata) { updatesTorneio.campeaoPrata = replaceInDuo(torneioAbertoData.campeaoPrata); torneioAbertoData.campeaoPrata = updatesTorneio.campeaoPrata; }
+
+                    await updateDoc(doc(db, "campeonatos", torneioAbertoId), updatesTorneio);
+
+                    // D. Atualiza os placares já salvos no banco de dados!
+                    for (let matchId in jogosSalvos) {
+                        let j = jogosSalvos[matchId];
+                        let tA_new = replaceInDuo(j.timeA); let tB_new = replaceInDuo(j.timeB); let v_new = replaceInDuo(j.vencedor);
+                        
+                        if (tA_new !== j.timeA || tB_new !== j.timeB || v_new !== j.vencedor) {
+                            let updatesJogo = { timeA: tA_new, timeB: tB_new };
+                            if (j.vencedor) updatesJogo.vencedor = v_new;
+                            await updateDoc(doc(db, "campeonatos", torneioAbertoId, "jogos", matchId), updatesJogo);
+                            
+                            jogosSalvos[matchId].timeA = tA_new; jogosSalvos[matchId].timeB = tB_new;
+                            if (j.vencedor) jogosSalvos[matchId].vencedor = v_new;
+                        }
+                    }
+
+                    // Recarrega os visuais na tela
+                    if (torneioAbertoData.sorteados.length > 0 && (!window.fasesMataMata || window.fasesMataMata.length === 0)) {
+                        renderizarGrupos(torneioAbertoData.sorteados);
+                    } else if (window.fasesMataMata && window.fasesMataMata.length > 0) {
+                        renderizarMataMata(true);
+                        document.querySelectorAll('.grupo-container').forEach(container => { atualizarTabelaDoGrupo(container); });
+                    }
+                }
+
+                document.getElementById('modalSubstituicao').classList.add('hidden');
+                alert(`✅ Substituição concluída!\n${oldName} saiu do campeonato e ${newName} assumiu o seu lugar.`);
+
+            } catch (e) {
+                console.error(e);
+                alert("Erro ao substituir jogador. Tente novamente.");
+            } finally {
+                btn.textContent = "Confirmar Troca"; btn.disabled = false;
+            }
+        };
 
         window.deletarInscrito = async function(idInscrito) {
             if (torneioAbertoData.sorteados && torneioAbertoData.sorteados.length > 0) {
