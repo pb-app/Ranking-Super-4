@@ -629,6 +629,8 @@
                         👥 Inscritos 
                         <span id="contadorInscritos" style="background: var(--primary-glow); color: var(--primary); font-size: 0.9rem; padding: 2px 10px; border-radius: 12px; margin-left: 10px; font-weight: 700;">0</span>
                     </h3>
+
+                    <button id="btnVoltarChaves" class="btn btn-outline hidden" style="margin-bottom: 20px; width: 100%; border-color: var(--primary); color: var(--primary) !important;">🎾 Voltar para as Chaves</button>
                     
                     <div class="form-group" id="area-add-inscritos" style="background: #f9fafb; padding: 15px; border-radius: 8px; border: 1px dashed var(--border);">
                         <input type="text" id="nomeJogador1" list="sugestoesJogadores" class="form-control" placeholder="Jogador 1 (Obrigatório)" style="margin-bottom: 10px; background: var(--white);">
@@ -846,8 +848,10 @@
             listSection.classList.add('hidden'); createSection.style.display = 'none'; detailsSection.classList.remove('hidden');
             
             document.getElementById('painel-inscritos').classList.remove('hidden');
+            document.getElementById('painel-chaves').classList.remove('hidden'); // Garante que as chaves reaparecem
             document.getElementById('painel-grid').classList.remove('grid-expandido');
             document.getElementById('btnMostrarInscritos').classList.add('hidden');
+            if (document.getElementById('btnVoltarChaves')) document.getElementById('btnVoltarChaves').classList.add('hidden'); // Esconde o voltar
             document.getElementById('avisoChaves').classList.remove('hidden');
 
             document.getElementById('chavesGeradasUI').innerHTML = ''; 
@@ -929,9 +933,18 @@
 
                
         document.getElementById('btnMostrarInscritos').addEventListener('click', () => {
+            // Mostra os inscritos em TELA CHEIA e esconde as chaves
             document.getElementById('painel-inscritos').classList.remove('hidden');
-            document.getElementById('painel-grid').classList.remove('grid-expandido');
-            document.getElementById('btnMostrarInscritos').classList.add('hidden');
+            document.getElementById('painel-chaves').classList.add('hidden');
+            document.getElementById('painel-grid').classList.add('grid-expandido');
+            document.getElementById('btnVoltarChaves').classList.remove('hidden');
+        });
+
+        document.getElementById('btnVoltarChaves').addEventListener('click', () => {
+            // Esconde os inscritos e volta a mostrar as chaves
+            document.getElementById('painel-inscritos').classList.add('hidden');
+            document.getElementById('painel-chaves').classList.remove('hidden');
+            document.getElementById('btnVoltarChaves').classList.add('hidden');
         });
 
         document.getElementById('btnVoltar').addEventListener('click', () => {
