@@ -3315,7 +3315,16 @@ let nomes = `<span style="line-height:1.4;">${nome1Final}${nome2Final}</span>${s
         
         setTimeout(iniciarContadores, 2000);
 
-        <!-- POP-UP DE EXPLICAÇÃO DA MEDALHA -->
+        // --- POP-UP DE EXPLICAÇÃO DA MEDALHA (DENTRO DO SCRIPT) ---
+        window.mostrarExplicacaoMedalha = function(titulo, descricao) {
+            document.getElementById('tituloMedalhaModal').textContent = titulo;
+            document.getElementById('textoMedalhaModal').textContent = descricao;
+            document.getElementById('modalExplicacaoMedalha').classList.remove('hidden');
+        };
+        
+    </script>
+    
+    <!-- POP-UP DE EXPLICAÇÃO DA MEDALHA (HTML APENAS) -->
     <div id="modalExplicacaoMedalha" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2050; display: flex; justify-content: center; align-items: center; background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(3px);">
         <div style="background: var(--white); padding: 2rem; border-radius: 16px; width: 90%; max-width: 320px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.15); position: relative;">
             <button type="button" onclick="document.getElementById('modalExplicacaoMedalha').classList.add('hidden')" style="position: absolute; top: 15px; right: 20px; background: transparent; border: none; font-size: 1.8rem; cursor: pointer; color: var(--gray);">&times;</button>
@@ -3324,14 +3333,5 @@ let nomes = `<span style="line-height:1.4;">${nome1Final}${nome2Final}</span>${s
             <button onclick="document.getElementById('modalExplicacaoMedalha').classList.add('hidden')" class="btn" style="width: 100%;">Entendido</button>
         </div>
     </div>
-
-        window.mostrarExplicacaoMedalha = function(titulo, descricao) {
-            document.getElementById('tituloMedalhaModal').textContent = titulo;
-            document.getElementById('textoMedalhaModal').textContent = descricao;
-            document.getElementById('modalExplicacaoMedalha').classList.remove('hidden');
-        };
-
-        
-    </script>
 </body>
 </html>
