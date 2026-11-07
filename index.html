@@ -312,34 +312,49 @@
                 </div>
             </div>
 
-            <!-- NOVA SEÇÃO: ÚLTIMOS TORNEIOS E H2H COMPACTO -->
-            <div style="margin-bottom: 20px; display: flex; flex-direction: column; gap: 10px;">
-                
-                <!-- Últimos Torneios -->
-                <div style="background: #f9fafb; padding: 12px 15px; border-radius: 12px; border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
-                    <span style="font-size: 0.85rem; font-weight: 600; color: var(--gray);">Últimos Torneios:</span>
-                    <div id="perfilUltimosTorneios" style="display: flex; gap: 6px;">
-                        <!-- Preenchido automaticamente via JS -->
-                        <span style="background: #e5e7eb; color: #6b7280; font-size: 0.75rem; padding: 4px 8px; border-radius: 6px; font-weight: 700;">--</span>
-                    </div>
-                </div>
-
-                <!-- H2H Compacto -->
-                <div style="background: #f9fafb; padding: 12px 15px; border-radius: 12px; border: 1px solid var(--border);">
-                    <div style="display: flex; gap: 8px; align-items: center;">
-                        <span style="font-size: 1.4rem; cursor: help;" title="Histórico de Confrontos (H2H)">⚔️</span>
-                        <input type="text" id="inputH2H" list="sugestoesH2H" class="form-control" placeholder="Adversário H2H..." style="padding: 8px 12px; font-size: 0.9rem; flex: 1; background: var(--white); margin: 0;">
-                        <button type="button" onclick="buscarH2H()" class="btn" style="padding: 8px 15px; font-size: 0.85rem; background: var(--blue-link);">Buscar</button>
-                    </div>
-                    <datalist id="sugestoesH2H"></datalist>
-                    <div id="resultadoH2H" class="hidden" style="margin-top: 15px; text-align: center;"></div>
-                </div>
-            </div>
-                <datalist id="sugestoesH2H"></datalist>
-                <div id="resultadoH2H" class="hidden" style="margin-top: 15px; text-align: center;"></div>
+            <!-- BOTÕES DE AÇÃO (H2H E HISTÓRICO) -->
+            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                <button onclick="abrirModalHistorico()" class="btn btn-outline" style="flex: 1; display: flex; flex-direction: column; align-items: center; padding: 12px 10px; gap: 8px; border-color: var(--border);">
+                    <span style="font-size: 1.8rem; line-height: 1;">📊</span>
+                    <span style="font-size: 0.8rem; font-weight: 600; color: var(--dark);">Últimos Jogos</span>
+                </button>
+                <button onclick="abrirModalH2H()" class="btn btn-outline" style="flex: 1; display: flex; flex-direction: column; align-items: center; padding: 12px 10px; gap: 8px; border-color: var(--border);">
+                    <span style="font-size: 1.8rem; line-height: 1;">⚔️</span>
+                    <span style="font-size: 0.8rem; font-weight: 600; color: var(--dark);">Confrontos</span>
+                </button>
             </div>
             
             <button type="button" id="btnFecharPerfil" class="btn btn-outline" style="width: 100%;">Fechar Painel</button>
+        </div>
+    </div>
+
+    <!-- 1º POP-UP: Histórico Recente -->
+    <div id="modalHistorico" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1050; display: flex; justify-content: center; align-items: center; background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(3px);">
+        <div style="background: var(--white); padding: 2rem; border-radius: 16px; width: 90%; max-width: 350px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.15); position: relative;">
+            <button type="button" onclick="document.getElementById('modalHistorico').classList.add('hidden')" style="position: absolute; top: 15px; right: 20px; background: transparent; border: none; font-size: 1.8rem; cursor: pointer; color: var(--gray);">&times;</button>
+            <h3 style="margin-bottom: 5px; color: var(--dark); font-size: 1.3rem;">📊 Forma Recente</h3>
+            <p style="color: var(--gray); font-size: 0.85rem; margin-bottom: 20px;">Pontos ganhos nos últimos torneios</p>
+            
+            <div id="perfilUltimosTorneios" style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px;"></div>
+            
+            <button onclick="document.getElementById('modalHistorico').classList.add('hidden')" class="btn btn-outline" style="width: 100%;">Voltar</button>
+        </div>
+    </div>
+
+    <!-- 2º POP-UP: H2H -->
+    <div id="modalH2H" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1050; display: flex; justify-content: center; align-items: center; background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(3px);">
+        <div style="background: var(--white); padding: 2rem; border-radius: 16px; width: 90%; max-width: 350px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.15); position: relative;">
+            <button type="button" onclick="document.getElementById('modalH2H').classList.add('hidden')" style="position: absolute; top: 15px; right: 20px; background: transparent; border: none; font-size: 1.8rem; cursor: pointer; color: var(--gray);">&times;</button>
+            <h3 style="margin-bottom: 5px; color: var(--dark); font-size: 1.3rem;">⚔️ Confrontos H2H</h3>
+            <p style="color: var(--gray); font-size: 0.85rem; margin-bottom: 20px;">Busque o histórico contra um adversário</p>
+            
+            <input type="text" id="inputH2H" list="sugestoesH2H" class="form-control" placeholder="Nome do adversário..." style="margin-bottom: 10px;">
+            <button type="button" onclick="buscarH2H()" class="btn" style="width: 100%; margin-bottom: 15px; background: var(--blue-link);">Buscar Histórico</button>
+            
+            <datalist id="sugestoesH2H"></datalist>
+            <div id="resultadoH2H" class="hidden" style="margin-bottom: 20px;"></div>
+            
+            <button onclick="document.getElementById('modalH2H').classList.add('hidden')" class="btn btn-outline" style="width: 100%;">Voltar</button>
         </div>
     </div>
 
@@ -2656,6 +2671,8 @@ let nomes = `<span style="line-height:1.4;">${nome1Final}${nome2Final}</span>${s
         };
 
         const modalPerfilJogador = document.getElementById('modalPerfilJogador');
+        window.abrirModalHistorico = function() { document.getElementById('modalHistorico').classList.remove('hidden'); };
+        window.abrirModalH2H = function() { document.getElementById('inputH2H').value = ''; document.getElementById('resultadoH2H').classList.add('hidden'); document.getElementById('modalH2H').classList.remove('hidden'); };
         window.abrirPerfilJogador = function(nome, pontos, torneios, titulos = 0, vitorias = 0, jogos = 0) {
             let derrotas = jogos - vitorias; let aproveitamento = jogos > 0 ? Math.round((vitorias / jogos) * 100) : 0;
             document.getElementById('perfilNome').textContent = nome; document.getElementById('perfilPontos').textContent = pontos; document.getElementById('perfilTorneios').textContent = torneios;
@@ -2669,16 +2686,16 @@ let nomes = `<span style="line-height:1.4;">${nome1Final}${nome2Final}</span>${s
             let containerHist = document.getElementById('perfilUltimosTorneios');
             containerHist.innerHTML = '';
             if (historico.length === 0) {
-                containerHist.innerHTML = '<span style="background: #e5e7eb; color: #6b7280; font-size: 0.75rem; padding: 4px 8px; border-radius: 6px; font-weight: 700;">Sem dados</span>';
-            } else {
-                historico.forEach(pts => {
-                    let corBg = pts > 50 ? '#dcfce7' : (pts > 20 ? '#fef9c3' : '#f3f4f6');
-                    let corTxt = pts > 50 ? '#166534' : (pts > 20 ? '#854d0e' : '#4b5563');
-                    containerHist.innerHTML += `<span style="background: ${corBg}; color: ${corTxt}; font-size: 0.75rem; padding: 4px 8px; border-radius: 6px; font-weight: 700; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">+${pts}</span>`;
-                });
-            }
-            
-            // Limpa a busca anterior do H2H
+            containerHist.innerHTML = '<span style="background: #e5e7eb; color: #6b7280; font-size: 0.9rem; padding: 6px 12px; border-radius: 6px; font-weight: 700;">Sem dados recentes</span>';
+        } else {
+            historico.forEach(pts => {
+                let corBg = pts > 50 ? '#dcfce7' : (pts > 20 ? '#fef9c3' : '#f3f4f6');
+                let corTxt = pts > 50 ? '#166534' : (pts > 20 ? '#854d0e' : '#4b5563');
+                containerHist.innerHTML += `<span style="background: ${corBg}; color: ${corTxt}; font-size: 1.1rem; padding: 6px 15px; border-radius: 8px; font-weight: 700; box-shadow: 0 1px 4px rgba(0,0,0,0.1);">+${pts} pts</span>`;
+            });
+        }
+
+        // Limpa a busca anterior do H2H
             document.getElementById('inputH2H').value = '';
             document.getElementById('resultadoH2H').classList.add('hidden');
             
