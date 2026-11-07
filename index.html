@@ -312,13 +312,29 @@
                 </div>
             </div>
 
-            <!-- NOVA SEÇÃO H2H -->
-            <div style="margin-bottom: 20px; background: #f9fafb; padding: 15px; border-radius: 12px; border: 1px solid var(--border); text-align: left;">
-                <h4 style="font-size: 0.95rem; color: var(--dark); margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">⚔️ Histórico de Confrontos (H2H)</h4>
-                <div style="display: flex; gap: 8px;">
-                    <input type="text" id="inputH2H" list="sugestoesH2H" class="form-control" placeholder="Adversário (Ex: João)" style="padding: 8px 12px; font-size: 0.9rem; flex: 1; background: var(--white);">
-                    <button type="button" onclick="buscarH2H()" class="btn" style="padding: 8px 15px; font-size: 0.85rem; background: var(--blue-link);">Buscar</button>
+            <!-- NOVA SEÇÃO: ÚLTIMOS TORNEIOS E H2H COMPACTO -->
+            <div style="margin-bottom: 20px; display: flex; flex-direction: column; gap: 10px;">
+                
+                <!-- Últimos Torneios -->
+                <div style="background: #f9fafb; padding: 12px 15px; border-radius: 12px; border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 0.85rem; font-weight: 600; color: var(--gray);">Últimos Torneios:</span>
+                    <div id="perfilUltimosTorneios" style="display: flex; gap: 6px;">
+                        <!-- Preenchido automaticamente via JS -->
+                        <span style="background: #e5e7eb; color: #6b7280; font-size: 0.75rem; padding: 4px 8px; border-radius: 6px; font-weight: 700;">--</span>
+                    </div>
                 </div>
+
+                <!-- H2H Compacto -->
+                <div style="background: #f9fafb; padding: 12px 15px; border-radius: 12px; border: 1px solid var(--border);">
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <span style="font-size: 1.4rem; cursor: help;" title="Histórico de Confrontos (H2H)">⚔️</span>
+                        <input type="text" id="inputH2H" list="sugestoesH2H" class="form-control" placeholder="Adversário H2H..." style="padding: 8px 12px; font-size: 0.9rem; flex: 1; background: var(--white); margin: 0;">
+                        <button type="button" onclick="buscarH2H()" class="btn" style="padding: 8px 15px; font-size: 0.85rem; background: var(--blue-link);">Buscar</button>
+                    </div>
+                    <datalist id="sugestoesH2H"></datalist>
+                    <div id="resultadoH2H" class="hidden" style="margin-top: 15px; text-align: center;"></div>
+                </div>
+            </div>
                 <datalist id="sugestoesH2H"></datalist>
                 <div id="resultadoH2H" class="hidden" style="margin-top: 15px; text-align: center;"></div>
             </div>
@@ -2337,8 +2353,24 @@ let nomes = `<span style="line-height:1.4;">${nome1Final}${nome2Final}</span>${s
                     let snap = await getDoc(ref);
                     if (snap.exists()) {
                         let dados = snap.data();
-                        await setDoc(ref, { nome: jogador, pontos: (dados.pontos || 0) + stats.pontos, pontosOuro: (dados.pontosOuro || 0) + stats.pontosOuro, pontosPrata: (dados.pontosPrata || 0) + stats.pontosPrata, torneios: (dados.torneios || 0) + 1, titulos: (dados.titulos || 0) + stats.titulos, vitorias: (dados.vitorias || 0) + stats.vitorias, jogos: (dados.jogos || 0) + stats.jogos });
-                    } else { await setDoc(ref, { nome: jogador, pontos: stats.pontos, pontosOuro: stats.pontosOuro, pontosPrata: stats.pontosPrata, torneios: 1, titulos: stats.titulos, vitorias: stats.vitorias, jogos: stats.jogos }); }
+                        
+                        // Histórico de pontos (Mantém apenas os últimos 3 torneios)
+                        let hist = dados.historicoPontos || [];
+                        hist.push(stats.pontos);
+                        if (hist.length > 3) hist = hist.slice(hist.length - 3);
+
+                        await setDoc(ref, { 
+                            nome: jogador, pontos: (dados.pontos || 0) + stats.pontos, pontosOuro: (dados.pontosOuro || 0) + stats.pontosOuro, pontosPrata: (dados.pontosPrata || 0) + stats.pontosPrata, 
+                            torneios: (dados.torneios || 0) + 1, titulos: (dados.titulos || 0) + stats.titulos, vitorias: (dados.vitorias || 0) + stats.vitorias, jogos: (dados.jogos || 0) + stats.jogos,
+                            historicoPontos: hist
+                        });
+                    } else { 
+                        await setDoc(ref, { 
+                            nome: jogador, pontos: stats.pontos, pontosOuro: stats.pontosOuro, pontosPrata: stats.pontosPrata, 
+                            torneios: 1, titulos: stats.titulos, vitorias: stats.vitorias, jogos: stats.jogos,
+                            historicoPontos: [stats.pontos]
+                        }); 
+                    }
                 }
                     
                     // --- NOVA LÓGICA: CAPTURAR OS CAMPEÕES ---
@@ -2628,6 +2660,23 @@ let nomes = `<span style="line-height:1.4;">${nome1Final}${nome2Final}</span>${s
             let derrotas = jogos - vitorias; let aproveitamento = jogos > 0 ? Math.round((vitorias / jogos) * 100) : 0;
             document.getElementById('perfilNome').textContent = nome; document.getElementById('perfilPontos').textContent = pontos; document.getElementById('perfilTorneios').textContent = torneios;
             document.getElementById('perfilTitulos').textContent = titulos; document.getElementById('perfilVitorias').textContent = vitorias; document.getElementById('perfilDerrotas').textContent = derrotas; document.getElementById('perfilAproveitamento').textContent = aproveitamento + '%';
+            // Lógica do Histórico de Pontos
+            let rankingNome = document.getElementById('filtroVisualRanking').options[document.getElementById('filtroVisualRanking').selectedIndex]?.text;
+            let lista = window.rankingDadosCache[rankingNome] || [];
+            let playerDados = lista.find(j => j.nome === nome);
+            let historico = playerDados ? (playerDados.historicoPontos || []) : [];
+            
+            let containerHist = document.getElementById('perfilUltimosTorneios');
+            containerHist.innerHTML = '';
+            if (historico.length === 0) {
+                containerHist.innerHTML = '<span style="background: #e5e7eb; color: #6b7280; font-size: 0.75rem; padding: 4px 8px; border-radius: 6px; font-weight: 700;">Sem dados</span>';
+            } else {
+                historico.forEach(pts => {
+                    let corBg = pts > 50 ? '#dcfce7' : (pts > 20 ? '#fef9c3' : '#f3f4f6');
+                    let corTxt = pts > 50 ? '#166534' : (pts > 20 ? '#854d0e' : '#4b5563');
+                    containerHist.innerHTML += `<span style="background: ${corBg}; color: ${corTxt}; font-size: 0.75rem; padding: 4px 8px; border-radius: 6px; font-weight: 700; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">+${pts}</span>`;
+                });
+            }
             
             // Limpa a busca anterior do H2H
             document.getElementById('inputH2H').value = '';
