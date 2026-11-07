@@ -299,7 +299,7 @@
 <body>
 
     <!-- Modal Automático de Instalação do App -->
-    <div id="modalInstalarApp" class="hidden modal-anim" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999; display: flex; justify-content: center; align-items: center;">
+    <div id="modalInstalarApp" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999; display: flex; justify-content: center; align-items: center;">
         <div style="background: var(--white); padding: 2.5rem; border-radius: 16px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 15px 40px rgba(0,0,0,0.2); animation: fadeIn 0.3s ease;">
             <div style="font-size: 3.5rem; margin-bottom: 10px;">📱</div>
             <h3 style="margin-bottom: 0.8rem; color: var(--dark); font-size: 1.5rem; font-weight: 800;">Instalar Confra & Play</h3>
@@ -386,7 +386,7 @@
             <button type="button" onclick="buscarH2H()" class="btn" style="width: 100%; margin-bottom: 15px; background: var(--blue-link);">Buscar Histórico</button>
             
             <datalist id="sugestoesH2H"></datalist>
-            <div id="resultadoH2H" class="hidden modal-anim" style="margin-bottom: 20px;"></div>
+            <div id="resultadoH2H" class="hidden" style="margin-bottom: 20px;"></div>
             
             <button onclick="document.getElementById('modalH2H').classList.add('hidden')" class="btn btn-outline" style="width: 100%;">Voltar</button>
         </div>
@@ -398,8 +398,8 @@
             <button type="button" onclick="document.getElementById('modalEditPlayer').classList.add('hidden')" style="position: absolute; top: 15px; right: 20px; background: transparent; border: none; font-size: 1.8rem; cursor: pointer; color: var(--gray);">&times;</button>
             <h3 style="margin-bottom: 1.5rem; color: var(--dark); font-size: 1.4rem;">✏️ Editar Jogador</h3>
             <form id="formEditPlayer">
-                <input type="hidden modal-anim" id="editPlayerId">
-                <input type="hidden modal-anim" id="editPlayerCategoria">
+                <input type="hidden" id="editPlayerId">
+                <input type="hidden" id="editPlayerCategoria">
                 
                 <div class="form-group" style="margin-bottom: 1.5rem;">
                     <label style="color: var(--blue-link);">Nome do Jogador</label>
@@ -449,7 +449,7 @@
     </div>
 
     <!-- Modal Zerar Ranking -->
-    <div id="modalZerarRanking" class="hidden modal-anim" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1200; display: flex; justify-content: center; align-items: center;">
+    <div id="modalZerarRanking" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1200; display: flex; justify-content: center; align-items: center;">
         <div style="background: var(--white); padding: 2.5rem; border-radius: 16px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
             <h3 style="margin-bottom: 1rem; color: #ef4444; font-size: 1.4rem;">⚠️ Zerar Ranking</h3>
             <p style="margin-bottom: 1.5rem; color: var(--dark); font-size: 1rem;">O que você deseja zerar na categoria <br><strong id="zerarCategoriaNome" style="color: var(--primary); font-size: 1.2rem;"></strong>?</p>
@@ -463,7 +463,7 @@
     </div>
 
     <!-- Modal Pontuação do Torneio -->
-    <div id="modalPontuacaoTorneio" class="hidden modal-anim" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2000; display: flex; justify-content: center; align-items: center; background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(3px);">
+    <div id="modalPontuacaoTorneio" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2000; display: flex; justify-content: center; align-items: center; background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(3px);">
         <div style="background: var(--white); padding: 2rem; border-radius: 16px; width: 90%; max-width: 380px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); position: relative; max-height: 90vh; overflow-y: auto;">
             <button type="button" onclick="document.getElementById('modalPontuacaoTorneio').classList.add('hidden')" style="position: absolute; top: 15px; right: 20px; background: transparent; border: none; font-size: 1.8rem; cursor: pointer; color: var(--gray);">&times;</button>
             <h3 style="margin-bottom: 1.5rem; color: var(--dark); font-size: 1.4rem; text-align: center;">🏆 Pontuação Oficial</h3>
@@ -475,7 +475,7 @@
     </div>
 
     <!-- Gerenciar Categorias Modal -->
-    <div id="modalRankings" class="hidden modal-anim" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; display: flex; justify-content: center; align-items: center;">
+    <div id="modalRankings" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; display: flex; justify-content: center; align-items: center;">
         <div style="background: var(--white); padding: 2.5rem; border-radius: 16px; width: 90%; max-width: 420px; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
             <h3 style="margin-bottom: 1.5rem; color: var(--dark); font-size: 1.4rem;">Gerenciar Categorias</h3>
             <div style="display: flex; gap: 10px; margin-bottom: 20px;">
@@ -488,7 +488,7 @@
     </div>
 
     <!-- Modal Substituição Inteligente -->
-    <div id="modalSubstituicao" class="hidden modal-anim" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2000; display: flex; justify-content: center; align-items: center; background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(3px);">
+    <div id="modalSubstituicao" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2000; display: flex; justify-content: center; align-items: center; background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(3px);">
         <div style="background: var(--white); padding: 2rem; border-radius: 16px; width: 90%; max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
             <h3 style="margin-bottom: 1rem; color: var(--dark); font-size: 1.4rem;">🔄 Substituir Jogador</h3>
             <p style="margin-bottom: 15px; color: var(--gray); font-size: 0.9rem;">Quem vai entrar no lugar de <strong id="subOldNameDisplay" style="color: var(--primary);"></strong>?</p>
@@ -507,7 +507,7 @@
     </div>
     
     <!-- Login Modal -->
-    <div id="loginModal" class="hidden modal-anim" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; display: flex; justify-content: center; align-items: center;">
+    <div id="loginModal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; display: flex; justify-content: center; align-items: center;">
         <div style="background: var(--white); padding: 3rem; border-radius: 16px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 15px 40px rgba(0,0,0,0.15);">
             <h2 style="margin-bottom: 2rem; color: var(--dark); font-weight: 700;">Acesso Restrito</h2>
             <form id="loginForm">
@@ -530,7 +530,7 @@
             
             <div id="auth-area" style="display: inline-flex; align-items: center;">
                 <button id="btnLogin" class="btn btn-outline" title="Área do Organizador" style="padding: 0; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">🔒</button>
-                <div id="user-menu" class="hidden modal-anim" style="display: flex; align-items: center; gap: 8px;">
+                <div id="user-menu" class="hidden" style="display: flex; align-items: center; gap: 8px;">
                     <span style="color: var(--gray); font-weight: 500; font-size: 0.85rem;">Organizador</span>
                     <button id="btnNewTournament" class="btn" style="padding: 0.5rem 0.8rem; font-size: 0.85rem; background: var(--dark);">+ Torneio</button>
                     <button id="btnLogout" class="btn btn-outline" style="padding: 0.5rem 0.8rem; font-size: 0.85rem;">Sair</button>
@@ -622,7 +622,7 @@
             <div class="tournaments-grid" id="tournaments-container"></div>
         </section>
 
-        <section id="ranking-section" class="hidden modal-anim">
+        <section id="ranking-section" class="hidden">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 10px;">
                 <h2 class="section-title" style="margin-bottom: 0;">🏆 Ranking</h2>
                 <button id="btnBaixarRanking" class="btn" style="background: #10b981; color: white;">📄 Baixar PDF</button>
@@ -675,7 +675,7 @@
             </div>
         </section>
 
-        <section id="details-section" class="hidden modal-anim">
+        <section id="details-section" class="hidden">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 10px;">
                 <button id="btnVoltar" class="btn btn-outline" style="border: none; padding-left: 0; color: var(--blue-link) !important; font-weight: 600;">← Voltar</button>
                 <div style="display: flex; gap: 10px;">
@@ -728,7 +728,7 @@
                         ⚙ Gerar Confrontos
                     </button>
 
-                    <div id="navegadorFases" class="hidden modal-anim" style="display: flex; justify-content: space-between; align-items: center; margin: 15px 0 25px 0;">
+                    <div id="navegadorFases" class="hidden" style="display: flex; justify-content: space-between; align-items: center; margin: 15px 0 25px 0;">
                         <button id="btnFaseAnterior" class="btn btn-outline" style="padding: 6px 15px; font-size: 1.1rem; border-radius: 6px; border: none; color: var(--blue-link) !important;">⬅</button>
                         <div style="text-align: center;">
                             <h3 id="tituloFaseAtual" style="margin: 0; font-size: 1.2rem; color: var(--dark);">Grupos</h3>
@@ -736,7 +736,7 @@
                         <button id="btnFaseProxima" class="btn btn-outline" style="padding: 6px 15px; font-size: 1.1rem; border-radius: 6px; border: none; color: var(--blue-link) !important;">➡</button>
                     </div>
 
-                    <div id="painelTrocaGrupos" class="hidden modal-anim" style="background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px dashed #94a3b8; margin-top: 15px; margin-bottom: 20px;">
+                    <div id="painelTrocaGrupos" class="hidden" style="background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px dashed #94a3b8; margin-top: 15px; margin-bottom: 20px;">
                         <h4 style="color: var(--dark); margin-bottom: 10px; font-size: 0.95rem; display: flex; align-items: center; gap: 8px;">🔄 Troca Manual de Grupos</h4>
                         <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
                             <select id="trocaTime1" class="form-control" style="flex: 1; min-width: 120px; padding: 0.5rem; background: var(--white);"></select>
