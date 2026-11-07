@@ -1394,7 +1394,10 @@ let nomes = `<span style="line-height:1.4;">${nome1Final}${nome2Final}</span>${s
                 let nomeParts = t.nome.split('&'); 
                 
                 let displayNome = nomeParts.length > 1 
-    ? `${window.nomeClicavel(nomeParts[0].trim())}${window.getBadgeSeed(nomeParts[0].trim())} <span style="color:var(--gray); font-weight:400;">&</span> ${window.nomeClicavel(nomeParts[1].trim())}${window.getBadgeSeed(nomeParts[1].trim())}`
+    ? `<div style="line-height:1.2;">
+         ${window.nomeClicavel(nomeParts[0].trim())}${window.getBadgeSeed(nomeParts[0].trim())}<br>
+         <span style="color:var(--gray); font-size:0.82rem; font-weight:400;">${window.nomeClicavel(nomeParts[1].trim())}${window.getBadgeSeed(nomeParts[1].trim())}</span>
+       </div>`
     : `${window.nomeClicavel(t.nome)}${window.getBadgeSeed(t.nome)}`;
                 
                 htmlTab += `<tr>
