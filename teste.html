@@ -259,6 +259,16 @@
             .bracket-match div[style*="Avança Direto"] {
                 margin: 4px 0 !important; padding: 4px !important; font-size: 0.7rem !important;
             }
+
+            /* Impede quebra feia dos nomes nas tabelas de grupo */
+.standings-table td:first-child {
+    white-space: normal !important;
+    word-break: normal !important;
+}
+.standings-table td:first-child span,
+.standings-table td:first-child div {
+    white-space: nowrap;
+}
         
     </style>
 </head>
@@ -1394,11 +1404,11 @@ let nomes = `<span style="line-height:1.4;">${nome1Final}${nome2Final}</span>${s
                 let nomeParts = t.nome.split('&'); 
                 
                 let displayNome = nomeParts.length > 1 
-    ? `<div style="line-height:1.2;">
-         ${window.nomeClicavel(nomeParts[0].trim())}${window.getBadgeSeed(nomeParts[0].trim())}<br>
-         <span style="color:var(--gray); font-size:0.82rem; font-weight:400;">${window.nomeClicavel(nomeParts[1].trim())}${window.getBadgeSeed(nomeParts[1].trim())}</span>
+    ? `<div style="line-height:1.25; white-space:nowrap;">
+         <div>${window.nomeClicavel(nomeParts[0].trim())}${window.getBadgeSeed(nomeParts[0].trim())}</div>
+         <div style="color:var(--gray); font-size:0.82rem; font-weight:400;">${window.nomeClicavel(nomeParts[1].trim())}${window.getBadgeSeed(nomeParts[1].trim())}</div>
        </div>`
-    : `${window.nomeClicavel(t.nome)}${window.getBadgeSeed(t.nome)}`;
+    : `<div style="white-space:nowrap;">${window.nomeClicavel(t.nome)}${window.getBadgeSeed(t.nome)}</div>`;
                 
                 htmlTab += `<tr>
                     <td data-name="${t.nome}" style="display:flex; align-items:center; gap:10px;"><div style="width:28px; height:28px; background:#e5e7eb; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.8rem;">👤</div>${displayNome}</td>
