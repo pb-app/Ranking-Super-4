@@ -2535,7 +2535,11 @@ let tB_display = tB_data.includes('&')
             tbodyRanking.innerHTML = html;
         }
 
-        filtroRanking.addEventListener('change', carregarRanking); tipoFiltroRanking.addEventListener('change', carregarRanking); document.getElementById('btnAbaRankings').addEventListener('click', carregarRanking);
+        filtroRanking.addEventListener('change', () => {
+    const valor = filtroRanking.value;
+    if (valor) localStorage.setItem('ultimaCategoriaRanking', valor);
+    carregarRanking();
+});
 
         // --- FUNÇÃO PARA GERAR O PDF DO RANKING ---
         document.getElementById('btnBaixarRanking').addEventListener('click', () => {
@@ -2681,6 +2685,13 @@ let tB_display = tB_data.includes('&')
                 listaCategoriasUI.appendChild(li);
             });
             if (!document.getElementById('ranking-section').classList.contains('hidden')) { carregarRanking(); }
+
+          // Restaura a última categoria selecionada
+          const ultima = localStorage.getItem('ultimaCategoriaRanking');
+         if (ultima && selectRankingFilter.querySelector(`option[value="${ultima}"]`)) {
+          selectRankingFilter.value = ultima;
+           carregarRanking();
+         }
         });
 
         document.getElementById('btnAdicionarCategoria').addEventListener('click', async () => {
