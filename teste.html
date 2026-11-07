@@ -1185,31 +1185,36 @@ let nomes = `<span style="line-height:1.4;">${nome1Final}${nome2Final}</span>${s
                     }
                 }
 
-                // C. Atualiza e renomeia os jogos salvos (para não perder os placares)
+                // C. Atualiza os nomes dentro dos jogos (mantém o matchId original)
 if (window.jogosSalvos) {
-    const jogosParaAtualizar = { ...window.jogosSalvos };
-    window.jogosSalvos = {};
-
-    for (let oldMatchId in jogosParaAtualizar) {
-        let jogo = jogosParaAtualizar[oldMatchId];
+    const updates = [];
+    for (let matchId in window.jogosSalvos) {
+        let jogo = window.jogosSalvos[matchId];
         if (!jogo) continue;
 
-        // Atualiza os nomes dentro do jogo
-        if (jogo.timeA) jogo.timeA = replaceInDuo(jogo.timeA);
-        if (jogo.timeB) jogo.timeB = replaceInDuo(jogo.timeB);
-        if (jogo.vencedor) jogo.vencedor = replaceInDuo(jogo.vencedor);
-
-        // Gera o novo matchId com os nomes atualizados
-        let newMatchId = (jogo.timeA || "").replace(/\s+/g, '') + "_vs_" + (jogo.timeB || "").replace(/\s+/g, '');
-
-        // Salva no novo ID e apaga o antigo
-        await setDoc(doc(db, "campeonatos", torneioAbertoId, "jogos", newMatchId), jogo, { merge: true });
-        if (oldMatchId !== newMatchId) {
-            await deleteDoc(doc(db, "campeonatos", torneioAbertoId, "jogos", oldMatchId));
+        let mudou = false;
+        if (jogo.timeA && jogo.timeA.includes(oldName)) {
+            jogo.timeA = replaceInDuo(jogo.timeA);
+            mudou = true;
+        }
+        if (jogo.timeB && jogo.timeB.includes(oldName)) {
+            jogo.timeB = replaceInDuo(jogo.timeB);
+            mudou = true;
+        }
+        if (jogo.vencedor && jogo.vencedor.includes(oldName)) {
+            jogo.vencedor = replaceInDuo(jogo.vencedor);
+            mudou = true;
         }
 
-        window.jogosSalvos[newMatchId] = jogo;
+        if (mudou) {
+            updates.push(setDoc(doc(db, "campeonatos", torneioAbertoId, "jogos", matchId), {
+                timeA: jogo.timeA,
+                timeB: jogo.timeB,
+                vencedor: jogo.vencedor || null
+            }, { merge: true }));
+        }
     }
+    await Promise.all(updates);
 }
 
                    document.getElementById('modalSubstituicao').classList.add('hidden');
