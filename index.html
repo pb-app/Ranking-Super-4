@@ -726,10 +726,12 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, doc, updateDoc, getDocs, setDoc, getDoc, deleteDoc, collectionGroup } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { getDatabase, ref, onValue, onDisconnect, set } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
         const firebaseConfig = {
           apiKey: "AIzaSyAzEUIZwc8vUgphMe4bpOkfOKTZIQlNsFs",
           authDomain: "super-4-clube.firebaseapp.com",
+          databaseURL: "https://super-4-clube-default-rtdb.firebaseio.com",
           projectId: "super-4-clube",
           storageBucket: "super-4-clube.firebasestorage.app",
           messagingSenderId: "831325355212",
@@ -3130,16 +3132,22 @@ let nomes = `<span style="line-height:1.4;">${nome1Final}${nome2Final}</span>${s
             }
         };
 
-           // =======================================================
+         // =======================================================
         // --- SISTEMA DE CONTADOR DE VISITAS E PESSOAS ONLINE ---
         // =======================================================
         
         const sessaoId = 'user_' + Math.random().toString(36).substr(2, 9);
         const docVisitas = doc(db, "sistema", "estatisticas");
-        const docOnline = doc(db, "sistema_online", sessaoId);
+        
+        // Liga à nova Base de Dados em Tempo Real para o contador online
+        const rtdb = getDatabase(app);
+        const myConnectionsRef = ref(rtdb, `sistema_online/${sessaoId}`);
+        const connectedRef = ref(rtdb, '.info/connected'); 
+        const onlineContadorRef = ref(rtdb, 'sistema_online');
 
         async function iniciarContadores() {
             try {
+                // 1. Contador de Visitas (Continua no Firestore)
                 if (!sessionStorage.getItem('visitaContabilizada')) {
                     let snap = await getDoc(docVisitas);
                     if (snap.exists()) {
@@ -3156,14 +3164,20 @@ let nomes = `<span style="line-height:1.4;">${nome1Final}${nome2Final}</span>${s
                     }
                 });
 
-                await setDoc(docOnline, { ativo: true, horaEntrada: serverTimestamp() });
-
-                const sairDoSite = () => { deleteDoc(docOnline); };
-                window.addEventListener('beforeunload', sairDoSite);
-                window.addEventListener('pagehide', sairDoSite);
+                // 2. Contador de Online Anti-Fantasmas (Usando Realtime Database)
+                onValue(connectedRef, (snap) => {
+                    if (snap.val() === true) {
+                        // Quando o utilizador abre a página, cria o registo
+                        set(myConnectionsRef, true);
+                        // A MÁGICA: O próprio servidor da Google apaga o registo se a internet cair ou fechar o separador!
+                        onDisconnect(myConnectionsRef).remove();
+                    }
+                });
                 
-                onSnapshot(collection(db, "sistema_online"), (snap) => {
-                    document.getElementById('txtOnline').innerText = snap.size;
+                // Escuta o total de pessoas e atualiza a bolinha verde
+                onValue(onlineContadorRef, (snap) => {
+                    let total = snap.exists() ? Object.keys(snap.val()).length : 0;
+                    document.getElementById('txtOnline').innerText = total;
                 });
 
             } catch (e) {
