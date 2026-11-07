@@ -2465,19 +2465,20 @@ let tB_display = tB_data.includes('&')
         window.rankingDadosCache = window.rankingDadosCache || {}; // CACHE DO RANKING GLOBAL
 
         async function carregarRanking(forcarAtualizacao = false) {
-            let rankingNome = filtroRanking.options[filtroRanking.selectedIndex]?.text; let tipoRanking = tipoFiltroRanking.value;
-            if(!rankingNome) { tbodyRanking.innerHTML = '<tr><td colspan="5" style="padding: 30px;">Selecione uma categoria...</td></tr>'; return; }
-            tbodyRanking.innerHTML = '<tr><td colspan="5" style="padding: 30px;">A carregar ranking...</td></tr>';
-            
-            let listaBase = [];
-            // Se já temos no cache e não estamos a forçar, usamos o cache para poupar o Firebase!
-            if (!forcarAtualizacao && window.rankingDadosCache[rankingNome]) {
-                listaBase = window.rankingDadosCache[rankingNome];
-            } else {
-                const snap = await getDocs(collection(db, "rankings", rankingNome, "jogadores"));
-                snap.forEach(doc => { let d = doc.data(); d.id = doc.id; listaBase.push(d); });
-                window.rankingDadosCache[rankingNome] = listaBase; // Guarda para o próximo clique
-            }
+    let rankingNome = filtroRanking.options[filtroRanking.selectedIndex]?.text; 
+    let tipoRanking = tipoFiltroRanking.value;
+    if(!rankingNome) { tbodyRanking.innerHTML = '<tr><td colspan="5" style="padding: 30px;">Selecione uma categoria...</td></tr>'; return; }
+    tbodyRanking.innerHTML = '<tr><td colspan="5" style="padding: 30px;">A carregar ranking...</td></tr>';
+    
+    let listaBase = [];
+    // Força atualização se for a primeira vez ou se o usuário mudou de categoria
+    if (!forcarAtualizacao && window.rankingDadosCache[rankingNome]) {
+        listaBase = window.rankingDadosCache[rankingNome];
+    } else {
+        const snap = await getDocs(collection(db, "rankings", rankingNome, "jogadores"));
+        snap.forEach(doc => { let d = doc.data(); d.id = doc.id; listaBase.push(d); });
+        window.rankingDadosCache[rankingNome] = listaBase;
+    }
 
             let lista = [];
             listaBase.forEach(d => { 
@@ -2536,15 +2537,15 @@ let tB_display = tB_data.includes('&')
         }
 
         filtroRanking.addEventListener('change', () => {
-       const valor = filtroRanking.value;
-         if (valor) localStorage.setItem('ultimaCategoriaRanking', valor);
-         carregarRanking();
-        });
+    const valor = filtroRanking.value;
+    if (valor) localStorage.setItem('ultimaCategoriaRanking', valor);
+    carregarRanking(true);   // ← true força atualizar
+});
 
-          tipoFiltroRanking.addEventListener('change', () => {
-       localStorage.setItem('ultimoTipoRanking', tipoFiltroRanking.value);
-       carregarRanking();
-       });
+tipoFiltroRanking.addEventListener('change', () => {
+    localStorage.setItem('ultimoTipoRanking', tipoFiltroRanking.value);
+    carregarRanking(true);   // ← true força atualizar
+});
 
         // --- FUNÇÃO PARA GERAR O PDF DO RANKING ---
         document.getElementById('btnBaixarRanking').addEventListener('click', () => {
