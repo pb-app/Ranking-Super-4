@@ -2670,6 +2670,66 @@ let nomes = `<span style="line-height:1.4;">${nome1Final}${nome2Final}</span>${s
             window.open(`https://api.whatsapp.com/send?text=${texto}`, '_blank');
         };
 
+        // --- SISTEMA DE MEDALHAS E CONQUISTAS DO JOGADOR ---
+        function calcularBadgesJogador(nome, vitorias, jogos, torneios, titulos) {
+            let badges = '';
+            let aproveitamento = jogos > 0 ? (vitorias / jogos) * 100 : 0;
+
+            // 1. 🔥 Intocável (> 80% de aproveitamento e min. 5 jogos)
+            if (aproveitamento >= 80 && jogos >= 5) {
+                badges += `<span style="background: #fef2f2; color: #dc2626; font-size: 0.75rem; font-weight: 700; padding: 4px 8px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);" title="Intocável: 80%+ de aproveitamento">🔥 Intocável</span>`;
+            }
+
+            // 2. 🛡️ Veterano (10+ torneios)
+            if (torneios >= 10) {
+                badges += `<span style="background: #eff6ff; color: #2563eb; font-size: 0.75rem; font-weight: 700; padding: 4px 8px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);" title="Veterano: 10+ torneios disputados">🛡️ Veterano</span>`;
+            }
+
+            // 3. 👑 Rei do Ouro (3+ títulos)
+            if (titulos >= 3) {
+                badges += `<span style="background: #fefce8; color: #ca8a04; font-size: 0.75rem; font-weight: 700; padding: 4px 8px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);" title="Rei do Ouro: 3+ títulos conquistados">👑 Rei do Ouro</span>`;
+            }
+
+            // Varredura no histórico de jogos salvos globais para as medalhas de zueira/superação
+            let tomouPneu = false;
+            let aplicouPneus = 0;
+            let foiLanterna = false;
+
+            if (window.h2hJogosCache) {
+                window.h2hJogosCache.forEach(j => {
+                    if (!j.vencedor) return;
+                    let jogA = (j.timeA || "").split('&').map(n => n.trim());
+                    let jogB = (j.timeB || "").split('&').map(n => n.trim());
+                    let estaNoJogo = jogA.includes(nome) || jogB.includes(nome);
+                    
+                    if (estaNoJogo && j.placarA && j.placarB) {
+                        let pA = j.placarA[0] || 0;
+                        let pB = j.placarB[0] || 0;
+                        let vencedores = j.vencedor.split('&').map(n => n.trim());
+                        let souVencedor = vencedores.includes(nome);
+
+                        // Verifica 6x0 (Pneu)
+                        if ((pA === 6 && pB === 0) || (pB === 6 && pA === 0)) {
+                            if (souVencedor) aplicouPneus++;
+                            else tomouPneu = true;
+                        }
+                    }
+                });
+            }
+
+            // 4. 🔔 Tomou Pneu (6x0)
+            if (tomouPneu) {
+                badges += `<span style="background: #f3f4f6; color: #4b5563; font-size: 0.75rem; font-weight: 700; padding: 4px 8px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);" title="Pneu: Já tomou um 6x0 na carreira">🔔 Pneu</span>`;
+            }
+
+            // 5. 🏎️ Atropelador (Aplicou 2+ pneus)
+            if (aplicouPneus >= 2) {
+                badges += `<span style="background: #faf5ff; color: #7e22ce; font-size: 0.75rem; font-weight: 700; padding: 4px 8px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);" title="Atropelador: Aplicou 2 ou mais placares de 6x0">🏎️ Atropelador</span>`;
+            }
+
+            return badges !== '' ? `<div style="display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px;">${badges}</div>` : '';
+        }
+
         const modalPerfilJogador = document.getElementById('modalPerfilJogador');
         window.abrirModalHistorico = function() { document.getElementById('modalHistorico').classList.remove('hidden'); };
         window.abrirModalH2H = function() { document.getElementById('inputH2H').value = ''; document.getElementById('resultadoH2H').classList.add('hidden'); document.getElementById('modalH2H').classList.remove('hidden'); };
@@ -2677,6 +2737,18 @@ let nomes = `<span style="line-height:1.4;">${nome1Final}${nome2Final}</span>${s
             let derrotas = jogos - vitorias; let aproveitamento = jogos > 0 ? Math.round((vitorias / jogos) * 100) : 0;
             document.getElementById('perfilNome').textContent = nome; document.getElementById('perfilPontos').textContent = pontos; document.getElementById('perfilTorneios').textContent = torneios;
             document.getElementById('perfilTitulos').textContent = titulos; document.getElementById('perfilVitorias').textContent = vitorias; document.getElementById('perfilDerrotas').textContent = derrotas; document.getElementById('perfilAproveitamento').textContent = aproveitamento + '%';
+
+            // Injeção Dinâmica das Medalhas
+            let containerBadges = document.getElementById('perfilBadgesContainer');
+            if (!containerBadges) {
+                // Se o contentor ainda não existir, cria-o dinamicamente logo abaixo do subtítulo do perfil
+                let subPerfil = document.querySelector('#modalPerfilJogador p');
+                containerBadges = document.createElement('div');
+                containerBadges.id = 'perfilBadgesContainer';
+                subPerfil.parentNode.insertBefore(containerBadges, subPerfil.nextSibling);
+            }
+            containerBadges.innerHTML = calcularBadgesJogador(nome, vitorias, jogos, torneios, titulos);
+            
             // Lógica do Histórico de Pontos
             let rankingNome = document.getElementById('filtroVisualRanking').options[document.getElementById('filtroVisualRanking').selectedIndex]?.text;
             let lista = window.rankingDadosCache[rankingNome] || [];
