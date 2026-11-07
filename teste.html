@@ -1185,8 +1185,14 @@ let nomes = `<span style="line-height:1.4;">${nome1Final}${nome2Final}</span>${s
                     }
                 }
 
-                document.getElementById('modalSubstituicao').classList.add('hidden');
-                alert(`✅ Substituição concluída!\n${oldName} saiu do campeonato e ${newName} assumiu o seu lugar.`);
+                   document.getElementById('modalSubstituicao').classList.add('hidden');
+
+            // Força a atualização completa da tela
+           setTimeout(() => {
+            abrirPainelTorneio(torneioAbertoId, torneioAbertoData);
+             }, 300);
+
+             alert(`✅ Substituição concluída!\n${oldName} saiu do campeonato e ${newName} assumiu o seu lugar.`);
 
             } catch (e) {
                 console.error(e);
