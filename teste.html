@@ -1185,21 +1185,32 @@ let nomes = `<span style="line-height:1.4;">${nome1Final}${nome2Final}</span>${s
                     }
                 }
 
-                // C. Atualiza os jogos salvos (placares da fase de grupos e mata-mata)
-              if (window.jogosSalvos) {
-             for (let matchId in window.jogosSalvos) {
-           let jogo = window.jogosSalvos[matchId];
-            if (jogo.timeA) jogo.timeA = replaceInDuo(jogo.timeA);
-            if (jogo.timeB) jogo.timeB = replaceInDuo(jogo.timeB);
-            if (jogo.vencedor) jogo.vencedor = replaceInDuo(jogo.vencedor);
-        
-            setDoc(doc(db, "campeonatos", torneioAbertoId, "jogos", matchId), {
-               timeA: jogo.timeA,
-            timeB: jogo.timeB,
-            vencedor: jogo.vencedor || null
-            }, { merge: true });
-               }
-          }
+                // C. Atualiza e renomeia os jogos salvos (para não perder os placares)
+if (window.jogosSalvos) {
+    const jogosParaAtualizar = { ...window.jogosSalvos };
+    window.jogosSalvos = {};
+
+    for (let oldMatchId in jogosParaAtualizar) {
+        let jogo = jogosParaAtualizar[oldMatchId];
+        if (!jogo) continue;
+
+        // Atualiza os nomes dentro do jogo
+        if (jogo.timeA) jogo.timeA = replaceInDuo(jogo.timeA);
+        if (jogo.timeB) jogo.timeB = replaceInDuo(jogo.timeB);
+        if (jogo.vencedor) jogo.vencedor = replaceInDuo(jogo.vencedor);
+
+        // Gera o novo matchId com os nomes atualizados
+        let newMatchId = (jogo.timeA || "").replace(/\s+/g, '') + "_vs_" + (jogo.timeB || "").replace(/\s+/g, '');
+
+        // Salva no novo ID e apaga o antigo
+        await setDoc(doc(db, "campeonatos", torneioAbertoId, "jogos", newMatchId), jogo, { merge: true });
+        if (oldMatchId !== newMatchId) {
+            await deleteDoc(doc(db, "campeonatos", torneioAbertoId, "jogos", oldMatchId));
+        }
+
+        window.jogosSalvos[newMatchId] = jogo;
+    }
+}
 
                    document.getElementById('modalSubstituicao').classList.add('hidden');
 
