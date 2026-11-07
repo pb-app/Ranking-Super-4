@@ -269,7 +269,31 @@
 .standings-table td:first-child div {
     white-space: nowrap;
 }
-        
+
+            /* Animações suaves */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+.modal-anim {
+    animation: fadeIn 0.25s ease-out;
+}
+
+.modal-content-anim {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* Animação nas trocas de fase */
+#chavesGeradasUI, #mataMataUI, #navegadorFases {
+    animation: fadeIn 0.3s ease-out;
+}
+            
     </style>
 </head>
 <body>
@@ -288,7 +312,7 @@
     </div>
 
     <!-- Perfil Viewer -->
-    <div id="modalPerfilJogador" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; display: flex; justify-content: center; align-items: center;">
+    <div id="modalPerfilJogador" class="hidden modal-anim" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; display: flex; justify-content: center; align-items: center;">
         <div style="background: var(--white); padding: 2.5rem; border-radius: 16px; width: 90%; max-width: 400px; text-align: center; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
             <button type="button" id="btnFecharPerfilTop" style="position: absolute; top: 15px; right: 20px; background: transparent; border: none; font-size: 1.8rem; cursor: pointer; color: var(--gray); transition: 0.2s;">&times;</button>
             <div style="font-size: 3.5rem; margin-bottom: 10px;">👤</div>
@@ -339,7 +363,7 @@
     </div>
 
     <!-- 1º POP-UP: Histórico Recente -->
-    <div id="modalHistorico" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1050; display: flex; justify-content: center; align-items: center; background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(3px);">
+    <div id="modalHistorico" class="hidden modal-anim" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1050; display: flex; justify-content: center; align-items: center; background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(3px);">
         <div style="background: var(--white); padding: 2rem; border-radius: 16px; width: 90%; max-width: 350px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.15); position: relative;">
             <button type="button" onclick="document.getElementById('modalHistorico').classList.add('hidden')" style="position: absolute; top: 15px; right: 20px; background: transparent; border: none; font-size: 1.8rem; cursor: pointer; color: var(--gray);">&times;</button>
             <h3 style="margin-bottom: 5px; color: var(--dark); font-size: 1.3rem;">📊 Forma Recente</h3>
@@ -352,7 +376,7 @@
     </div>
 
     <!-- 2º POP-UP: H2H -->
-    <div id="modalH2H" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1050; display: flex; justify-content: center; align-items: center; background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(3px);">
+    <div id="modalH2H" class="hidden modal-anim" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1050; display: flex; justify-content: center; align-items: center; background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(3px);">
         <div style="background: var(--white); padding: 2rem; border-radius: 16px; width: 90%; max-width: 350px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.15); position: relative;">
             <button type="button" onclick="document.getElementById('modalH2H').classList.add('hidden')" style="position: absolute; top: 15px; right: 20px; background: transparent; border: none; font-size: 1.8rem; cursor: pointer; color: var(--gray);">&times;</button>
             <h3 style="margin-bottom: 5px; color: var(--dark); font-size: 1.3rem;">⚔️ Confrontos H2H</h3>
@@ -369,7 +393,7 @@
     </div>
 
     <!-- Modal Editar Jogador (Apenas Organizador) -->
-    <div id="modalEditPlayer" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1100; display: flex; justify-content: center; align-items: center;">
+    <div id="modalEditPlayer" class="hidden modal-anim" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1100; display: flex; justify-content: center; align-items: center;">
         <div style="background: var(--white); padding: 2.5rem; border-radius: 16px; width: 90%; max-width: 450px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); position: relative;">
             <button type="button" onclick="document.getElementById('modalEditPlayer').classList.add('hidden')" style="position: absolute; top: 15px; right: 20px; background: transparent; border: none; font-size: 1.8rem; cursor: pointer; color: var(--gray);">&times;</button>
             <h3 style="margin-bottom: 1.5rem; color: var(--dark); font-size: 1.4rem;">✏️ Editar Jogador</h3>
