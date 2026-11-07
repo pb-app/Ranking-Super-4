@@ -2536,10 +2536,15 @@ let tB_display = tB_data.includes('&')
         }
 
         filtroRanking.addEventListener('change', () => {
-    const valor = filtroRanking.value;
-    if (valor) localStorage.setItem('ultimaCategoriaRanking', valor);
-    carregarRanking();
-});
+       const valor = filtroRanking.value;
+         if (valor) localStorage.setItem('ultimaCategoriaRanking', valor);
+         carregarRanking();
+        });
+
+          tipoFiltroRanking.addEventListener('change', () => {
+       localStorage.setItem('ultimoTipoRanking', tipoFiltroRanking.value);
+       carregarRanking();
+       });
 
         // --- FUNÇÃO PARA GERAR O PDF DO RANKING ---
         document.getElementById('btnBaixarRanking').addEventListener('click', () => {
@@ -2686,13 +2691,17 @@ let tB_display = tB_data.includes('&')
             });
             if (!document.getElementById('ranking-section').classList.contains('hidden')) { carregarRanking(); }
 
-          // Restaura a última categoria selecionada
-          const ultima = localStorage.getItem('ultimaCategoriaRanking');
-         if (ultima && selectRankingFilter.querySelector(`option[value="${ultima}"]`)) {
-          selectRankingFilter.value = ultima;
-           carregarRanking();
+          // Restaura categoria e tipo salvos
+         const ultimaCat = localStorage.getItem('ultimaCategoriaRanking');
+         const ultimoTipo = localStorage.getItem('ultimoTipoRanking') || 'geral';
+
+         if (ultimaCat && selectRankingFilter.querySelector(`option[value="${ultimaCat}"]`)) {
+          selectRankingFilter.value = ultimaCat;
          }
-        });
+         if (tipoFiltroRanking.querySelector(`option[value="${ultimoTipo}"]`)) {
+          tipoFiltroRanking.value = ultimoTipo;
+         }
+         carregarRanking();
 
         document.getElementById('btnAdicionarCategoria').addEventListener('click', async () => {
             const nomeInput = document.getElementById('novaCategoriaInput'); const nome = nomeInput.value.trim(); if (!nome) return;
