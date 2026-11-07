@@ -2670,7 +2670,7 @@ let nomes = `<span style="line-height:1.4;">${nome1Final}${nome2Final}</span>${s
             window.open(`https://api.whatsapp.com/send?text=${texto}`, '_blank');
         };
 
-        // --- SISTEMA DE MEDALHAS E CONQUISTAS COM EXPLICAÇÃO ---
+        // --- SISTEMA DE MEDALHAS E CONQUISTAS COM EXPLICAÇÃO (CORRIGIDO) ---
         function calcularBadgesJogador(nome, vitorias, jogos, torneios, titulos) {
             let badges = '';
             let aproveitamento = jogos > 0 ? (vitorias / jogos) * 100 : 0;
@@ -2682,33 +2682,30 @@ let nomes = `<span style="line-height:1.4;">${nome1Final}${nome2Final}</span>${s
                 badges += `<span onclick="mostrarExplicacaoMedalha('🛡️ Veterano', 'Conquistado por atletas leais que já participaram em 10 ou mais torneios oficiais na plataforma.')" style="background: #eff6ff; color: #2563eb; font-size: 0.75rem; font-weight: 700; padding: 6px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); cursor: pointer;" title="Clique para ver a explicação">🛡️ Veterano</span>`;
             }
             if (titulos >= 3) {
-                badges += `<span onclick="mostrarExplicacaoMedalha('👑 Rei da Ouro', 'Exclusivo para lendas que já ergueram o troféu de Campeão na Chave Ouro por 3 ou mais vezes.')" style="background: #fefce8; color: #ca8a04; font-size: 0.75rem; font-weight: 700; padding: 6px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); cursor: pointer;" title="Clique para ver a explicação">👑 Rei do Ouro</span>`;
-            }
-
-            if (tomouPneu) {
-                badges += `<span onclick="mostrarExplicacaoMedalha('🔔 Pneu', 'Este emblema indica que o atleta já sofreu a amarga derrota de um 6x0 (pneu) em partidas oficiais da liga.')" style="background: #f3f4f6; color: #4b5563; font-size: 0.75rem; font-weight: 700; padding: 6px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); cursor: pointer;" title="Clique para ver a explicação">🔔 Pneu</span>`;
-            }
-            if (aplicouPneus >= 5) {
-                badges += `<span onclick="mostrarExplicacaoMedalha('🏎️ Atropelador', 'Atribuído a quem já aplicou dois ou mais placares implacáveis de 6x0 (pneu duplo ou mais) nos adversários!')" style="background: #faf5ff; color: #7e22ce; font-size: 0.75rem; font-weight: 700; padding: 6px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); cursor: pointer;" title="Clique para ver a explicação">🏎️ Atropelador</span>`;
+                badges += `<span onclick="mostrarExplicacaoMedalha('👑 Rei do Ouro', 'Exclusivo para lendas que já ergueram o troféu de Campeão na Chave Ouro por 3 ou mais vezes.')" style="background: #fefce8; color: #ca8a04; font-size: 0.75rem; font-weight: 700; padding: 6px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); cursor: pointer;" title="Clique para ver a explicação">👑 Rei do Ouro</span>`;
             }
 
             let tomouPneu = false;
             let aplicouPneus = 0;
 
-            if (window.h2hJogosCache) {
-                window.h2hJogosCache.forEach(j => {
+            // Se a cache H2H não existir, tenta ler diretamente dos torneios ou cria uma lista de apoio
+            let listaJogosParaVerificar = window.h2hJogosCache || [];
+
+            if (listaJogosParaVerificar.length > 0) {
+                listaJogosParaVerificar.forEach(j => {
                     if (!j.vencedor) return;
                     let jogA = (j.timeA || "").split('&').map(n => n.trim());
                     let jogB = (j.timeB || "").split('&').map(n => n.trim());
                     let estaNoJogo = jogA.includes(nome) || jogB.includes(nome);
                     
                     if (estaNoJogo && j.placarA && j.placarB) {
-                        let pA = j.placarA[0] || 0;
-                        let pB = j.placarB[0] || 0;
+                        let pA = parseInt(j.placarA[0]) || 0;
+                        let pB = parseInt(j.placarB[0]) || 0;
                         let vencedores = j.vencedor.split('&').map(n => n.trim());
                         let souVencedor = vencedores.includes(nome);
 
-                        if ((pA === 6 && pB === 0) || (pB === 6 && pA === 0)) {
+                        // Identifica 6x0 ou 8x0 (conforme o tipo de set)
+                        if ((pA >= 6 && pB === 0 && pA > pB) || (pB >= 6 && pA === 0 && pB > pA)) {
                             if (souVencedor) aplicouPneus++;
                             else tomouPneu = true;
                         }
@@ -2716,11 +2713,15 @@ let nomes = `<span style="line-height:1.4;">${nome1Final}${nome2Final}</span>${s
                 });
             }
 
-            
+            if (tomouPneu) {
+                badges += `<span onclick="mostrarExplicacaoMedalha('🔔 Pneu', 'Este emblema indica que o atleta já sofreu a amarga derrota de um 6x0 (pneu) em partidas oficiais da liga.')" style="background: #f3f4f6; color: #4b5563; font-size: 0.75rem; font-weight: 700; padding: 6px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); cursor: pointer;" title="Clique para ver a explicação">🔔 Pneu</span>`;
+            }
+            if (aplicouPneus >= 2) {
+                badges += `<span onclick="mostrarExplicacaoMedalha('🏎️ Atropelador', 'Atribuído a quem já aplicou dois ou mais placares implacáveis de 6x0 (pneu duplo ou mais) nos adversários!')" style="background: #faf5ff; color: #7e22ce; font-size: 0.75rem; font-weight: 700; padding: 6px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); cursor: pointer;" title="Clique para ver a explicação">🏎️ Atropelador</span>`;
+            }
 
             return badges !== '' ? `<div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px;">${badges}</div>` : '';
         }
-
         const modalPerfilJogador = document.getElementById('modalPerfilJogador');
         window.abrirModalHistorico = function() { document.getElementById('modalHistorico').classList.remove('hidden'); };
         window.abrirModalH2H = function() { document.getElementById('inputH2H').value = ''; document.getElementById('resultadoH2H').classList.add('hidden'); document.getElementById('modalH2H').classList.remove('hidden'); };
