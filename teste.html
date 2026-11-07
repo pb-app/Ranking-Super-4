@@ -1088,7 +1088,7 @@ let nomes = `<span style="line-height:1.4;">${nome1Final}${nome2Final}</span>${s
                     let torneioSorteado = torneioAbertoData && torneioAbertoData.sorteados && torneioAbertoData.sorteados.length > 0;
                     let btnExcluir = (isLogged && !torneioSorteado) ? `<button onclick="deletarInscrito('${idInscrito}')" class="btn btn-outline" style="padding: 4px 8px; font-size: 0.75rem; border-color: #ef4444; color: #ef4444 !important;">✕</button>` : '';
 
-                    li.innerHTML = `<div style="display:flex; align-items:center; gap:10px;"><div style="width:32px; height:32px; background:#e5e7eb; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1rem;">👤</div>${nomes}</div> ${btnExcluir}`;
+                    li.innerHTML = `<div style="display:flex; align-items:center; gap:10px;">${nomes}</div> ${btnExcluir}`;
                     listaUI.appendChild(li);
                 });
             });
@@ -1431,7 +1431,7 @@ let nomes = `<span style="line-height:1.4;">${nome1Final}${nome2Final}</span>${s
     : `<div style="white-space:nowrap;">${window.nomeClicavel(t.nome)}${window.getBadgeSeed(t.nome)}</div>`;
                 
                 htmlTab += `<tr>
-                    <td data-name="${t.nome}" style="display:flex; align-items:center; gap:10px;"><div style="width:28px; height:28px; background:#e5e7eb; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.8rem;">👤</div>${displayNome}</td>
+                    <td data-name="${t.nome}" style="display:flex; align-items:center; gap:8px;">${displayNome}</td>
                     <td style="color:var(--gray);">${t.j}</td>
                     <td><strong style="color:var(--dark);">${t.v}</strong></td>
                     <td style="color:var(--gray);">${t.ss}</td>
