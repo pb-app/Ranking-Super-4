@@ -2838,12 +2838,27 @@ let tB_display = tB_data.includes('&')
             
             // Preenche as sugestões de adversários com base no ranking atual
             const datalist = document.getElementById('sugestoesH2H');
-            datalist.innerHTML = '';
-            document.querySelectorAll('#rankingTabelaBody a').forEach(a => {
-                if (a.textContent !== nome) {
-                    let opt = document.createElement('option'); opt.value = a.textContent; datalist.appendChild(opt);
-                }
-            });
+datalist.innerHTML = '';
+
+// Preenche a partir do cache (funciona tanto no ranking quanto no torneio)
+if (window.rankingJogadoresCache) {
+    Object.keys(window.rankingJogadoresCache).forEach(nomeJogador => {
+        if (nomeJogador !== nome) {
+            let opt = document.createElement('option');
+            opt.value = nomeJogador;
+            datalist.appendChild(opt);
+        }
+    });
+} else {
+    // Fallback antigo (só se o cache não existir)
+    document.querySelectorAll('#rankingTabelaBody a').forEach(a => {
+        if (a.textContent !== nome) {
+            let opt = document.createElement('option');
+            opt.value = a.textContent;
+            datalist.appendChild(opt);
+        }
+    });
+}
 
             modalPerfilJogador.classList.remove('hidden');
         };
