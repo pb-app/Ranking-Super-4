@@ -269,6 +269,26 @@
 .standings-table td:first-child div {
     white-space: nowrap;
 }
+
+            /* Animações suaves */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Anima automaticamente qualquer modal quando ele aparece */
+[id^="modal"]:not(.hidden) {
+    animation: fadeIn 0.30s ease-out;
+}
+
+/* Animação suave nas trocas de fase */
+#chavesGeradasUI, 
+#mataMataUI, 
+#navegadorFases,
+#ranking-section,
+#details-section {
+    animation: fadeIn 0.3s ease-out;
+}
         
     </style>
 </head>
