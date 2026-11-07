@@ -1185,6 +1185,22 @@ let nomes = `<span style="line-height:1.4;">${nome1Final}${nome2Final}</span>${s
                     }
                 }
 
+                // C. Atualiza os jogos salvos (placares da fase de grupos e mata-mata)
+              if (window.jogosSalvos) {
+             for (let matchId in window.jogosSalvos) {
+           let jogo = window.jogosSalvos[matchId];
+            if (jogo.timeA) jogo.timeA = replaceInDuo(jogo.timeA);
+            if (jogo.timeB) jogo.timeB = replaceInDuo(jogo.timeB);
+            if (jogo.vencedor) jogo.vencedor = replaceInDuo(jogo.vencedor);
+        
+            setDoc(doc(db, "campeonatos", torneioAbertoId, "jogos", matchId), {
+               timeA: jogo.timeA,
+            timeB: jogo.timeB,
+            vencedor: jogo.vencedor || null
+            }, { merge: true });
+               }
+          }
+
                    document.getElementById('modalSubstituicao').classList.add('hidden');
 
             // Força a atualização completa da tela
