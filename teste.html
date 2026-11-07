@@ -1088,7 +1088,7 @@ let nomes = `<span style="line-height:1.4;">${nome1Final}${nome2Final}</span>${s
                     let torneioSorteado = torneioAbertoData && torneioAbertoData.sorteados && torneioAbertoData.sorteados.length > 0;
                     let btnExcluir = (isLogged && !torneioSorteado) ? `<button onclick="deletarInscrito('${idInscrito}')" class="btn btn-outline" style="padding: 4px 8px; font-size: 0.75rem; border-color: #ef4444; color: #ef4444 !important;">✕</button>` : '';
 
-                    li.innerHTML = `<div style="display:flex; align-items:center; gap:10px;"><div style="width:32px; height:32px; background:#e5e7eb; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1rem;">👤</div>${nomes}</div> ${btnExcluir}`;
+                    li.innerHTML = `<div style="display:flex; align-items:center; gap:10px;"><div style="width:32px; height:32px; background:#e5e7eb; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1rem;"></div>${nomes}</div> ${btnExcluir}`;
                     listaUI.appendChild(li);
                 });
             });
@@ -1431,7 +1431,7 @@ let nomes = `<span style="line-height:1.4;">${nome1Final}${nome2Final}</span>${s
     : `<div style="white-space:nowrap;">${window.nomeClicavel(t.nome)}${window.getBadgeSeed(t.nome)}</div>`;
                 
                 htmlTab += `<tr>
-                    <td data-name="${t.nome}" style="display:flex; align-items:center; gap:10px;"><div style="width:28px; height:28px; background:#e5e7eb; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.8rem;">👤</div>${displayNome}</td>
+                    <td data-name="${t.nome}" style="display:flex; align-items:center; gap:10px;"><div style="width:28px; height:28px; background:#e5e7eb; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.8rem;"></div>${displayNome}</td>
                     <td style="color:var(--gray);">${t.j}</td>
                     <td><strong style="color:var(--dark);">${t.v}</strong></td>
                     <td style="color:var(--gray);">${t.ss}</td>
@@ -2543,7 +2543,7 @@ let tB_display = tB_data.includes('&')
                 html += `<tr>
                     <td style="font-size: 1.1rem; font-weight:600;">${icone}</td>
                     <td style="text-align:left; display:flex; align-items:center; gap:10px;">
-                        <div style="width:30px; height:30px; background:#e5e7eb; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.85rem;">👤</div>
+                        <div style="width:30px; height:30px; background:#e5e7eb; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.85rem;"></div>
                         <a href="#" onclick="abrirPerfilJogador('${jog.nome}', ${ptsToShow}, ${jog.torneios}, ${titulos}, ${vitorias}, ${jogos})" style="color: var(--dark); text-decoration: none; font-weight: 600;">${jog.nome}</a>
                     </td>
                     <td style="color: ${corPts}; font-size: 1.1rem;"><strong>${ptsToShow}</strong></td>
