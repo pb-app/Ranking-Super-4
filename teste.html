@@ -1394,8 +1394,7 @@ let nomes = `<span style="line-height:1.4;">${nome1Final}${nome2Final}</span>${s
                 let nomeParts = t.nome.split('&'); 
                 
                 let displayNome = nomeParts.length > 1 
-    ? `${window.nomeClicavel(nomeParts[0].trim())}${window.getBadgeSeed(nomeParts[0].trim())}<br>
-       <span style="color:var(--gray); font-weight:400; font-size:0.85rem;">${window.nomeClicavel(nomeParts[1].trim())}${window.getBadgeSeed(nomeParts[1].trim())}</span>`
+    ? `${window.nomeClicavel(nomeParts[0].trim())}${window.getBadgeSeed(nomeParts[0].trim())} <span style="color:var(--gray); font-weight:400;">&</span> ${window.nomeClicavel(nomeParts[1].trim())}${window.getBadgeSeed(nomeParts[1].trim())}`
     : `${window.nomeClicavel(t.nome)}${window.getBadgeSeed(t.nome)}`;
                 
                 htmlTab += `<tr>
@@ -1783,12 +1782,14 @@ let nomes = `<span style="line-height:1.4;">${nome1Final}${nome2Final}</span>${s
                 let tB_data = jogo.timeB || "Aguardando...";
                 
                 let tA_display = tA_data.includes('&') 
-                    ? `<span>${tA_data.split('&')[0].trim()}${window.getBadgeSeed(tA_data.split('&')[0].trim())}</span><br><span style="color:var(--gray); font-size:0.85rem; font-weight:400;">${tA_data.split('&')[1].trim()}${window.getBadgeSeed(tA_data.split('&')[1].trim())}</span>` 
-                    : `<span>${tA_data}${window.getBadgeSeed(tA_data)}</span>`;
-                    
-                let tB_display = tB_data.includes('&') 
-                    ? `<span>${tB_data.split('&')[0].trim()}${window.getBadgeSeed(tB_data.split('&')[0].trim())}</span><br><span style="color:var(--gray); font-size:0.85rem; font-weight:400;">${tB_data.split('&')[1].trim()}${window.getBadgeSeed(tB_data.split('&')[1].trim())}</span>` 
-                    : `<span>${tB_data}${window.getBadgeSeed(tB_data)}</span>`;
+    ? `${window.nomeClicavel(tA_data.split('&')[0].trim())}${window.getBadgeSeed(tA_data.split('&')[0].trim())}<br>
+       <span style="color:var(--gray); font-size:0.85rem; font-weight:400;">${window.nomeClicavel(tA_data.split('&')[1].trim())}${window.getBadgeSeed(tA_data.split('&')[1].trim())}</span>` 
+    : `${window.nomeClicavel(tA_data)}${window.getBadgeSeed(tA_data)}`;
+
+let tB_display = tB_data.includes('&') 
+    ? `${window.nomeClicavel(tB_data.split('&')[0].trim())}${window.getBadgeSeed(tB_data.split('&')[0].trim())}<br>
+       <span style="color:var(--gray); font-size:0.85rem; font-weight:400;">${window.nomeClicavel(tB_data.split('&')[1].trim())}${window.getBadgeSeed(tB_data.split('&')[1].trim())}</span>` 
+    : `${window.nomeClicavel(tB_data)}${window.getBadgeSeed(tB_data)}`;
                 
                 let prefix = chave === 'Prata' ? "MM_Prata_" : "MM_";
                 let matchId = `${prefix}${rodadaIndex}_${tA_data.replace(/\s+/g, '')}_vs_${tB_data.replace(/\s+/g, '')}`;
