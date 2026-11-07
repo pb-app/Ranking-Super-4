@@ -2675,23 +2675,25 @@ let nomes = `<span style="line-height:1.4;">${nome1Final}${nome2Final}</span>${s
             let badges = '';
             let aproveitamento = jogos > 0 ? (vitorias / jogos) * 100 : 0;
 
+            // 1. 🔥 Intocável (80%+ de aproveitamento e min. 5 jogos)
             if (aproveitamento >= 80 && jogos >= 5) {
                 badges += `<span onclick="mostrarExplicacaoMedalha('🔥 Intocável', 'O jogador mantém um aproveitamento de vitórias superior ou igual a 80% (com pelo menos 5 jogos disputados). É um verdadeiro carrasco nas quadras!')" style="background: #fef2f2; color: #dc2626; font-size: 0.75rem; font-weight: 700; padding: 6px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); cursor: pointer;" title="Clique para ver a explicação">🔥 Intocável</span>`;
             }
+            // 2. 🛡️ Veterano (10+ torneios)
             if (torneios >= 10) {
                 badges += `<span onclick="mostrarExplicacaoMedalha('🛡️ Veterano', 'Conquistado por atletas leais que já participaram em 10 ou mais torneios oficiais na plataforma.')" style="background: #eff6ff; color: #2563eb; font-size: 0.75rem; font-weight: 700; padding: 6px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); cursor: pointer;" title="Clique para ver a explicação">🛡️ Veterano</span>`;
             }
+            // 3. 👑 Rei do Ouro (3+ títulos)
             if (titulos >= 3) {
-                badges += `<span onclick="mostrarExplicacaoMedalha('👑 Rei da Ouro', 'Exclusivo para lendas que já ergueram o troféu de Campeão na Chave Ouro por 3 ou mais vezes.')" style="background: #fefce8; color: #ca8a04; font-size: 0.75rem; font-weight: 700; padding: 6px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); cursor: pointer;" title="Clique para ver a explicação">👑 Rei do Ouro</span>`;
+                badges += `<span onclick="mostrarExplicacaoMedalha('👑 Rei do Ouro', 'Exclusivo para lendas que já ergueram o troféu de Campeão na Chave Ouro por 3 ou mais vezes.')" style="background: #fefce8; color: #ca8a04; font-size: 0.75rem; font-weight: 700; padding: 6px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); cursor: pointer;" title="Clique para ver a explicação">👑 Rei do Ouro</span>`;
             }
 
-            // Variáveis de contagem para as novas medalhas
+            // Variáveis de contagem
             let tomouPneu = false;
             let aplicouPneus = 0;
             let oitavasPerdidas = 0;
             let titulosPrataCount = 0;
 
-            // Varredura nos jogos salvos e histórico global
             if (window.h2hJogosCache) {
                 window.h2hJogosCache.forEach(j => {
                     if (!j.vencedor) return;
@@ -2700,7 +2702,6 @@ let nomes = `<span style="line-height:1.4;">${nome1Final}${nome2Final}</span>${s
                     let estaNoJogo = jogA.includes(nome) || jogB.includes(nome);
                     
                     if (estaNoJogo) {
-                        // Contagem de 6x0 (Pneus)
                         if (j.placarA && j.placarB) {
                             let pA = parseInt(j.placarA[0]) || 0;
                             let pB = parseInt(j.placarB[0]) || 0;
@@ -2713,11 +2714,9 @@ let nomes = `<span style="line-height:1.4;">${nome1Final}${nome2Final}</span>${s
                             }
                         }
 
-                        // Conta derrotas nas oitavas de final (com base no rótulo da fase do jogo)
                         if (j.fase && j.fase.toLowerCase().includes("eliminatória")) {
                             let vencedores = j.vencedor.split('&').map(n => n.trim());
                             let souVencedor = vencedores.includes(nome);
-                            // Se o jogo for de oitavas e ele perdeu
                             if (!souVencedor && (j.fase.includes("0_") || j.fase.toLowerCase().includes("oitavas"))) {
                                 oitavasPerdidas++;
                             }
@@ -2726,37 +2725,47 @@ let nomes = `<span style="line-height:1.4;">${nome1Final}${nome2Final}</span>${s
                 });
             }
 
-            // Tenta resgatar os títulos de prata do perfil carregado
             let rankingNome = document.getElementById('filtroVisualRanking').options[document.getElementById('filtroVisualRanking').selectedIndex]?.text;
             let listaJogadores = window.rankingDadosCache[rankingNome] || [];
             let dadosAtleta = listaJogadores.find(j => j.nome === nome);
-            if (dadosAtleta) {
-                // Se o atleta tiver pontos de prata dominantes ou títulos de prata computados
-                if (dadosAtleta.pontosPrata && dadosAtleta.pontosPrata > 300) titulosPrataCount += 2; // estimativa ou propriedade dedicada
+            if (dadosAtleta && dadosAtleta.pontosPrata && dadosAtleta.pontosPrata > 300) {
+                titulosPrataCount += 2;
             }
 
-            // 👑 Rei da Prata (3+ títulos na Prata)
+            // 4. 👑 Rei da Prata (3+ títulos na Prata)
             if (titulosPrataCount >= 3 || (dadosAtleta && dadosAtleta.titulosPrata >= 3)) {
                 badges += `<span onclick="mostrarExplicacaoMedalha('👑 Rei da Prata', 'Exclusivo para os verdadeiros donos da Chave Prata que já ergueram 3 ou mais troféus nesta categoria!')" style="background: #f1f5f9; color: #475569; font-size: 0.75rem; font-weight: 700; padding: 6px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); cursor: pointer;" title="Clique para ver a explicação">👑 Rei da Prata</span>`;
             }
 
-            // 🔔 Pneu (6x0 sofrido)
+            // 5. 🎈 Bola Mucha (0% de aproveitamento com min. 3 jogos)
+            if (jogos >= 3 && aproveitamento === 0) {
+                badges += `<span onclick="mostrarExplicacaoMedalha('🎈 Bola Mucha', 'Atribuído com muito carinho aos atletas que disputaram pelo menos 3 jogos mas ainda não conseguiram saber o que é vencer uma partida (0% de aproveitamento).')" style="background: #fef2f2; color: #991b1b; font-size: 0.75rem; font-weight: 700; padding: 6px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); cursor: pointer;" title="Clique para ver a explicação">🎈 Bola Mucha</span>`;
+            } 
+            // 6. 🐴 Pangaré (Abaixo de 30% de aproveitamento com min. 5 jogos e se não for Bola Mucha)
+            else if (jogos >= 5 && aproveitamento < 30) {
+                badges += `<span onclick="mostrarExplicacaoMedalha('🐴 Pangaré', 'Para os guerreiros que lutam muito, mas cujo aproveitamento geral fica abaixo de 30% nas quadras. Quase lá!')" style="background: #fffbeb; color: #b45309; font-size: 0.75rem; font-weight: 700; padding: 6px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); cursor: pointer;" title="Clique para ver a explicação">🐴 Pangaré</span>`;
+            }
+
+            // 7. 🔔 Pneu (6x0 sofrido)
             if (tomouPneu) {
                 badges += `<span onclick="mostrarExplicacaoMedalha('🔔 Pneu', 'Este emblema indica que o atleta já sofreu a amarga derrota de um 6x0 (pneu) em partidas oficiais da liga.')" style="background: #f3f4f6; color: #4b5563; font-size: 0.75rem; font-weight: 700; padding: 6px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); cursor: pointer;" title="Clique para ver a explicação">🔔 Pneu</span>`;
             }
 
-            // 🏎️ Atropelador (Aplicou pneus)
+            // 8. 🏎️ Atropelador (Aplicou pneus)
             if (aplicouPneus >= 2) {
                 badges += `<span onclick="mostrarExplicacaoMedalha('🏎️ Atropelador', 'Atribuído a quem já aplicou dois ou mais placares implacáveis de 6x0 (pneu duplo ou mais) nos adversários!')" style="background: #faf5ff; color: #7e22ce; font-size: 0.75rem; font-weight: 700; padding: 6px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); cursor: pointer;" title="Clique para ver a explicação">🏎️ Atropelador</span>`;
             }
 
-            // ⚓ Âncora (5+ derrotas nas oitavas)
+            // 9. ⚓ Âncora (5+ derrotas nas oitavas)
             if (oitavasPerdidas >= 5) {
                 badges += `<span onclick="mostrarExplicacaoMedalha('⚓ Âncora', 'Concedido com muito bom humor aos atletas que já estacionaram e perderam mais de 5 vezes logo na primeira fase de mata-mata (oitavas). Difícil passar daí!')" style="background: #eff6ff; color: #1e40af; font-size: 0.75rem; font-weight: 700; padding: 6px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); cursor: pointer;" title="Clique para ver a explicação">⚓ Âncora</span>`;
             }
 
             return badges !== '' ? `<div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px;">${badges}</div>` : '';
         }
+
+
+        
         const modalPerfilJogador = document.getElementById('modalPerfilJogador');
         window.abrirModalHistorico = function() { document.getElementById('modalHistorico').classList.remove('hidden'); };
         window.abrirModalH2H = function() { document.getElementById('inputH2H').value = ''; document.getElementById('resultadoH2H').classList.add('hidden'); document.getElementById('modalH2H').classList.remove('hidden'); };
