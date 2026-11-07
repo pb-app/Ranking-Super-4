@@ -2702,6 +2702,7 @@ let tB_display = tB_data.includes('&')
           tipoFiltroRanking.value = ultimoTipo;
          }
          carregarRanking();
+         });
 
         document.getElementById('btnAdicionarCategoria').addEventListener('click', async () => {
             const nomeInput = document.getElementById('novaCategoriaInput'); const nome = nomeInput.value.trim(); if (!nome) return;
