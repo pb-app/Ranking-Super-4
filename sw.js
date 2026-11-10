@@ -1,4 +1,4 @@
-const CACHE_NAME = 'liga-bt-store-v7'; // Mude para v5, v6, etc., sempre que atualizar!
+const CACHE_NAME = 'liga-bt-store-v8'; // Mude para v5, v6, etc., sempre que atualizar!
 
 // Instalação: guarda os ficheiros base e força o novo service worker a assumir o controlo
 self.addEventListener('install', (e) => {
