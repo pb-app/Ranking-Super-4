@@ -1,4 +1,4 @@
-const CACHE_NAME = 'liga-bt-store-v6'; // Mude para v3, v4, etc., sempre que fizer uma grande atualização!
+const CACHE_NAME = 'liga-bt-store-v5'; // Mude para v5, v6, etc., sempre que atualizar!
 
 // Instalação: guarda os ficheiros base e força o novo service worker a assumir o controlo
 self.addEventListener('install', (e) => {
@@ -10,7 +10,7 @@ self.addEventListener('install', (e) => {
     );
 });
 
-// Ativação: apaga os caches antigos do telemóvel (a magia da atualização!)
+// Ativação: apaga os caches antigos do telemóvel
 self.addEventListener('activate', (e) => {
     e.waitUntil(
         caches.keys().then((keyList) => {
@@ -22,15 +22,21 @@ self.addEventListener('activate', (e) => {
             }));
         })
     );
-    return self.clients.claim(); // Força o controlo imediato sobre a página aberta
+    return self.clients.claim();
 });
 
-// Fetch: Estratégia "Network First" (Tenta a internet primeiro, se falhar usa o cache)
+// NOVO: Ouve o comando enviado pelo botão do rodapé para atualizar imediatamente
+self.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'SKIP_WAITING') {
+        self.skipWaiting();
+    }
+});
+
+// Fetch: Estratégia "Network First"
 self.addEventListener('fetch', (e) => {
     e.respondWith(
         fetch(e.request)
             .then((response) => {
-                // Se a internet funcionar, atualiza o cache invisivelmente com a versão mais recente
                 const responseClone = response.clone();
                 caches.open(CACHE_NAME).then((cache) => {
                     cache.put(e.request, responseClone);
@@ -38,7 +44,6 @@ self.addEventListener('fetch', (e) => {
                 return response;
             })
             .catch(() => {
-                // Se o utilizador estiver offline, puxa a versão guardada no telemóvel
                 return caches.match(e.request);
             })
     );
