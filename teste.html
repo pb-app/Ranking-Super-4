@@ -816,6 +816,44 @@
     return `<span style="cursor:pointer; text-decoration:underline; text-underline-offset:2px;" 
                   onclick="abrirPerfilDoTorneio('${clean}')">${nome.trim()}</span>`;
 };
+
+
+        window.verificarAtualizacaoApp = function() {
+    const badge = document.getElementById('appVersionBadge');
+    badge.textContent = "Verificando...";
+
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistration().then((reg) => {
+            if (!reg) {
+                alert("Nenhum serviço ativo encontrado.");
+                badge.textContent = "v5 🔄";
+                return;
+            }
+
+            // Pede para o navegador procurar por novas versões no servidor
+            reg.update().then(() => {
+                setTimeout(() => {
+                    if (reg.waiting) {
+                        // Se houver um novo Service Worker à espera, ativa-o imediatamente
+                        badge.textContent = "Atualizando...";
+                        reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+                        window.location.reload();
+                    } else {
+                        badge.textContent = "v5 🔄";
+                        alert("O aplicativo já está na versão mais recente!");
+                    }
+                }, 1000);
+            }).catch(() => {
+                badge.textContent = "v5 🔄";
+                alert("Erro ao verificar atualizações. Verifique a sua conexão.");
+            });
+        });
+    } else {
+        badge.textContent = "v5 🔄";
+        alert("O seu navegador não suporta atualizações automáticas.");
+    }
+};
+
         
         // --- FUNÇÃO INTELIGENTE DE ETIQUETAS (SEEDS) ---
         window.getBadgeSeed = function(nome) {
@@ -2804,9 +2842,9 @@ tipoFiltroRanking.addEventListener('change', () => {
             let badges = '';
             let aproveitamento = jogos > 0 ? (vitorias / jogos) * 100 : 0;
 
-            // 1. 🔥 Intocável (80%+ de aproveitamento e min. 5 jogos)
-            if (aproveitamento >= 80 && jogos >= 5) {
-                badges += `<span onclick="mostrarExplicacaoMedalha('🔥 Intocável', 'O jogador mantém um aproveitamento de vitórias superior ou igual a 80% (com pelo menos 5 jogos disputados). É um verdadeiro carrasco nas quadras!')" style="background: #fef2f2; color: #dc2626; font-size: 0.75rem; font-weight: 700; padding: 6px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); cursor: pointer;" title="Clique para ver a explicação">🔥 Intocável</span>`;
+            // 1. 🔥 Intocável (80%+ de aproveitamento e min. 10 jogos)
+            if (aproveitamento >= 80 && jogos >= 10) {
+                badges += `<span onclick="mostrarExplicacaoMedalha('🔥 Intocável', 'O jogador mantém um aproveitamento de vitórias superior ou igual a 80% (com pelo menos 10 jogos disputados). É um verdadeiro carrasco nas quadras!')" style="background: #fef2f2; color: #dc2626; font-size: 0.75rem; font-weight: 700; padding: 6px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); cursor: pointer;" title="Clique para ver a explicação">🔥 Intocável</span>`;
             }
             // 2. 🛡️ Veterano (10+ torneios)
             if (torneios >= 10) {
@@ -2817,12 +2855,16 @@ tipoFiltroRanking.addEventListener('change', () => {
                 badges += `<span onclick="mostrarExplicacaoMedalha('👑 Rei da Ouro', 'Exclusivo para lendas que já ergueram o troféu de Campeão na Chave Ouro por 3 ou mais vezes.')" style="background: #fefce8; color: #ca8a04; font-size: 0.75rem; font-weight: 700; padding: 6px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); cursor: pointer;" title="Clique para ver a explicação">👑 Rei da Ouro</span>`;
             }
 
-            // Variáveis de contagem
+            // Variáveis de contagem e análise de histórico
             let tomouPneu = false;
             let aplicouPneus = 0;
             let oitavasPerdidas = 0;
             let titulosPrataCount = 0;
+            let tieBreaksVencidos = 0;
+            let tieBreaksPerdidos = 0;
+            let vicesCount = 0;
 
+            // Análise via H2H Cache (Partidas)
             if (window.h2hJogosCache) {
                 window.h2hJogosCache.forEach(j => {
                     if (!j.vencedor) return;
@@ -2837,9 +2879,17 @@ tipoFiltroRanking.addEventListener('change', () => {
                             let vencedores = j.vencedor.split('&').map(n => n.trim());
                             let souVencedor = vencedores.includes(nome);
 
+                            // Pneus (6x0)
                             if ((pA >= 6 && pB === 0 && pA > pB) || (pB >= 6 && pA === 0 && pB > pA)) {
                                 if (souVencedor) aplicouPneus++;
                                 else tomouPneu = true;
+                            }
+
+                            // Detecção de Tie-Break / Jogos Apertados (Ex: 7/6, 9/8 ou diferença de 1 game no Super Tie-Break)
+                            let diff = Math.abs(pA - pB);
+                            if ((pA >= 6 || pB >= 6) && diff === 1) {
+                                if (souVencedor) tieBreaksVencidos++;
+                                else tieBreaksPerdidos++;
                             }
                         }
 
@@ -2857,8 +2907,15 @@ tipoFiltroRanking.addEventListener('change', () => {
             let rankingNome = document.getElementById('filtroVisualRanking').options[document.getElementById('filtroVisualRanking').selectedIndex]?.text;
             let listaJogadores = window.rankingDadosCache[rankingNome] || [];
             let dadosAtleta = listaJogadores.find(j => j.nome === nome);
-            if (dadosAtleta && dadosAtleta.pontosPrata && dadosAtleta.pontosPrata > 300) {
-                titulosPrataCount += 2;
+            
+            if (dadosAtleta) {
+                if (dadosAtleta.pontosPrata && dadosAtleta.pontosPrata > 300) {
+                    titulosPrataCount += 2;
+                }
+                // Conta quantas vezes ficou em 2º lugar (Vice) nos torneios registados
+                if (dadosAtleta.vices) {
+                    vicesCount = dadosAtleta.vices;
+                }
             }
 
             // 4. 👑 Rei da Prata (3+ títulos na Prata)
@@ -2866,26 +2923,41 @@ tipoFiltroRanking.addEventListener('change', () => {
                 badges += `<span onclick="mostrarExplicacaoMedalha('👑 Rei da Prata', 'Exclusivo para os verdadeiros donos da Chave Prata que já ergueram 3 ou mais troféus nesta categoria!')" style="background: #f1f5f9; color: #475569; font-size: 0.75rem; font-weight: 700; padding: 6px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); cursor: pointer;" title="Clique para ver a explicação">👑 Rei da Prata</span>`;
             }
 
-            // 5. 🎈 Bola Mucha (0% de aproveitamento com min. 3 jogos)
-            if (jogos >= 3 && aproveitamento === 0) {
-                badges += `<span onclick="mostrarExplicacaoMedalha('🎈 Bola Mucha', 'Atribuído com muito carinho aos atletas que disputaram pelo menos 3 jogos mas ainda não conseguiram saber o que é vencer uma partida (0% de aproveitamento).')" style="background: #fef2f2; color: #991b1b; font-size: 0.75rem; font-weight: 700; padding: 6px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); cursor: pointer;" title="Clique para ver a explicação">🎈 Bola Mucha</span>`;
+            // 5. 🧊 Rei do Tie-Break (3+ tie-breaks vencidos e bom aproveitamento neles)
+            if (tieBreaksVencidos >= 3 && tieBreaksVencidos >= tieBreaksPerdidos) {
+                badges += `<span onclick="mostrarExplicacaoMedalha('🧊 Rei do Tie-Break', 'Conquistado por atletas de nervos de aço que venceram 3 ou mais partidas decididas no detalhe (tie-break). Frieza total!')" style="background: #eff6ff; color: #1d4ed8; font-size: 0.75rem; font-weight: 700; padding: 6px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); cursor: pointer;" title="Clique para ver a explicação">🧊 Rei do Tie-Break</span>`;
+            }
+
+            // 6. 🥈 Rei do Quase (3+ Vices)
+            if (vicesCount >= 3) {
+                badges += `<span onclick="mostrarExplicacaoMedalha('🥈 Rei do Quase', 'Concedido com muito bom humor aos atletas que colecionam medalhas de Vice-Campeão. Bateu na trave várias vezes!')" style="background: #f8fafc; color: #475569; font-size: 0.75rem; font-weight: 700; padding: 6px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); cursor: pointer;" title="Clique para ver a explicação">🥈 Rei do Quase</span>`;
+            }
+
+            // 7. 🍉 Especialista em Tie-Brakes Trágicos (3+ tie-breaks perdidos)
+            if (tieBreaksPerdidos >= 3 && tieBreaksPerdidos > tieBreaksVencidos) {
+                badges += `<span onclick="mostrarExplicacaoMedalha('🍉 Coração de Melância', 'Para quem tem muita emoção em quadra, mas acabou perdendo 3 ou mais partidas no detalhe final do tie-break. Quase levou!')" style="background: #fef2f2; color: #b91c1c; font-size: 0.75rem; font-weight: 700; padding: 6px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); cursor: pointer;" title="Clique para ver a explicação">🍉 Tie-Break Trágico</span>`;
+            }
+
+            // 8. 🎈 Bola Mucha (0% de aproveitamento com min. 5 jogos)
+            if (jogos >= 5 && aproveitamento === 0) {
+                badges += `<span onclick="mostrarExplicacaoMedalha('🎈 Bola Mucha', 'Atribuído com muito carinho aos atletas que disputaram pelo menos 5 jogos mas ainda não conseguiram saber o que é vencer uma partida (0% de aproveitamento).')" style="background: #fef2f2; color: #991b1b; font-size: 0.75rem; font-weight: 700; padding: 6px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); cursor: pointer;" title="Clique para ver a explicação">🎈 Bola Mucha</span>`;
             } 
-            // 6. 🐴 Pangaré (Abaixo de 30% de aproveitamento com min. 5 jogos e se não for Bola Mucha)
+            // 9. 🐴 Pangaré (Abaixo de 30% de aproveitamento com min. 5 jogos e se não for Bola Mucha)
             else if (jogos >= 5 && aproveitamento < 30) {
                 badges += `<span onclick="mostrarExplicacaoMedalha('🐴 Pangaré', 'Para os guerreiros que lutam muito, mas cujo aproveitamento geral fica abaixo de 30% nas quadras. Quase lá!')" style="background: #fffbeb; color: #b45309; font-size: 0.75rem; font-weight: 700; padding: 6px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); cursor: pointer;" title="Clique para ver a explicação">🐴 Pangaré</span>`;
             }
 
-            // 7. 🔔 Sino (6x0 sofrido)
+            // 10. 🔔 Sino (6x0 sofrido)
             if (tomouPneu) {
-                badges += `<span onclick="mostrarExplicacaoMedalha('🔔 Sino', 'Este emblema indica que o atleta já sofreu a amarga derrota de um 6x0 (pneu) em partidas oficiais da liga.')" style="background: #f3f4f6; color: #4b5563; font-size: 0.75rem; font-weight: 700; padding: 6px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); cursor: pointer;" title="Clique para ver a explicação">🔔 Pneu</span>`;
+                badges += `<span onclick="mostrarExplicacaoMedalha('🔔 Pneu', 'Este emblema indica que o atleta já sofreu a amarga derrota de um 6x0 (pneu) em partidas oficiais da liga.')" style="background: #f3f4f6; color: #4b5563; font-size: 0.75rem; font-weight: 700; padding: 6px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); cursor: pointer;" title="Clique para ver a explicação">🔔 Pneu</span>`;
             }
 
-            // 8. 🏎️ Atropelador (Aplicou pneus)
-            if (aplicouPneus >= 2) {
-                badges += `<span onclick="mostrarExplicacaoMedalha('🏎️ Atropelador', 'Atribuído a quem já aplicou dois ou mais placares implacáveis de 6x0 (pneu duplo ou mais) nos adversários!')" style="background: #faf5ff; color: #7e22ce; font-size: 0.75rem; font-weight: 700; padding: 6px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); cursor: pointer;" title="Clique para ver a explicação">🏎️ Atropelador</span>`;
+            // 11. 🏎️ Atropelador (Aplicou pneus)
+            if (aplicouPneus >= 4) {
+                badges += `<span onclick="mostrarExplicacaoMedalha('🏎️ Atropelador', 'Atribuído a quem já aplicou 4 ou mais placares implacáveis de 6x0 (pneu duplo ou mais) nos adversários!')" style="background: #faf5ff; color: #7e22ce; font-size: 0.75rem; font-weight: 700; padding: 6px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); cursor: pointer;" title="Clique para ver a explicação">🏎️ Atropelador</span>`;
             }
 
-            // 9. ⚓ Âncora (5+ derrotas nas oitavas)
+            // 12. ⚓ Âncora (5+ derrotas nas oitavas)
             if (oitavasPerdidas >= 5) {
                 badges += `<span onclick="mostrarExplicacaoMedalha('⚓ Âncora', 'Concedido com muito bom humor aos atletas que já estacionaram e perderam mais de 5 vezes logo na primeira fase de mata-mata (oitavas). Difícil passar daí!')" style="background: #eff6ff; color: #1e40af; font-size: 0.75rem; font-weight: 700; padding: 6px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); cursor: pointer;" title="Clique para ver a explicação">⚓ Âncora</span>`;
             }
@@ -3554,5 +3626,12 @@ if (window.rankingJogadoresCache) {
             <button onclick="document.getElementById('modalExplicacaoMedalha').classList.add('hidden')" class="btn" style="width: 100%;">Entendido</button>
         </div>
     </div>
+
+    <!-- Versão Clicável para Atualizar -->
+<div id="appVersionBadge" onclick="verificarAtualizacaoApp()" style="position: fixed; bottom: 12px; right: 12px; background: rgba(31, 41, 55, 0.85); backdrop-filter: blur(4px); color: #9ca3af; padding: 5px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; z-index: 1000; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1);" title="Toque para verificar atualizações">
+    v8 🔄
+</div>
+
+    
 </body>
 </html>
