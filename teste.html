@@ -2355,6 +2355,10 @@ let tB_display = tB_data.includes('&')
             btnAbaCampeonatos.classList.add('tab-inactive'); btnAbaCampeonatos.classList.remove('tab-active');
             listSection.classList.add('hidden'); detailsSection.classList.add('hidden'); createSection.style.display = 'none'; rankingSection.classList.remove('hidden');
             updateAuthUI();
+            
+            // LIMPA O CACHE E FORÇA O RECARREGAMENTO DO FIREBASE AO CLICAR NA ABA
+            window.rankingDadosCache = {}; 
+            carregarRanking(true);
         });
 
         document.getElementById('btnEncerrarTorneio').addEventListener('click', async () => {
