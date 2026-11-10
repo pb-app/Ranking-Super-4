@@ -816,6 +816,44 @@
     return `<span style="cursor:pointer; text-decoration:underline; text-underline-offset:2px;" 
                   onclick="abrirPerfilDoTorneio('${clean}')">${nome.trim()}</span>`;
 };
+
+
+        window.verificarAtualizacaoApp = function() {
+    const badge = document.getElementById('appVersionBadge');
+    badge.textContent = "Verificando...";
+
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistration().then((reg) => {
+            if (!reg) {
+                alert("Nenhum serviço ativo encontrado.");
+                badge.textContent = "v5 🔄";
+                return;
+            }
+
+            // Pede para o navegador procurar por novas versões no servidor
+            reg.update().then(() => {
+                setTimeout(() => {
+                    if (reg.waiting) {
+                        // Se houver um novo Service Worker à espera, ativa-o imediatamente
+                        badge.textContent = "Atualizando...";
+                        reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+                        window.location.reload();
+                    } else {
+                        badge.textContent = "v5 🔄";
+                        alert("O aplicativo já está na versão mais recente!");
+                    }
+                }, 1000);
+            }).catch(() => {
+                badge.textContent = "v5 🔄";
+                alert("Erro ao verificar atualizações. Verifique a sua conexão.");
+            });
+        });
+    } else {
+        badge.textContent = "v5 🔄";
+        alert("O seu navegador não suporta atualizações automáticas.");
+    }
+};
+
         
         // --- FUNÇÃO INTELIGENTE DE ETIQUETAS (SEEDS) ---
         window.getBadgeSeed = function(nome) {
@@ -3555,9 +3593,9 @@ if (window.rankingJogadoresCache) {
         </div>
     </div>
 
-    <!-- Versão Discreta do App -->
-<div id="appVersionBadge" style="position: fixed; bottom: 12px; right: 12px; background: rgba(31, 41, 55, 0.75); backdrop-filter: blur(4px); color: #9ca3af; padding: 4px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 400; z-index: 1000; pointer-events: none;">
-    v6
+    <!-- Versão Clicável para Atualizar -->
+<div id="appVersionBadge" onclick="verificarAtualizacaoApp()" style="position: fixed; bottom: 12px; right: 12px; background: rgba(31, 41, 55, 0.85); backdrop-filter: blur(4px); color: #9ca3af; padding: 5px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; z-index: 1000; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1);" title="Toque para verificar atualizações">
+    v5 🔄
 </div>
 
     
