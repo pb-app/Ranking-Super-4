@@ -1917,51 +1917,41 @@ let tB_display = tB_data.includes('&')
         }
 
         window.avancarVencedorMataMata = async function() {
-            function atualizarChave(fases, chave) {
-                if(!fases) return;
-                fases.forEach((fase, roundIndex) => {
-                    let jogos = fase.jogos || fase; let vencedores = [];
-                    jogos.forEach(jogo => {
-                        let prefix = chave === 'Prata' ? "MM_Prata_" : "MM_";
-                        let matchId = `${prefix}${roundIndex}_${jogo.timeA.replace(/\s+/g, '')}_vs_${jogo.timeB.replace(/\s+/g, '')}`;
-                        let salvo = jogosSalvos[matchId];
-                        
-                        if (salvo && salvo.vencedor) { vencedores.push(salvo.vencedor); } 
-                        else if (jogo.timeA && jogo.timeA.includes("BYE")) { vencedores.push(jogo.timeB); } 
-                        else if (jogo.timeB && jogo.timeB.includes("BYE")) { vencedores.push(jogo.timeA); } 
-                        else { vencedores.push("Aguardando..."); }
-                    });
-                    
-                    if (fases[roundIndex + 1] && vencedores.length > 0) {
-                        let iv = 0; let proxRodada = fases[roundIndex + 1].jogos || fases[roundIndex + 1];
-                        proxRodada.forEach(pJogo => {
-                            pJogo.timeA = vencedores[iv] || "Aguardando..."; iv++; pJogo.timeB = vencedores[iv] || "Aguardando..."; iv++;
-                        });
-                    }
+    function atualizarChave(fases, chave) {
+        if(!fases) return;
+        fases.forEach((fase, roundIndex) => {
+            let jogos = fase.jogos || fase; let vencedores = [];
+            jogos.forEach(jogo => {
+                let prefix = chave === 'Prata' ? "MM_Prata_" : "MM_";
+                let matchId = `${prefix}${roundIndex}_${jogo.timeA.replace(/\s+/g, '')}_vs_${jogo.timeB.replace(/\s+/g, '')}`;
+                let salvo = jogosSalvos[matchId];
+                
+                if (salvo && salvo.vencedor) { vencedores.push(salvo.vencedor); } 
+                else if (jogo.timeA && jogo.timeA.includes("BYE")) { vencedores.push(jogo.timeB); } 
+                else if (jogo.timeB && jogo.timeB.includes("BYE")) { vencedores.push(jogo.timeA); } 
+                else { vencedores.push("Aguardando..."); }
+            });
+            
+            if (fases[roundIndex + 1] && vencedores.length > 0) {
+                let iv = 0; let proxRodada = fases[roundIndex + 1].jogos || fases[roundIndex + 1];
+                proxRodada.forEach(pJogo => {
+                    pJogo.timeA = vencedores[iv] || "Aguardando..."; iv++; pJogo.timeB = vencedores[iv] || "Aguardando..."; iv++;
                 });
             }
+        });
+    }
 
-            atualizarChave(window.fasesMataMata, 'Ouro');
-            if (window.fasesPrata && window.fasesPrata.length > 0) { atualizarChave(window.fasesPrata, 'Prata'); }
-            
-            let updatePayload = { fasesMataMata: window.fasesMataMata }; 
-            if (window.fasesPrata && window.fasesPrata.length > 0) updatePayload.fasesPrata = window.fasesPrata;
-            
-            // NOVO: Se o torneio já estiver encerrado e o nome alterado for o de um campeão, atualiza o card também!
-            if (torneioAbertoData.status === "encerrado") {
-                if (torneioAbertoData.campeaoOuro === timeAntigo) {
-                    updatePayload.campeaoOuro = novoNome;
-                    torneioAbertoData.campeaoOuro = novoNome;
-                }
-                if (torneioAbertoData.campeaoPrata === timeAntigo) {
-                    updatePayload.campeaoPrata = novoNome;
-                    torneioAbertoData.campeaoPrata = novoNome;
-                }
-            }
+    atualizarChave(window.fasesMataMata, 'Ouro');
+    if (window.fasesPrata && window.fasesPrata.length > 0) { atualizarChave(window.fasesPrata, 'Prata'); }
+    
+    let updatePayload = { fasesMataMata: window.fasesMataMata }; 
+    if (window.fasesPrata && window.fasesPrata.length > 0) updatePayload.fasesPrata = window.fasesPrata;
+    
+    // O BLOCO COM ERRO FOI REMOVIDO DAQUI E MOVIDO PARA A FUNÇÃO CORRETA ABAIXO
 
-            await updateDoc(doc(db, "campeonatos", torneioAbertoId), updatePayload);
-            renderizarMataMata(true); 
-        };
+    await updateDoc(doc(db, "campeonatos", torneioAbertoId), updatePayload);
+    renderizarMataMata(true); 
+};
         
         document.getElementById('btnMontarMataMata').addEventListener('click', async () => {
             const jogosFaseGrupos = document.querySelectorAll('#chavesGeradasUI .match-box');
@@ -3063,32 +3053,44 @@ if (window.rankingJogadoresCache) {
             } catch (error) { alert("Erro ao aplicar repescagem."); botao.textContent = "Trocar"; botao.disabled = false; }
         };
 
-        // FUNÇÃO 1: TROCA DE EMERGÊNCIA NO MATA-MATA
-        window.editarNomeDuplaMataMata = async function(elemento, timeAntigo, matchId, indexRodada, chave) {
-            let novoNome = prompt("Troca de Emergência!\nDigite o novo nome da dupla (Ex: Maria & Ana):", timeAntigo);
-            if (!novoNome || novoNome === timeAntigo) return;
+       window.editarNomeDuplaMataMata = async function(elemento, timeAntigo, matchId, indexRodada, chave) {
+    let novoNome = prompt("Troca de Emergência!\nDigite o novo nome da dupla (Ex: Maria & Ana):", timeAntigo);
+    if (!novoNome || novoNome === timeAntigo) return;
 
-            // Atualiza o visual na tela
-            elemento.setAttribute('data-name', novoNome);
-            elemento.innerHTML = novoNome.includes('&') 
-                ? `<span>${novoNome.split('&')[0].trim()}${window.getBadgeSeed(novoNome.split('&')[0].trim())}</span><br><span style="color:var(--gray); font-size:0.85rem; font-weight:400;">${novoNome.split('&')[1].trim()}${window.getBadgeSeed(novoNome.split('&')[1].trim())}</span>` 
-                : `<span>${novoNome}${window.getBadgeSeed(novoNome)}</span>`;
+    // Atualiza o visual na tela
+    elemento.setAttribute('data-name', novoNome);
+    elemento.innerHTML = novoNome.includes('&') 
+        ? `<span>${novoNome.split('&')[0].trim()}${window.getBadgeSeed(novoNome.split('&')[0].trim())}</span><br><span style="color:var(--gray); font-size:0.85rem; font-weight:400;">${novoNome.split('&')[1].trim()}${window.getBadgeSeed(novoNome.split('&')[1].trim())}</span>` 
+        : `<span>${novoNome}${window.getBadgeSeed(novoNome)}</span>`;
 
-            // Atualiza no banco de dados para o novo nome progredir caso vençam
-            let fases = chave === 'Prata' ? window.fasesPrata : window.fasesMataMata;
-            let rodada = fases[indexRodada].jogos || fases[indexRodada];
-            
-            rodada.forEach(jogo => {
-                if (jogo.timeA === timeAntigo) jogo.timeA = novoNome;
-                if (jogo.timeB === timeAntigo) jogo.timeB = novoNome;
-            });
+    // Atualiza no banco de dados para o novo nome progredir caso vençam
+    let fases = chave === 'Prata' ? window.fasesPrata : window.fasesMataMata;
+    let rodada = fases[indexRodada].jogos || fases[indexRodada];
+    
+    rodada.forEach(jogo => {
+        if (jogo.timeA === timeAntigo) jogo.timeA = novoNome;
+        if (jogo.timeB === timeAntigo) jogo.timeB = novoNome;
+    });
 
-            let updatePayload = { fasesMataMata: window.fasesMataMata }; 
-            if (window.fasesPrata && window.fasesPrata.length > 0) updatePayload.fasesPrata = window.fasesPrata;
-            await updateDoc(doc(db, "campeonatos", torneioAbertoId), updatePayload);
-            
-            alert(`Dupla atualizada com sucesso!\nOs pontos finais irão para: ${novoNome}`);
-        };
+    let updatePayload = { fasesMataMata: window.fasesMataMata }; 
+    if (window.fasesPrata && window.fasesPrata.length > 0) updatePayload.fasesPrata = window.fasesPrata;
+    
+    // LÓGICA CORRIGIDA INSERIDA AQUI: Se o torneio já estiver encerrado, atualiza o campeão
+    if (torneioAbertoData.status === "encerrado") {
+        if (torneioAbertoData.campeaoOuro === timeAntigo) {
+            updatePayload.campeaoOuro = novoNome;
+            torneioAbertoData.campeaoOuro = novoNome;
+        }
+        if (torneioAbertoData.campeaoPrata === timeAntigo) {
+            updatePayload.campeaoPrata = novoNome;
+            torneioAbertoData.campeaoPrata = novoNome;
+        }
+    }
+
+    await updateDoc(doc(db, "campeonatos", torneioAbertoId), updatePayload);
+    
+    alert(`Dupla atualizada com sucesso!\nOs pontos finais irão para: ${novoNome}`);
+};
 
         // FUNÇÃO 2: BOTÃO RÁPIDO DE W.O.
         window.declararWO = async function(botao, matchId, timeA, timeB) {
