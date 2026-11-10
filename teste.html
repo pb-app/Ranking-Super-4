@@ -1161,20 +1161,46 @@ let nomes = `<span style="line-height:1.4;">${nome1Final}${nome2Final}</span>${s
 
                     await updateDoc(doc(db, "campeonatos", torneioAbertoId), updatesTorneio);
 
-                    // D. Atualiza os placares já salvos no banco de dados!
-                    for (let matchId in jogosSalvos) {
-                        let j = jogosSalvos[matchId];
-                        let tA_new = replaceInDuo(j.timeA); let tB_new = replaceInDuo(j.timeB); let v_new = replaceInDuo(j.vencedor);
-                        
-                        if (tA_new !== j.timeA || tB_new !== j.timeB || v_new !== j.vencedor) {
-                            let updatesJogo = { timeA: tA_new, timeB: tB_new };
-                            if (j.vencedor) updatesJogo.vencedor = v_new;
-                            await updateDoc(doc(db, "campeonatos", torneioAbertoId, "jogos", matchId), updatesJogo);
-                            
-                            jogosSalvos[matchId].timeA = tA_new; jogosSalvos[matchId].timeB = tB_new;
-                            if (j.vencedor) jogosSalvos[matchId].vencedor = v_new;
-                        }
-                    }
+                    // D. ATUALIZA E MIGRA OS PLACARES JÁ SALVOS (Muda a Chave/ID do Jogo)
+const updatesJogos = [];
+const novosJogosSalvos = {};
+
+for (let oldMatchId in jogosSalvos) {
+    let jogo = jogosSalvos[oldMatchId];
+    let tA_new = replaceInDuo(jogo.timeA); 
+    let tB_new = replaceInDuo(jogo.timeB); 
+    let v_new = replaceInDuo(jogo.vencedor);
+    
+    if (tA_new !== jogo.timeA || tB_new !== jogo.timeB || v_new !== jogo.vencedor) {
+        // Reconstrói o ID do jogo com o novo nome para não perder os placares
+        let oldSuffix = jogo.timeA.replace(/\s+/g, '') + "_vs_" + jogo.timeB.replace(/\s+/g, '');
+        let newSuffix = tA_new.replace(/\s+/g, '') + "_vs_" + tB_new.replace(/\s+/g, '');
+        let newMatchId = oldMatchId.replace(oldSuffix, newSuffix);
+
+        // Prepara os dados transferindo todo o histórico
+        let dadosAtualizados = {
+            ...jogo,
+            timeA: tA_new,
+            timeB: tB_new
+        };
+        if (jogo.vencedor) dadosAtualizados.vencedor = v_new;
+
+        // Cria novo Documento com o novo ID e elimina o ID antigo
+        updatesJogos.push(setDoc(doc(db, "campeonatos", torneioAbertoId, "jogos", newMatchId), dadosAtualizados));
+        updatesJogos.push(deleteDoc(doc(db, "campeonatos", torneioAbertoId, "jogos", oldMatchId)));
+        
+        novosJogosSalvos[newMatchId] = dadosAtualizados;
+    } else {
+        novosJogosSalvos[oldMatchId] = jogo;
+    }
+}
+
+// Executa todas as trocas no Firebase de uma só vez
+await Promise.all(updatesJogos);
+
+// Atualiza a cache local para que o ecrã encontre os placares migrados
+jogosSalvos = novosJogosSalvos;
+window.jogosSalvos = novosJogosSalvos;
 
                     // Recarrega os visuais na tela
                     if (torneioAbertoData.sorteados.length > 0 && (!window.fasesMataMata || window.fasesMataMata.length === 0)) {
