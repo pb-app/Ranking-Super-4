@@ -259,6 +259,36 @@
             .bracket-match div[style*="Avança Direto"] {
                 margin: 4px 0 !important; padding: 4px !important; font-size: 0.7rem !important;
             }
+
+            /* Impede quebra feia dos nomes nas tabelas de grupo */
+.standings-table td:first-child {
+    white-space: normal !important;
+    word-break: normal !important;
+}
+.standings-table td:first-child span,
+.standings-table td:first-child div {
+    white-space: nowrap;
+}
+
+            /* Animações suaves */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Anima automaticamente qualquer modal quando ele aparece */
+[id^="modal"]:not(.hidden) {
+    animation: fadeIn 0.30s ease-out;
+}
+
+/* Animação suave nas trocas de fase */
+#chavesGeradasUI, 
+#mataMataUI, 
+#navegadorFases,
+#ranking-section,
+#details-section {
+    animation: fadeIn 0.3s ease-out;
+}
         
     </style>
 </head>
@@ -281,7 +311,7 @@
     <div id="modalPerfilJogador" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; display: flex; justify-content: center; align-items: center;">
         <div style="background: var(--white); padding: 2.5rem; border-radius: 16px; width: 90%; max-width: 400px; text-align: center; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
             <button type="button" id="btnFecharPerfilTop" style="position: absolute; top: 15px; right: 20px; background: transparent; border: none; font-size: 1.8rem; cursor: pointer; color: var(--gray); transition: 0.2s;">&times;</button>
-            <div style="font-size: 3.5rem; margin-bottom: 10px;">👤</div>
+            <div style="font-size: 3.5rem; margin-bottom: 10px;"></div>
             <h2 id="perfilNome" style="color: var(--dark); margin-bottom: 5px; font-size: 1.6rem; font-weight: 800;">Nome do Jogador</h2>
             <p style="color: var(--blue-link); margin-bottom: 25px; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Estatísticas Oficiais</p>
             
@@ -779,6 +809,13 @@
         let setsAberto = ""; 
         let inscritosUnsubscribe = null; 
         let inscritosAtuais = []; 
+
+        window.nomeClicavel = function(nome) {
+    if (!nome) return '';
+    const clean = nome.trim().replace(/'/g, "\\'");
+    return `<span style="cursor:pointer; text-decoration:underline; text-underline-offset:2px;" 
+                  onclick="abrirPerfilDoTorneio('${clean}')">${nome.trim()}</span>`;
+};
         
         // --- FUNÇÃO INTELIGENTE DE ETIQUETAS (SEEDS) ---
         window.getBadgeSeed = function(nome) {
@@ -915,13 +952,20 @@
 
             // --- NOVO: BUSCA OS PONTOS DO RANKING EM SEGUNDO PLANO ---
             window.pontosRankingCache = {};
-            if (camp.ranking) {
-                getDocs(collection(db, "rankings", camp.ranking, "jogadores")).then(snapRank => {
-                    snapRank.forEach(docR => { window.pontosRankingCache[docR.data().nome] = docR.data().pontos || 0; });
-                    // Se os grupos já estiverem na tela, dá um "refresh" para aplicar o desempate
-                    document.querySelectorAll('.grupo-container').forEach(container => { atualizarTabelaDoGrupo(container); });
-                }).catch(e => console.log("Erro ao buscar ranking para desempate:", e));
-            }
+window.rankingJogadoresCache = {}; // cache completo
+
+if (camp.ranking) {
+    getDocs(collection(db, "rankings", camp.ranking, "jogadores")).then(snapRank => {
+        snapRank.forEach(docR => {
+            const d = docR.data();
+            window.pontosRankingCache[d.nome] = d.pontos || 0;
+            window.rankingJogadoresCache[d.nome] = d;
+        });
+        document.querySelectorAll('.grupo-container').forEach(container => { 
+            atualizarTabelaDoGrupo(container); 
+        });
+    }).catch(e => console.log("Erro ao buscar ranking:", e));
+}
             
             carregarInscritos(id);
             carregarSugestoesJogadores(camp.ranking);
@@ -1044,7 +1088,7 @@ let nomes = `<span style="line-height:1.4;">${nome1Final}${nome2Final}</span>${s
                     let torneioSorteado = torneioAbertoData && torneioAbertoData.sorteados && torneioAbertoData.sorteados.length > 0;
                     let btnExcluir = (isLogged && !torneioSorteado) ? `<button onclick="deletarInscrito('${idInscrito}')" class="btn btn-outline" style="padding: 4px 8px; font-size: 0.75rem; border-color: #ef4444; color: #ef4444 !important;">✕</button>` : '';
 
-                    li.innerHTML = `<div style="display:flex; align-items:center; gap:10px;"><div style="width:32px; height:32px; background:#e5e7eb; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1rem;">👤</div>${nomes}</div> ${btnExcluir}`;
+                    li.innerHTML = `<div style="display:flex; align-items:center; gap:10px;">${nomes}</div> ${btnExcluir}`;
                     listaUI.appendChild(li);
                 });
             });
@@ -1117,20 +1161,46 @@ let nomes = `<span style="line-height:1.4;">${nome1Final}${nome2Final}</span>${s
 
                     await updateDoc(doc(db, "campeonatos", torneioAbertoId), updatesTorneio);
 
-                    // D. Atualiza os placares já salvos no banco de dados!
-                    for (let matchId in jogosSalvos) {
-                        let j = jogosSalvos[matchId];
-                        let tA_new = replaceInDuo(j.timeA); let tB_new = replaceInDuo(j.timeB); let v_new = replaceInDuo(j.vencedor);
-                        
-                        if (tA_new !== j.timeA || tB_new !== j.timeB || v_new !== j.vencedor) {
-                            let updatesJogo = { timeA: tA_new, timeB: tB_new };
-                            if (j.vencedor) updatesJogo.vencedor = v_new;
-                            await updateDoc(doc(db, "campeonatos", torneioAbertoId, "jogos", matchId), updatesJogo);
-                            
-                            jogosSalvos[matchId].timeA = tA_new; jogosSalvos[matchId].timeB = tB_new;
-                            if (j.vencedor) jogosSalvos[matchId].vencedor = v_new;
-                        }
-                    }
+                    // D. ATUALIZA E MIGRA OS PLACARES JÁ SALVOS (Muda a Chave/ID do Jogo)
+const updatesJogos = [];
+const novosJogosSalvos = {};
+
+for (let oldMatchId in jogosSalvos) {
+    let jogo = jogosSalvos[oldMatchId];
+    let tA_new = replaceInDuo(jogo.timeA); 
+    let tB_new = replaceInDuo(jogo.timeB); 
+    let v_new = replaceInDuo(jogo.vencedor);
+    
+    if (tA_new !== jogo.timeA || tB_new !== jogo.timeB || v_new !== jogo.vencedor) {
+        // Reconstrói o ID do jogo com o novo nome para não perder os placares
+        let oldSuffix = jogo.timeA.replace(/\s+/g, '') + "_vs_" + jogo.timeB.replace(/\s+/g, '');
+        let newSuffix = tA_new.replace(/\s+/g, '') + "_vs_" + tB_new.replace(/\s+/g, '');
+        let newMatchId = oldMatchId.replace(oldSuffix, newSuffix);
+
+        // Prepara os dados transferindo todo o histórico
+        let dadosAtualizados = {
+            ...jogo,
+            timeA: tA_new,
+            timeB: tB_new
+        };
+        if (jogo.vencedor) dadosAtualizados.vencedor = v_new;
+
+        // Cria novo Documento com o novo ID e elimina o ID antigo
+        updatesJogos.push(setDoc(doc(db, "campeonatos", torneioAbertoId, "jogos", newMatchId), dadosAtualizados));
+        updatesJogos.push(deleteDoc(doc(db, "campeonatos", torneioAbertoId, "jogos", oldMatchId)));
+        
+        novosJogosSalvos[newMatchId] = dadosAtualizados;
+    } else {
+        novosJogosSalvos[oldMatchId] = jogo;
+    }
+}
+
+// Executa todas as trocas no Firebase de uma só vez
+await Promise.all(updatesJogos);
+
+// Atualiza a cache local para que o ecrã encontre os placares migrados
+jogosSalvos = novosJogosSalvos;
+window.jogosSalvos = novosJogosSalvos;
 
                     // Recarrega os visuais na tela
                     if (torneioAbertoData.sorteados.length > 0 && (!window.fasesMataMata || window.fasesMataMata.length === 0)) {
@@ -1141,8 +1211,46 @@ let nomes = `<span style="line-height:1.4;">${nome1Final}${nome2Final}</span>${s
                     }
                 }
 
-                document.getElementById('modalSubstituicao').classList.add('hidden');
-                alert(`✅ Substituição concluída!\n${oldName} saiu do campeonato e ${newName} assumiu o seu lugar.`);
+                // C. Atualiza os nomes dentro dos jogos (mantém o matchId original)
+if (window.jogosSalvos) {
+    const updates = [];
+    for (let matchId in window.jogosSalvos) {
+        let jogo = window.jogosSalvos[matchId];
+        if (!jogo) continue;
+
+        let mudou = false;
+        if (jogo.timeA && jogo.timeA.includes(oldName)) {
+            jogo.timeA = replaceInDuo(jogo.timeA);
+            mudou = true;
+        }
+        if (jogo.timeB && jogo.timeB.includes(oldName)) {
+            jogo.timeB = replaceInDuo(jogo.timeB);
+            mudou = true;
+        }
+        if (jogo.vencedor && jogo.vencedor.includes(oldName)) {
+            jogo.vencedor = replaceInDuo(jogo.vencedor);
+            mudou = true;
+        }
+
+        if (mudou) {
+            updates.push(setDoc(doc(db, "campeonatos", torneioAbertoId, "jogos", matchId), {
+                timeA: jogo.timeA,
+                timeB: jogo.timeB,
+                vencedor: jogo.vencedor || null
+            }, { merge: true }));
+        }
+    }
+    await Promise.all(updates);
+}
+
+                   document.getElementById('modalSubstituicao').classList.add('hidden');
+
+            // Força a atualização completa da tela
+           setTimeout(() => {
+            abrirPainelTorneio(torneioAbertoId, torneioAbertoData);
+             }, 300);
+
+             alert(`✅ Substituição concluída!\n${oldName} saiu do campeonato e ${newName} assumiu o seu lugar.`);
 
             } catch (e) {
                 console.error(e);
@@ -1380,11 +1488,14 @@ let nomes = `<span style="line-height:1.4;">${nome1Final}${nome2Final}</span>${s
                 let nomeParts = t.nome.split('&'); 
                 
                 let displayNome = nomeParts.length > 1 
-                    ? `<span>${nomeParts[0].trim()}${window.getBadgeSeed(nomeParts[0].trim())}<br><span style="color:var(--gray); font-weight:400; font-size:0.85rem;">${nomeParts[1].trim()}${window.getBadgeSeed(nomeParts[1].trim())}</span></span>` 
-                    : `<span>${t.nome}${window.getBadgeSeed(t.nome)}</span>`;
+    ? `<div style="line-height:1.25; white-space:nowrap;">
+         <div>${window.nomeClicavel(nomeParts[0].trim())}${window.getBadgeSeed(nomeParts[0].trim())}</div>
+         <div style="color:var(--gray); font-size:0.82rem; font-weight:400;">${window.nomeClicavel(nomeParts[1].trim())}${window.getBadgeSeed(nomeParts[1].trim())}</div>
+       </div>`
+    : `<div style="white-space:nowrap;">${window.nomeClicavel(t.nome)}${window.getBadgeSeed(t.nome)}</div>`;
                 
                 htmlTab += `<tr>
-                    <td data-name="${t.nome}" style="display:flex; align-items:center; gap:10px;"><div style="width:28px; height:28px; background:#e5e7eb; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.8rem;">👤</div>${displayNome}</td>
+                    <td data-name="${t.nome}" style="display:flex; align-items:center; gap:8px;">${displayNome}</td>
                     <td style="color:var(--gray);">${t.j}</td>
                     <td><strong style="color:var(--dark);">${t.v}</strong></td>
                     <td style="color:var(--gray);">${t.ss}</td>
@@ -1768,12 +1879,14 @@ let nomes = `<span style="line-height:1.4;">${nome1Final}${nome2Final}</span>${s
                 let tB_data = jogo.timeB || "Aguardando...";
                 
                 let tA_display = tA_data.includes('&') 
-                    ? `<span>${tA_data.split('&')[0].trim()}${window.getBadgeSeed(tA_data.split('&')[0].trim())}</span><br><span style="color:var(--gray); font-size:0.85rem; font-weight:400;">${tA_data.split('&')[1].trim()}${window.getBadgeSeed(tA_data.split('&')[1].trim())}</span>` 
-                    : `<span>${tA_data}${window.getBadgeSeed(tA_data)}</span>`;
-                    
-                let tB_display = tB_data.includes('&') 
-                    ? `<span>${tB_data.split('&')[0].trim()}${window.getBadgeSeed(tB_data.split('&')[0].trim())}</span><br><span style="color:var(--gray); font-size:0.85rem; font-weight:400;">${tB_data.split('&')[1].trim()}${window.getBadgeSeed(tB_data.split('&')[1].trim())}</span>` 
-                    : `<span>${tB_data}${window.getBadgeSeed(tB_data)}</span>`;
+    ? `${window.nomeClicavel(tA_data.split('&')[0].trim())}${window.getBadgeSeed(tA_data.split('&')[0].trim())}<br>
+       <span style="color:var(--gray); font-size:0.85rem; font-weight:400;">${window.nomeClicavel(tA_data.split('&')[1].trim())}${window.getBadgeSeed(tA_data.split('&')[1].trim())}</span>` 
+    : `${window.nomeClicavel(tA_data)}${window.getBadgeSeed(tA_data)}`;
+
+let tB_display = tB_data.includes('&') 
+    ? `${window.nomeClicavel(tB_data.split('&')[0].trim())}${window.getBadgeSeed(tB_data.split('&')[0].trim())}<br>
+       <span style="color:var(--gray); font-size:0.85rem; font-weight:400;">${window.nomeClicavel(tB_data.split('&')[1].trim())}${window.getBadgeSeed(tB_data.split('&')[1].trim())}</span>` 
+    : `${window.nomeClicavel(tB_data)}${window.getBadgeSeed(tB_data)}`;
                 
                 let prefix = chave === 'Prata' ? "MM_Prata_" : "MM_";
                 let matchId = `${prefix}${rodadaIndex}_${tA_data.replace(/\s+/g, '')}_vs_${tB_data.replace(/\s+/g, '')}`;
@@ -1830,51 +1943,41 @@ let nomes = `<span style="line-height:1.4;">${nome1Final}${nome2Final}</span>${s
         }
 
         window.avancarVencedorMataMata = async function() {
-            function atualizarChave(fases, chave) {
-                if(!fases) return;
-                fases.forEach((fase, roundIndex) => {
-                    let jogos = fase.jogos || fase; let vencedores = [];
-                    jogos.forEach(jogo => {
-                        let prefix = chave === 'Prata' ? "MM_Prata_" : "MM_";
-                        let matchId = `${prefix}${roundIndex}_${jogo.timeA.replace(/\s+/g, '')}_vs_${jogo.timeB.replace(/\s+/g, '')}`;
-                        let salvo = jogosSalvos[matchId];
-                        
-                        if (salvo && salvo.vencedor) { vencedores.push(salvo.vencedor); } 
-                        else if (jogo.timeA && jogo.timeA.includes("BYE")) { vencedores.push(jogo.timeB); } 
-                        else if (jogo.timeB && jogo.timeB.includes("BYE")) { vencedores.push(jogo.timeA); } 
-                        else { vencedores.push("Aguardando..."); }
-                    });
-                    
-                    if (fases[roundIndex + 1] && vencedores.length > 0) {
-                        let iv = 0; let proxRodada = fases[roundIndex + 1].jogos || fases[roundIndex + 1];
-                        proxRodada.forEach(pJogo => {
-                            pJogo.timeA = vencedores[iv] || "Aguardando..."; iv++; pJogo.timeB = vencedores[iv] || "Aguardando..."; iv++;
-                        });
-                    }
+    function atualizarChave(fases, chave) {
+        if(!fases) return;
+        fases.forEach((fase, roundIndex) => {
+            let jogos = fase.jogos || fase; let vencedores = [];
+            jogos.forEach(jogo => {
+                let prefix = chave === 'Prata' ? "MM_Prata_" : "MM_";
+                let matchId = `${prefix}${roundIndex}_${jogo.timeA.replace(/\s+/g, '')}_vs_${jogo.timeB.replace(/\s+/g, '')}`;
+                let salvo = jogosSalvos[matchId];
+                
+                if (salvo && salvo.vencedor) { vencedores.push(salvo.vencedor); } 
+                else if (jogo.timeA && jogo.timeA.includes("BYE")) { vencedores.push(jogo.timeB); } 
+                else if (jogo.timeB && jogo.timeB.includes("BYE")) { vencedores.push(jogo.timeA); } 
+                else { vencedores.push("Aguardando..."); }
+            });
+            
+            if (fases[roundIndex + 1] && vencedores.length > 0) {
+                let iv = 0; let proxRodada = fases[roundIndex + 1].jogos || fases[roundIndex + 1];
+                proxRodada.forEach(pJogo => {
+                    pJogo.timeA = vencedores[iv] || "Aguardando..."; iv++; pJogo.timeB = vencedores[iv] || "Aguardando..."; iv++;
                 });
             }
+        });
+    }
 
-            atualizarChave(window.fasesMataMata, 'Ouro');
-            if (window.fasesPrata && window.fasesPrata.length > 0) { atualizarChave(window.fasesPrata, 'Prata'); }
-            
-            let updatePayload = { fasesMataMata: window.fasesMataMata }; 
-            if (window.fasesPrata && window.fasesPrata.length > 0) updatePayload.fasesPrata = window.fasesPrata;
-            
-            // NOVO: Se o torneio já estiver encerrado e o nome alterado for o de um campeão, atualiza o card também!
-            if (torneioAbertoData.status === "encerrado") {
-                if (torneioAbertoData.campeaoOuro === timeAntigo) {
-                    updatePayload.campeaoOuro = novoNome;
-                    torneioAbertoData.campeaoOuro = novoNome;
-                }
-                if (torneioAbertoData.campeaoPrata === timeAntigo) {
-                    updatePayload.campeaoPrata = novoNome;
-                    torneioAbertoData.campeaoPrata = novoNome;
-                }
-            }
+    atualizarChave(window.fasesMataMata, 'Ouro');
+    if (window.fasesPrata && window.fasesPrata.length > 0) { atualizarChave(window.fasesPrata, 'Prata'); }
+    
+    let updatePayload = { fasesMataMata: window.fasesMataMata }; 
+    if (window.fasesPrata && window.fasesPrata.length > 0) updatePayload.fasesPrata = window.fasesPrata;
+    
+    // O BLOCO COM ERRO FOI REMOVIDO DAQUI E MOVIDO PARA A FUNÇÃO CORRETA ABAIXO
 
-            await updateDoc(doc(db, "campeonatos", torneioAbertoId), updatePayload);
-            renderizarMataMata(true); 
-        };
+    await updateDoc(doc(db, "campeonatos", torneioAbertoId), updatePayload);
+    renderizarMataMata(true); 
+};
         
         document.getElementById('btnMontarMataMata').addEventListener('click', async () => {
             const jogosFaseGrupos = document.querySelectorAll('#chavesGeradasUI .match-box');
@@ -2252,6 +2355,10 @@ let nomes = `<span style="line-height:1.4;">${nome1Final}${nome2Final}</span>${s
             btnAbaCampeonatos.classList.add('tab-inactive'); btnAbaCampeonatos.classList.remove('tab-active');
             listSection.classList.add('hidden'); detailsSection.classList.add('hidden'); createSection.style.display = 'none'; rankingSection.classList.remove('hidden');
             updateAuthUI();
+            
+            // LIMPA O CACHE E FORÇA O RECARREGAMENTO DO FIREBASE AO CLICAR NA ABA
+            window.rankingDadosCache = {}; 
+            carregarRanking(true);
         });
 
         document.getElementById('btnEncerrarTorneio').addEventListener('click', async () => {
@@ -2436,19 +2543,20 @@ let nomes = `<span style="line-height:1.4;">${nome1Final}${nome2Final}</span>${s
         window.rankingDadosCache = window.rankingDadosCache || {}; // CACHE DO RANKING GLOBAL
 
         async function carregarRanking(forcarAtualizacao = false) {
-            let rankingNome = filtroRanking.options[filtroRanking.selectedIndex]?.text; let tipoRanking = tipoFiltroRanking.value;
-            if(!rankingNome) { tbodyRanking.innerHTML = '<tr><td colspan="5" style="padding: 30px;">Selecione uma categoria...</td></tr>'; return; }
-            tbodyRanking.innerHTML = '<tr><td colspan="5" style="padding: 30px;">A carregar ranking...</td></tr>';
-            
-            let listaBase = [];
-            // Se já temos no cache e não estamos a forçar, usamos o cache para poupar o Firebase!
-            if (!forcarAtualizacao && window.rankingDadosCache[rankingNome]) {
-                listaBase = window.rankingDadosCache[rankingNome];
-            } else {
-                const snap = await getDocs(collection(db, "rankings", rankingNome, "jogadores"));
-                snap.forEach(doc => { let d = doc.data(); d.id = doc.id; listaBase.push(d); });
-                window.rankingDadosCache[rankingNome] = listaBase; // Guarda para o próximo clique
-            }
+    let rankingNome = filtroRanking.options[filtroRanking.selectedIndex]?.text; 
+    let tipoRanking = tipoFiltroRanking.value;
+    if(!rankingNome) { tbodyRanking.innerHTML = '<tr><td colspan="5" style="padding: 30px;">Selecione uma categoria...</td></tr>'; return; }
+    tbodyRanking.innerHTML = '<tr><td colspan="5" style="padding: 30px;">A carregar ranking...</td></tr>';
+    
+    let listaBase = [];
+    // Força atualização se for a primeira vez ou se o usuário mudou de categoria
+    if (!forcarAtualizacao && window.rankingDadosCache[rankingNome]) {
+        listaBase = window.rankingDadosCache[rankingNome];
+    } else {
+        const snap = await getDocs(collection(db, "rankings", rankingNome, "jogadores"));
+        snap.forEach(doc => { let d = doc.data(); d.id = doc.id; listaBase.push(d); });
+        window.rankingDadosCache[rankingNome] = listaBase;
+    }
 
             let lista = [];
             listaBase.forEach(d => { 
@@ -2506,7 +2614,16 @@ let nomes = `<span style="line-height:1.4;">${nome1Final}${nome2Final}</span>${s
             tbodyRanking.innerHTML = html;
         }
 
-        filtroRanking.addEventListener('change', carregarRanking); tipoFiltroRanking.addEventListener('change', carregarRanking); document.getElementById('btnAbaRankings').addEventListener('click', carregarRanking);
+        filtroRanking.addEventListener('change', () => {
+    const valor = filtroRanking.value;
+    if (valor) localStorage.setItem('ultimaCategoriaRanking', valor);
+    carregarRanking(true);   // ← true força atualizar
+});
+
+tipoFiltroRanking.addEventListener('change', () => {
+    localStorage.setItem('ultimoTipoRanking', tipoFiltroRanking.value);
+    carregarRanking(true);   // ← true força atualizar
+});
 
         // --- FUNÇÃO PARA GERAR O PDF DO RANKING ---
         document.getElementById('btnBaixarRanking').addEventListener('click', () => {
@@ -2652,7 +2769,19 @@ let nomes = `<span style="line-height:1.4;">${nome1Final}${nome2Final}</span>${s
                 listaCategoriasUI.appendChild(li);
             });
             if (!document.getElementById('ranking-section').classList.contains('hidden')) { carregarRanking(); }
-        });
+
+          // Restaura categoria e tipo salvos
+         const ultimaCat = localStorage.getItem('ultimaCategoriaRanking');
+         const ultimoTipo = localStorage.getItem('ultimoTipoRanking') || 'geral';
+
+         if (ultimaCat && selectRankingFilter.querySelector(`option[value="${ultimaCat}"]`)) {
+          selectRankingFilter.value = ultimaCat;
+         }
+         if (tipoFiltroRanking.querySelector(`option[value="${ultimoTipo}"]`)) {
+          tipoFiltroRanking.value = ultimoTipo;
+         }
+         carregarRanking();
+         });
 
         document.getElementById('btnAdicionarCategoria').addEventListener('click', async () => {
             const nomeInput = document.getElementById('novaCategoriaInput'); const nome = nomeInput.value.trim(); if (!nome) return;
@@ -2746,9 +2875,9 @@ let nomes = `<span style="line-height:1.4;">${nome1Final}${nome2Final}</span>${s
                 badges += `<span onclick="mostrarExplicacaoMedalha('🐴 Pangaré', 'Para os guerreiros que lutam muito, mas cujo aproveitamento geral fica abaixo de 30% nas quadras. Quase lá!')" style="background: #fffbeb; color: #b45309; font-size: 0.75rem; font-weight: 700; padding: 6px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); cursor: pointer;" title="Clique para ver a explicação">🐴 Pangaré</span>`;
             }
 
-            // 7. 🔔 Pneu (6x0 sofrido)
+            // 7. 🔔 Sino (6x0 sofrido)
             if (tomouPneu) {
-                badges += `<span onclick="mostrarExplicacaoMedalha('🔔 Pneu', 'Este emblema indica que o atleta já sofreu a amarga derrota de um 6x0 (pneu) em partidas oficiais da liga.')" style="background: #f3f4f6; color: #4b5563; font-size: 0.75rem; font-weight: 700; padding: 6px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); cursor: pointer;" title="Clique para ver a explicação">🔔 Pneu</span>`;
+                badges += `<span onclick="mostrarExplicacaoMedalha('🔔 Sino', 'Este emblema indica que o atleta já sofreu a amarga derrota de um 6x0 (pneu) em partidas oficiais da liga.')" style="background: #f3f4f6; color: #4b5563; font-size: 0.75rem; font-weight: 700; padding: 6px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); cursor: pointer;" title="Clique para ver a explicação">🔔 Pneu</span>`;
             }
 
             // 8. 🏎️ Atropelador (Aplicou pneus)
@@ -2809,15 +2938,48 @@ let nomes = `<span style="line-height:1.4;">${nome1Final}${nome2Final}</span>${s
             
             // Preenche as sugestões de adversários com base no ranking atual
             const datalist = document.getElementById('sugestoesH2H');
-            datalist.innerHTML = '';
-            document.querySelectorAll('#rankingTabelaBody a').forEach(a => {
-                if (a.textContent !== nome) {
-                    let opt = document.createElement('option'); opt.value = a.textContent; datalist.appendChild(opt);
-                }
-            });
+datalist.innerHTML = '';
+
+// Preenche a partir do cache (funciona tanto no ranking quanto no torneio)
+if (window.rankingJogadoresCache) {
+    Object.keys(window.rankingJogadoresCache).forEach(nomeJogador => {
+        if (nomeJogador !== nome) {
+            let opt = document.createElement('option');
+            opt.value = nomeJogador;
+            datalist.appendChild(opt);
+        }
+    });
+} else {
+    // Fallback antigo (só se o cache não existir)
+    document.querySelectorAll('#rankingTabelaBody a').forEach(a => {
+        if (a.textContent !== nome) {
+            let opt = document.createElement('option');
+            opt.value = a.textContent;
+            datalist.appendChild(opt);
+        }
+    });
+}
 
             modalPerfilJogador.classList.remove('hidden');
         };
+
+        window.abrirPerfilDoTorneio = function(nome) {
+    const jogador = window.rankingJogadoresCache?.[nome];
+    if (!jogador) {
+        alert(`Jogador "${nome}" ainda não tem estatísticas no ranking.`);
+        return;
+    }
+    abrirPerfilJogador(
+        jogador.nome,
+        jogador.pontos || 0,
+        jogador.torneios || 0,
+        jogador.titulos || 0,
+        jogador.vitorias || 0,
+        jogador.jogos || 0
+    );
+};
+
+        
         document.getElementById('btnFecharPerfil').addEventListener('click', () => modalPerfilJogador.classList.add('hidden')); document.getElementById('btnFecharPerfilTop').addEventListener('click', () => modalPerfilJogador.classList.add('hidden'));
 
         updateAuthUI();
@@ -2921,32 +3083,44 @@ let nomes = `<span style="line-height:1.4;">${nome1Final}${nome2Final}</span>${s
             } catch (error) { alert("Erro ao aplicar repescagem."); botao.textContent = "Trocar"; botao.disabled = false; }
         };
 
-        // FUNÇÃO 1: TROCA DE EMERGÊNCIA NO MATA-MATA
-        window.editarNomeDuplaMataMata = async function(elemento, timeAntigo, matchId, indexRodada, chave) {
-            let novoNome = prompt("Troca de Emergência!\nDigite o novo nome da dupla (Ex: Maria & Ana):", timeAntigo);
-            if (!novoNome || novoNome === timeAntigo) return;
+       window.editarNomeDuplaMataMata = async function(elemento, timeAntigo, matchId, indexRodada, chave) {
+    let novoNome = prompt("Troca de Emergência!\nDigite o novo nome da dupla (Ex: Maria & Ana):", timeAntigo);
+    if (!novoNome || novoNome === timeAntigo) return;
 
-            // Atualiza o visual na tela
-            elemento.setAttribute('data-name', novoNome);
-            elemento.innerHTML = novoNome.includes('&') 
-                ? `<span>${novoNome.split('&')[0].trim()}${window.getBadgeSeed(novoNome.split('&')[0].trim())}</span><br><span style="color:var(--gray); font-size:0.85rem; font-weight:400;">${novoNome.split('&')[1].trim()}${window.getBadgeSeed(novoNome.split('&')[1].trim())}</span>` 
-                : `<span>${novoNome}${window.getBadgeSeed(novoNome)}</span>`;
+    // Atualiza o visual na tela
+    elemento.setAttribute('data-name', novoNome);
+    elemento.innerHTML = novoNome.includes('&') 
+        ? `<span>${novoNome.split('&')[0].trim()}${window.getBadgeSeed(novoNome.split('&')[0].trim())}</span><br><span style="color:var(--gray); font-size:0.85rem; font-weight:400;">${novoNome.split('&')[1].trim()}${window.getBadgeSeed(novoNome.split('&')[1].trim())}</span>` 
+        : `<span>${novoNome}${window.getBadgeSeed(novoNome)}</span>`;
 
-            // Atualiza no banco de dados para o novo nome progredir caso vençam
-            let fases = chave === 'Prata' ? window.fasesPrata : window.fasesMataMata;
-            let rodada = fases[indexRodada].jogos || fases[indexRodada];
-            
-            rodada.forEach(jogo => {
-                if (jogo.timeA === timeAntigo) jogo.timeA = novoNome;
-                if (jogo.timeB === timeAntigo) jogo.timeB = novoNome;
-            });
+    // Atualiza no banco de dados para o novo nome progredir caso vençam
+    let fases = chave === 'Prata' ? window.fasesPrata : window.fasesMataMata;
+    let rodada = fases[indexRodada].jogos || fases[indexRodada];
+    
+    rodada.forEach(jogo => {
+        if (jogo.timeA === timeAntigo) jogo.timeA = novoNome;
+        if (jogo.timeB === timeAntigo) jogo.timeB = novoNome;
+    });
 
-            let updatePayload = { fasesMataMata: window.fasesMataMata }; 
-            if (window.fasesPrata && window.fasesPrata.length > 0) updatePayload.fasesPrata = window.fasesPrata;
-            await updateDoc(doc(db, "campeonatos", torneioAbertoId), updatePayload);
-            
-            alert(`Dupla atualizada com sucesso!\nOs pontos finais irão para: ${novoNome}`);
-        };
+    let updatePayload = { fasesMataMata: window.fasesMataMata }; 
+    if (window.fasesPrata && window.fasesPrata.length > 0) updatePayload.fasesPrata = window.fasesPrata;
+    
+    // LÓGICA CORRIGIDA INSERIDA AQUI: Se o torneio já estiver encerrado, atualiza o campeão
+    if (torneioAbertoData.status === "encerrado") {
+        if (torneioAbertoData.campeaoOuro === timeAntigo) {
+            updatePayload.campeaoOuro = novoNome;
+            torneioAbertoData.campeaoOuro = novoNome;
+        }
+        if (torneioAbertoData.campeaoPrata === timeAntigo) {
+            updatePayload.campeaoPrata = novoNome;
+            torneioAbertoData.campeaoPrata = novoNome;
+        }
+    }
+
+    await updateDoc(doc(db, "campeonatos", torneioAbertoId), updatePayload);
+    
+    alert(`Dupla atualizada com sucesso!\nOs pontos finais irão para: ${novoNome}`);
+};
 
         // FUNÇÃO 2: BOTÃO RÁPIDO DE W.O.
         window.declararWO = async function(botao, matchId, timeA, timeB) {
