@@ -2920,16 +2920,24 @@ tipoFiltroRanking.addEventListener('change', () => {
                     
                     if (estaNoJogo) {
                         if (j.placarA && j.placarB) {
-                            let pA = parseInt(j.placarA[0]) || 0;
-                            let pB = parseInt(j.placarB[0]) || 0;
-                            let vencedores = j.vencedor.split('&').map(n => n.trim());
-                            let souVencedor = vencedores.includes(nome);
+    let vencedores = j.vencedor.split('&').map(n => n.trim());
+    let souVencedor = vencedores.includes(nome);
 
-                            // Pneus (6x0)
-                            if ((pA >= 6 && pB === 0 && pA > pB) || (pB >= 6 && pA === 0 && pB > pA)) {
-                                if (souVencedor) aplicouPneus++;
-                                else tomouPneu = true;
-                            }
+    // Percorre todos os sets jogados (funciona para 1 set ou melhor de 3)
+    for (let i = 0; i < j.placarA.length; i++) {
+        let pA = parseInt(j.placarA[i]) || 0;
+        let pB = parseInt(j.placarB[i]) || 0;
+
+        if ((pA >= 6 && pB === 0 && pA > pB) || (pB >= 6 && pA === 0 && pB > pA)) {
+            if (souVencedor) {
+                aplicouPneus++;
+            } else {
+                tomouPneu = true;
+            }
+            break; // Encontrou um pneu nesta partida, pode parar de procurar nos outros sets
+        }
+    }
+}
 
                             // Detecção de Tie-Break / Jogos Apertados (Ex: 7/6, 9/8 ou diferença de 1 game no Super Tie-Break)
                             let diff = Math.abs(pA - pB);
