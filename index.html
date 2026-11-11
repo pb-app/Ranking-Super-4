@@ -2177,9 +2177,9 @@ let tB_display = tB_data.includes('&')
             });
 
             function gerarChaveMatematica(times) {
-                if(times.length < 2) return [];
+                if (times.length < 2) return [];
                 
-                // Desempate pelo Ranking Geral para definir as Cabeças de Chave
+                // 1. Desempate e ordenação técnica dos times (Vitórias > SS > SG > Ranking)
                 times.sort((a,b) => {
                     if (b.v !== a.v) return b.v - a.v;
                     if (b.ss !== a.ss) return b.ss - a.ss;
@@ -2194,44 +2194,76 @@ let tB_display = tB_data.includes('&')
                     return Math.random() - 0.5;
                 });
 
-                let seed1 = times[0].nome; let seed2 = times[1].nome;
-                let timesRestantesArray = times.slice(2).map(t => t.nome);
-
                 let nextPowerOf2 = Math.pow(2, Math.ceil(Math.log2(times.length)));
                 let numByesGlobal = nextPowerOf2 - times.length; 
                 let totalJogos = nextPowerOf2 / 2;
 
                 if (totalJogos === 1) {
-                    let fases = [];
-                    fases.push({ jogos: [{ timeA: seed1, timeB: seed2 }] });
-                    return fases;
+                    return [{ jogos: [{ timeA: times[0].nome, timeB: times[1] ? times[1].nome : "BYE (Avança)" }] }];
                 }
 
-                // 2. FUNÇÃO INTERNA: Testa se um sorteio gerou repetecos
+                // 2. ORDEM SIMÉTRICA ESPELHADA DE CONFRONTOS:
+                // [0]: Topo Superior (Seed 1)
+                // [totalJogos - 1]: Fundo Inferior (Seed 2)
+                // [totalJogos / 2]: Topo Inferior (Seed 3)
+                // [(totalJogos / 2) - 1]: Fundo Superior (Seed 4)
+                let m1 = Math.floor(totalJogos / 2) - 1;
+                let m2 = Math.floor(totalJogos / 2);
+                
+                let ordemJogos = [0, totalJogos - 1];
+                if (totalJogos >= 2) {
+                    ordemJogos.push(m2);
+                    ordemJogos.push(m1);
+                }
+
+                // Intercala o restante dos jogos entre o lado de cima e o de baixo
+                for (let k = 1; k < m1; k++) {
+                    ordemJogos.push(k);
+                    ordemJogos.push(totalJogos - 1 - k);
+                    ordemJogos.push(m2 + k);
+                    ordemJogos.push(m1 - k);
+                }
+                ordemJogos = [...new Set(ordemJogos)].filter(idx => idx >= 0 && idx < totalJogos);
+
                 function avaliarChaveamento(restoPermutado) {
-                    let rodada = [];
-                    for(let i=0; i<totalJogos; i++) rodada.push({timeA: null, timeB: null});
-                    let fila = [...restoPermutado];
+                    let rodada = Array.from({ length: totalJogos }, () => ({ timeA: null, timeB: null }));
+                    let filaTimes = [...restoPermutado];
                     let byes = numByesGlobal;
 
-                    rodada[0].timeA = seed1; 
-                    rodada[totalJogos - 1].timeA = seed2;
-                    if (byes > 0) { rodada[0].timeB = "BYE (Avança)"; byes--; }
-                    if (byes > 0) { rodada[totalJogos - 1].timeB = "BYE (Avança)"; byes--; }
+                    let sementes = times.map(t => t.nome);
+                    let sementeIdx = 0;
 
-                    for (let i = 0; i < totalJogos; i++) {
-                        if (!rodada[i].timeA) rodada[i].timeA = fila.shift();
-                        if (!rodada[i].timeB) {
-                            if (byes > 0) { rodada[i].timeB = "BYE (Avança)"; byes--; } 
-                            else { rodada[i].timeB = fila.shift(); }
+                    // Aloca os Cabeças de Chave e BYEs na ordem simétrica perfeita
+                    for (let k = 0; k < ordemJogos.length; k++) {
+                        let matchIdx = ordemJogos[k];
+                        if (sementeIdx < sementes.length) {
+                            rodada[matchIdx].timeA = sementes[sementeIdx++];
+                            if (byes > 0) {
+                                rodada[matchIdx].timeB = "BYE (Avança)";
+                                byes--;
+                            }
                         }
                     }
 
+                    // Preenche as duplas restantes na ordem da fila
+                    for (let idx = 0; idx < totalJogos; idx++) {
+                        if (!rodada[idx].timeA) rodada[idx].timeA = filaTimes.shift() || "Aguardando...";
+                        if (!rodada[idx].timeB) {
+                            if (byes > 0) {
+                                rodada[idx].timeB = "BYE (Avança)";
+                                byes--;
+                            } else {
+                                rodada[idx].timeB = filaTimes.shift() || "Aguardando...";
+                            }
+                        }
+                    }
+
+                    // Avalia se gerou jogos repetidos com o histórico dos últimos 3 torneios
                     let penalidade = 0;
                     rodada.forEach(j => {
-                        if (j.timeA && j.timeB && !j.timeB.includes("BYE")) {
+                        if (j.timeA && j.timeB && !j.timeB.includes("BYE") && !j.timeA.includes("BYE")) {
                             let chaveA = j.timeA.trim() + "_vs_" + j.timeB.trim();
-                            if (window.historicoConfrontos.has(chaveA)) penalidade++;
+                            if (window.historicoConfrontos && window.historicoConfrontos.has(chaveA)) penalidade++;
                         }
                     });
                     return { rodada, penalidade };
@@ -2240,21 +2272,24 @@ let tB_display = tB_data.includes('&')
                 let melhorRodada = null;
                 let menorPenalidade = 999;
 
-                // 3. Simula até 50 sorteios e escolhe o que evitar mais repetições
+                // Mantém os cabeças de chave fixos e sorteia os demais tentando zerar repetecos
+                let seedsFixosCount = Math.min(times.length, ordemJogos.length);
+                let restoShuffledBase = times.slice(seedsFixosCount).map(t => t.nome);
+
                 for (let tentativa = 0; tentativa < 50; tentativa++) {
-                    let restoShuffled = [...timesRestantesArray].sort(() => Math.random() - 0.5);
+                    let restoShuffled = [...restoShuffledBase].sort(() => Math.random() - 0.5);
                     let res = avaliarChaveamento(restoShuffled);
-                    
+
                     if (res.penalidade < menorPenalidade) {
                         menorPenalidade = res.penalidade;
                         melhorRodada = res.rodada;
                     }
-                    if (menorPenalidade === 0) break; // Achou um sorteio perfeito (inédito), para a busca!
+                    if (menorPenalidade === 0) break;
                 }
 
                 let fases = [{ jogos: melhorRodada }];
 
-                // Constrói o resto do chaveamento vazio (Quartas, Semis, Final)
+                // Constrói a estrutura das rodadas seguintes (Semifinais, Final)
                 let prox = totalJogos / 2;
                 while (prox >= 1) { 
                     let rN = []; 
