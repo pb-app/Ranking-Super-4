@@ -2920,24 +2920,16 @@ tipoFiltroRanking.addEventListener('change', () => {
                     
                     if (estaNoJogo) {
                         if (j.placarA && j.placarB) {
-    let vencedores = j.vencedor.split('&').map(n => n.trim());
-    let souVencedor = vencedores.includes(nome);
+                            let pA = parseInt(j.placarA[0]) || 0;
+                            let pB = parseInt(j.placarB[0]) || 0;
+                            let vencedores = j.vencedor.split('&').map(n => n.trim());
+                            let souVencedor = vencedores.includes(nome);
 
-    // Percorre todos os sets jogados (funciona para 1 set ou melhor de 3)
-    for (let i = 0; i < j.placarA.length; i++) {
-        let pA = parseInt(j.placarA[i]) || 0;
-        let pB = parseInt(j.placarB[i]) || 0;
-
-        if ((pA >= 6 && pB === 0 && pA > pB) || (pB >= 6 && pA === 0 && pB > pA)) {
-            if (souVencedor) {
-                aplicouPneus++;
-            } else {
-                tomouPneu = true;
-            }
-            break; // Encontrou um pneu nesta partida, pode parar de procurar nos outros sets
-        }
-    }
-}
+                            // Pneus (6x0)
+                            if ((pA >= 6 && pB === 0 && pA > pB) || (pB >= 6 && pA === 0 && pB > pA)) {
+                                if (souVencedor) aplicouPneus++;
+                                else tomouPneu = true;
+                            }
 
                             // Detecção de Tie-Break / Jogos Apertados (Ex: 7/6, 9/8 ou diferença de 1 game no Super Tie-Break)
                             let diff = Math.abs(pA - pB);
@@ -3683,7 +3675,7 @@ if (window.rankingJogadoresCache) {
 
     <!-- Versão Clicável para Atualizar -->
 <div id="appVersionBadge" onclick="verificarAtualizacaoApp()" style="position: fixed; bottom: 12px; right: 12px; background: rgba(31, 41, 55, 0.85); backdrop-filter: blur(4px); color: #9ca3af; padding: 5px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; z-index: 1000; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1);" title="Toque para verificar atualizações">
-    v8 🔄
+    v9 🔄
 </div>
 
     
