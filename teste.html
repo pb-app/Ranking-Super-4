@@ -205,58 +205,74 @@
             .bracket-container {
                 display: flex !important; flex-direction: row !important; width: 100% !important;
                 align-items: stretch !important; background: #ffffff !important; border-radius: 12px !important;
-                padding: 10px 5px !important; margin-bottom: 20px !important; /* Espaços super reduzidos */
+                padding: 10px 5px !important; margin-bottom: 20px !important; 
                 box-shadow: 0 4px 15px rgba(0,0,0,0.03) !important; border: 1px solid #f1f5f9 !important;
                 overflow-x: auto;
-                gap: 5px !important; /* Aproxima muito as colunas */
+                gap: 5px !important; 
             }
 
             .bracket-round {
-                flex: 1 !important; min-width: 170px !important; /* Colunas bem estreitas */
+                flex: 1 !important; min-width: 160px !important; /* Colunas um pouco mais estreitas */
                 display: flex !important; flex-direction: column !important;
                 margin: 0 !important; border-right: 1px dashed #e2e8f0 !important; 
                 padding: 0 5px !important; position: relative !important;
-                justify-content: space-around !important; /* Espalha os jogos uniformemente na vertical */
-                gap: 5px !important;
+                justify-content: space-around !important; 
+                gap: 2px !important; /* Gap quase zero entre os blocos */
             }
             .bracket-round:last-child { border-right: none !important; }
 
-            /* Título da fase (Oitavas, Quartas) dentro da coluna */
             .bracket-round h3 {
                 position: relative !important; top: 0 !important; left: 0 !important; width: 100% !important;
-                text-align: center !important; font-size: 0.75rem !important; color: #4b5563 !important; 
-                margin: 0 0 5px 0 !important; background: #f3f4f6 !important; padding: 4px !important; border-radius: 4px !important;
+                text-align: center !important; font-size: 0.7rem !important; color: #4b5563 !important; 
+                margin: 0 0 2px 0 !important; background: #f3f4f6 !important; padding: 2px !important; border-radius: 4px !important;
             }
             
-            .bracket-round .chave-title { margin-bottom: 2px !important; font-size: 0.8rem !important; }
+            /* Títulos das chaves (Ouro/Prata) mais compactos e próximos do conteúdo */
+            .bracket-round .chave-title { margin-bottom: 2px !important; font-size: 0.8rem !important; padding: 0 !important; line-height: 1 !important;}
             .bracket-round:not(:first-child) .chave-title { display: none !important; }
+            
+            /* Redução do espaçamento do bloco prata */
+            .bloco-chave-prata { margin-top: 5px !important; padding-top: 5px !important; }
 
             /* CAIXA DE JOGO ULTRA COMPACTA */
             .bracket-match {
-                padding: 4px !important; /* Quase nenhum espaço extra por dentro */
+                padding: 4px !important;
                 margin: 0 !important; border-radius: 6px !important;
                 background: #ffffff !important; border: 1px solid #cbd5e1 !important;
                 box-shadow: 0 1px 2px rgba(0,0,0,0.02) !important; transition: transform 0.2s;
-                min-height: 40px !important; /* Força a caixa a ser baixinha */
+                min-height: auto !important; /* Deixa a altura ajustar-se ao conteúdo */
                 display: flex !important; flex-direction: column !important; justify-content: center !important;
             }
             .bracket-match:hover { transform: scale(1.02); border-color: #94a3b8 !important; box-shadow: 0 4px 8px rgba(0,0,0,0.1) !important; z-index: 10; }
             
-            /* Textos e Nomes colados e sem quebrar linha */
             .bracket-match .t-a, .bracket-match .t-b { 
                 font-size: 0.7rem !important; line-height: 1.1 !important; margin: 1px 0 !important; padding: 0 !important; 
-                white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; /* Corta nomes gigantes */
+                white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; 
             }
             .bracket-match .t-a span, .bracket-match .t-b span { font-size: 0.7rem !important; }
             
-            /* Placar e Inputs em miniatura */
-            .bracket-match .match-score { margin: 2px 0 !important; gap: 4px !important; }
-            .bracket-match .score-input { 
-                width: 20px !important; height: 16px !important; font-size: 0.7rem !important; padding: 0 !important; border-radius: 2px !important; 
+            /* CORREÇÃO DOS PLACARES ESCONDIDOS: Garante que estão visíveis */
+            .bracket-match .match-score { 
+                display: flex !important; /* Força a visualização do flexbox do placar */
+                margin: 2px 0 !important; gap: 4px !important; justify-content: center !important; align-items: center !important;
             }
-            .bracket-match .match-score span { font-size: 0.75rem !important; }
+            .bracket-match .score-input { 
+                width: 20px !important; height: 16px !important; font-size: 0.7rem !important; padding: 0 !important; border-radius: 2px !important; text-align: center !important; border: 1px solid #d1d5db !important; background: #fff !important;
+            }
+            .bracket-match .match-score span { font-size: 0.75rem !important; margin: 0 2px !important;}
             
-            /* Botões microscópicos */
+            /* Ajuste dos botões ocultos e ações */
+            .match-header-actions { min-height: 18px !important; margin-bottom: 2px !important; }
+            
+            /* Exibição condicional das ações no desktop */
+            .bracket-match .match-actions { 
+                display: flex !important; flex-direction: column !important; gap: 2px !important; margin-top: 0 !important; 
+                max-height: 0 !important; opacity: 0 !important; overflow: hidden !important; transition: all 0.2s ease !important;
+            }
+            .bracket-match:hover .match-actions, .bracket-match.resolvido .match-actions { 
+                max-height: 100px !important; opacity: 1 !important; margin-top: 4px !important; 
+            }
+
             .bracket-match button { 
                 padding: 1px 4px !important; font-size: 0.55rem !important; margin-top: 2px !important; height: auto !important; min-height: 16px !important; border-radius: 3px !important;
             }
@@ -264,7 +280,6 @@
                 padding: 1px 4px !important; font-size: 0.55rem !important; margin-bottom: 2px !important; display: inline-block !important; border-radius: 3px !important;
             }
             
-            /* Caixa do "Avança Direto" (BYE) - Fica apagada e não chama atenção */
             .bracket-match div[style*="Avança Direto"] {
                 margin: 1px 0 !important; padding: 1px !important; font-size: 0.6rem !important;
             }
