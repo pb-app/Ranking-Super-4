@@ -343,6 +343,26 @@
 /* Oculta os botões de ação e exibe apenas no hover ou se o placar já estiver salvo */
 .match-actions { display: flex; flex-direction: column; gap: 6px; max-height: 0; opacity: 0; overflow: hidden; transition: all 0.3s ease; margin-top: 0; }
 .match-card:hover .match-actions, .match-card.resolvido .match-actions { max-height: 150px; opacity: 1; margin-top: 8px; }
+
+            /* --- CORREÇÃO DA QUADRA NO TELEMÓVEL (Alinhada no Canto) --- */
+@media (max-width: 768px) {
+    /* Força o container do card a aceitar posicionamento absoluto se necessário */
+    .bracket-match {
+        position: relative !important;
+        padding-top: 20px !important; /* Abre um pequeno espaço no topo para a quadra não tapar os nomes */
+    }
+
+    /* Posiciona a etiqueta da quadra no canto superior direito do card no telemóvel */
+    .bracket-match .btn-quadra-nova,
+    .bracket-match div[onclick*="atribuirQuadra"] {
+        position: absolute !important;
+        top: 4px !important;
+        right: 6px !important;
+        margin: 0 !important;
+        font-size: 0.6rem !important;
+        padding: 1px 5px !important;
+    }
+}
         
     </style>
 </head>
