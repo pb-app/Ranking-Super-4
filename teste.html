@@ -289,6 +289,21 @@
 #details-section {
     animation: fadeIn 0.3s ease-out;
 }
+
+            /* --- NOVO VISUAL MATA-MATA (CARD LIMPO) --- */
+.bracket-column { display: flex; flex-direction: column; }
+.round-header { text-align: center; font-weight: 800; color: #4b5563; background: #f3f4f6; padding: 6px; border-radius: 6px; margin-bottom: 10px; font-size: 0.85rem; text-transform: uppercase; border: 1px solid #e5e7eb; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05); }
+
+.match-card { position: relative; overflow: hidden; }
+.match-card.bye-card { border: 1px dashed #cbd5e1 !important; opacity: 0.5; background: transparent !important; }
+
+.match-header-actions { display: flex; justify-content: flex-end; margin-bottom: 5px; min-height: 22px; }
+.btn-quadra-nova { background: #e0e7ff !important; color: #4338ca !important; font-size: 0.65rem !important; padding: 2px 6px !important; border-radius: 4px !important; border: none !important; cursor: pointer; font-weight: 700 !important; }
+.btn-quadra-nova.empty { background: transparent !important; border: 1px dashed #94a3b8 !important; color: #94a3b8 !important; }
+
+/* Oculta os botões de ação e exibe apenas no hover ou se o placar já estiver salvo */
+.match-actions { display: flex; flex-direction: column; gap: 6px; max-height: 0; opacity: 0; overflow: hidden; transition: all 0.3s ease; margin-top: 0; }
+.match-card:hover .match-actions, .match-card.resolvido .match-actions { max-height: 150px; opacity: 1; margin-top: 8px; }
         
     </style>
 </head>
@@ -1878,8 +1893,8 @@ if (window.jogosSalvos) {
                 else if (rodadaIndex === maxRounds - 3) nome = "Quartas de Final";
                 nomesFases.push(nome);
 
-                html += `<div class="bracket-round">`;
-                html += `<h3>${nome}</h3>`; // O título da fase que fica no topo
+                html += `<div class="bracket-round bracket-column">`;
+                html += `<div class="round-header">${nome}</div>`;
                 
                 // --- BLOCO DA CHAVE OURO ---
                 if (window.fasesMataMata && window.fasesMataMata[rodadaIndex]) {
@@ -1917,32 +1932,29 @@ if (window.jogosSalvos) {
                 let tB_data = jogo.timeB || "Aguardando...";
                 
                 let tA_display = tA_data.includes('&') 
-    ? `${window.nomeClicavel(tA_data.split('&')[0].trim())}${window.getBadgeSeed(tA_data.split('&')[0].trim())}<br>
-       <span style="color:var(--gray); font-size:0.85rem; font-weight:400;">${window.nomeClicavel(tA_data.split('&')[1].trim())}${window.getBadgeSeed(tA_data.split('&')[1].trim())}</span>` 
-    : `${window.nomeClicavel(tA_data)}${window.getBadgeSeed(tA_data)}`;
+                    ? `${window.nomeClicavel(tA_data.split('&')[0].trim())}${window.getBadgeSeed(tA_data.split('&')[0].trim())}<br><span style="color:var(--gray); font-size:0.85rem; font-weight:400;">${window.nomeClicavel(tA_data.split('&')[1].trim())}${window.getBadgeSeed(tA_data.split('&')[1].trim())}</span>` 
+                    : `${window.nomeClicavel(tA_data)}${window.getBadgeSeed(tA_data)}`;
 
-let tB_display = tB_data.includes('&') 
-    ? `${window.nomeClicavel(tB_data.split('&')[0].trim())}${window.getBadgeSeed(tB_data.split('&')[0].trim())}<br>
-       <span style="color:var(--gray); font-size:0.85rem; font-weight:400;">${window.nomeClicavel(tB_data.split('&')[1].trim())}${window.getBadgeSeed(tB_data.split('&')[1].trim())}</span>` 
-    : `${window.nomeClicavel(tB_data)}${window.getBadgeSeed(tB_data)}`;
+                let tB_display = tB_data.includes('&') 
+                    ? `${window.nomeClicavel(tB_data.split('&')[0].trim())}${window.getBadgeSeed(tB_data.split('&')[0].trim())}<br><span style="color:var(--gray); font-size:0.85rem; font-weight:400;">${window.nomeClicavel(tB_data.split('&')[1].trim())}${window.getBadgeSeed(tB_data.split('&')[1].trim())}</span>` 
+                    : `${window.nomeClicavel(tB_data)}${window.getBadgeSeed(tB_data)}`;
                 
                 let prefix = chave === 'Prata' ? "MM_Prata_" : "MM_";
                 let matchId = `${prefix}${rodadaIndex}_${tA_data.replace(/\s+/g, '')}_vs_${tB_data.replace(/\s+/g, '')}`;
                 let isBye = tA_data.includes("BYE") || tB_data.includes("BYE");
 
-                // Adiciona a possibilidade de clicar no nome para editar (se for organizador)
                 let cliqueEdicaoA = isLogged && !isBye && !tA_data.includes("Aguardando") ? `onclick="editarNomeDuplaMataMata(this, '${tA_data}', '${matchId}', ${rodadaIndex}, '${chave}')" style="cursor:pointer;" title="Clique para substituição de emergência"` : '';
                 let cliqueEdicaoB = isLogged && !isBye && !tB_data.includes("Aguardando") ? `onclick="editarNomeDuplaMataMata(this, '${tB_data}', '${matchId}', ${rodadaIndex}, '${chave}')" style="cursor:pointer;" title="Clique para substituição de emergência"` : '';
 
                 if (isBye) {
                     let btnRepescagem = isLogged ? `<button onclick="abrirRepescagem(this, ${rodadaIndex}, '${matchId}')" class="btn btn-outline btn-puxar" style="width: 100%; margin-top: 10px; font-size: 0.8rem; border-color: #d97706; color: #d97706 !important; padding:6px;">🔄 Repescagem</button>` : '';
                     html += `
-                        <div class="bracket-match mata-mata-match resolvido" id="box-${matchId}" style="background: #f0fdf4; border-left-color: #10b981;">
+                        <div class="bracket-match match-card bye-card mata-mata-match resolvido" id="box-${matchId}">
                             <strong class="t-a" data-name="${tA_data}" ${cliqueEdicaoA}>${tA_display}</strong>
-                            <div style="margin: 10px 0; color: var(--blue-link); font-size: 0.85rem; font-weight: 600; background: #eff6ff; padding: 8px; border-radius: 6px; border: 1px dashed var(--blue-link);">🚀 Avança Direto</div>
+                            <div style="margin: 10px 0; color: var(--blue-link); font-size: 0.85rem; font-weight: 600; text-align:center;">🚀 Avança Direto</div>
                             <strong class="t-b" data-name="${tB_data}" ${cliqueEdicaoB}>${tB_display}</strong>
-                            <div class="repescagem-area hidden" style="margin-top: 15px; background: var(--white); padding: 12px; border-radius: 8px; border: 1px solid var(--border);">
-                                <select class="form-control select-repescagem" style="margin-bottom: 10px; padding: 8px; font-size: 0.9rem; background: #f9fafb;"></select>
+                            <div class="repescagem-area hidden" style="margin-top: 15px;">
+                                <select class="form-control select-repescagem" style="margin-bottom: 10px; padding: 8px; font-size: 0.9rem;"></select>
                                 <div style="display: flex; gap: 8px;">
                                     <button onclick="confirmarRepescagem(this, ${rodadaIndex}, '${matchId}')" class="btn" style="flex: 1; padding: 6px; font-size: 0.85rem;">Trocar</button>
                                     <button onclick="cancelarRepescagem(this)" class="btn btn-outline" style="padding: 6px; font-size: 0.85rem;">❌</button>
@@ -1956,22 +1968,21 @@ let tB_display = tB_data.includes('&')
                     let btnStyle = jogosSalvos[matchId] ? 'background: #ecfdf5; color: #10b981; border: 1px solid #10b981;' : 'background: transparent; color: var(--blue-link); border: 1px solid var(--blue-link);';
                     let btnText = jogosSalvos[matchId] ? (jogosSalvos[matchId].isWO ? '✅ W.O. Aplicado!' : '✅ Salvo!') : '💾 Salvar Placar';
                     
-                    // Botão de W.O. que só aparece se o jogo ainda não estiver salvo
-                    let btnWO = isLogged && !isBye && !jogosSalvos[matchId] && !hideBtn ? `<button onclick="declararWO(this, '${matchId}', '${tA_data}', '${tB_data}')" class="btn btn-outline" style="background: #fef2f2; color: #ef4444; border: 1px solid #fecaca; margin-top:5px; width:100%; max-width:180px; padding: 6px;">🛑 Aplicar W.O.</button>` : '';
+                    let btnWO = isLogged && !isBye && !jogosSalvos[matchId] && !hideBtn ? `<button onclick="declararWO(this, '${matchId}', '${tA_data}', '${tB_data}')" class="btn btn-outline" style="background: #fef2f2; color: #ef4444; border: 1px solid #fecaca; width:100%; padding: 6px;">🛑 Aplicar W.O.</button>` : '';
 
                     let quadra = jogosSalvos[matchId] ? jogosSalvos[matchId].quadra : '';
                     let quadraHtml = '';
-                    if (quadra) { quadraHtml = `<div onclick="atribuirQuadra(this, '${matchId}', '${tA_data}', '${tB_data}', true)" style="background: #e0e7ff; color: #4338ca; font-size: 0.75rem; padding: 3px 10px; border-radius: 12px; cursor: pointer; display: inline-block; margin-bottom: 10px; font-weight: 700;">📍 Quadra ${quadra}</div><br>`; }
-                    else if (isLogged && !tA_data.includes("Aguardando") && !tB_data.includes("Aguardando")) { quadraHtml = `<div onclick="atribuirQuadra(this, '${matchId}', '${tA_data}', '${tB_data}', true)" style="background: transparent; border: 1px dashed #94a3b8; color: #94a3b8; font-size: 0.7rem; padding: 2px 8px; border-radius: 12px; cursor: pointer; display: inline-block; margin-bottom: 10px;">+ Atribuir Quadra</div><br>`; }
+                    if (quadra) { quadraHtml = `<button onclick="atribuirQuadra(this, '${matchId}', '${tA_data}', '${tB_data}', true)" class="btn-quadra-nova">📍 Quadra ${quadra}</button>`; }
+                    else if (isLogged && !tA_data.includes("Aguardando") && !tB_data.includes("Aguardando")) { quadraHtml = `<button onclick="atribuirQuadra(this, '${matchId}', '${tA_data}', '${tB_data}', true)" class="btn-quadra-nova empty">+ Quadra</button>`; }
 
                     html += `
-                        <div class="bracket-match mata-mata-match ${isResolvido}">
-                            ${quadraHtml}
+                        <div class="bracket-match match-card mata-mata-match ${isResolvido}">
+                            <div class="match-header-actions">${quadraHtml}</div>
                             <strong class="t-a" data-name="${tA_data}" ${cliqueEdicaoA}>${tA_display}</strong>
                             ${gerarInputsPlacar(setsAberto, matchId)}
                             <strong class="t-b" data-name="${tB_data}" ${cliqueEdicaoB}>${tB_display}</strong>
-                            <div style="display:flex; flex-direction:column; align-items:center;">
-                                <button onclick="salvarPlacar(this)" data-matchid="${matchId}" class="btn btn-outline ${hideBtn}" style="${btnStyle}; margin-top:10px; width:100%; max-width:180px; padding: 6px;">${btnText}</button>
+                            <div class="match-actions ${hideBtn}">
+                                <button onclick="salvarPlacar(this)" data-matchid="${matchId}" class="btn btn-outline" style="${btnStyle}; width:100%; padding: 6px;">${btnText}</button>
                                 ${btnWO}
                             </div>
                         </div>`;
