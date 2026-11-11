@@ -212,12 +212,12 @@
             }
 
             .bracket-round {
-                flex: 1 !important; min-width: 160px !important; /* Colunas um pouco mais estreitas */
+                flex: 1 !important; min-width: 160px !important;
                 display: flex !important; flex-direction: column !important;
                 margin: 0 !important; border-right: 1px dashed #e2e8f0 !important; 
                 padding: 0 5px !important; position: relative !important;
                 justify-content: space-around !important; 
-                gap: 2px !important; /* Gap quase zero entre os blocos */
+                gap: 2px !important; 
             }
             .bracket-round:last-child { border-right: none !important; }
 
@@ -227,12 +227,18 @@
                 margin: 0 0 2px 0 !important; background: #f3f4f6 !important; padding: 2px !important; border-radius: 4px !important;
             }
             
-            /* Títulos das chaves (Ouro/Prata) mais compactos e próximos do conteúdo */
+            /* Títulos das chaves (Ouro/Prata) */
             .bracket-round .chave-title { margin-bottom: 2px !important; font-size: 0.8rem !important; padding: 0 !important; line-height: 1 !important;}
             .bracket-round:not(:first-child) .chave-title { display: none !important; }
             
-            /* Redução do espaçamento do bloco prata */
-            .bloco-chave-prata { margin-top: 5px !important; padding-top: 5px !important; }
+            /* DESTAQUE DA CHAVE PRATA: Divisão clara com fundo diferenciado */
+            .bloco-chave-prata { 
+                margin-top: 15px !important; 
+                padding: 10px 5px !important; 
+                border-top: 3px solid #cbd5e1 !important; /* Linha grossa separadora */
+                background-color: #f8fafc !important; /* Fundo ligeiramente acinzentado */
+                border-radius: 8px !important;
+            }
 
             /* CAIXA DE JOGO ULTRA COMPACTA */
             .bracket-match {
@@ -240,7 +246,7 @@
                 margin: 0 !important; border-radius: 6px !important;
                 background: #ffffff !important; border: 1px solid #cbd5e1 !important;
                 box-shadow: 0 1px 2px rgba(0,0,0,0.02) !important; transition: transform 0.2s;
-                min-height: auto !important; /* Deixa a altura ajustar-se ao conteúdo */
+                min-height: auto !important; 
                 display: flex !important; flex-direction: column !important; justify-content: center !important;
             }
             .bracket-match:hover { transform: scale(1.02); border-color: #94a3b8 !important; box-shadow: 0 4px 8px rgba(0,0,0,0.1) !important; z-index: 10; }
@@ -251,20 +257,26 @@
             }
             .bracket-match .t-a span, .bracket-match .t-b span { font-size: 0.7rem !important; }
             
-            /* CORREÇÃO DOS PLACARES ESCONDIDOS: Garante que estão visíveis */
+            /* CORREÇÃO DOS PLACARES: Remover setinhas e centralizar o número */
             .bracket-match .match-score { 
-                display: flex !important; /* Força a visualização do flexbox do placar */
+                display: flex !important; 
                 margin: 2px 0 !important; gap: 4px !important; justify-content: center !important; align-items: center !important;
             }
             .bracket-match .score-input { 
                 width: 20px !important; height: 16px !important; font-size: 0.7rem !important; padding: 0 !important; border-radius: 2px !important; text-align: center !important; border: 1px solid #d1d5db !important; background: #fff !important;
+                /* Remove as setas de aumento/diminuição padrão nos navegadores baseados em WebKit/Blink e Firefox */
+                -moz-appearance: textfield; 
+            }
+            .bracket-match .score-input::-webkit-outer-spin-button,
+            .bracket-match .score-input::-webkit-inner-spin-button {
+                -webkit-appearance: none;
+                margin: 0;
             }
             .bracket-match .match-score span { font-size: 0.75rem !important; margin: 0 2px !important;}
             
             /* Ajuste dos botões ocultos e ações */
             .match-header-actions { min-height: 18px !important; margin-bottom: 2px !important; }
             
-            /* Exibição condicional das ações no desktop */
             .bracket-match .match-actions { 
                 display: flex !important; flex-direction: column !important; gap: 2px !important; margin-top: 0 !important; 
                 max-height: 0 !important; opacity: 0 !important; overflow: hidden !important; transition: all 0.2s ease !important;
