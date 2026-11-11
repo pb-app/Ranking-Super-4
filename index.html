@@ -1935,17 +1935,28 @@ let tB_display = tB_data.includes('&')
                 let cliqueEdicaoB = isLogged && !isBye && !tB_data.includes("Aguardando") ? `onclick="editarNomeDuplaMataMata(this, '${tB_data}', '${matchId}', ${rodadaIndex}, '${chave}')" style="cursor:pointer;" title="Clique para substituição de emergência"` : '';
 
                 if (isBye) {
-                    let btnRepescagem = isLogged ? `<button onclick="abrirRepescagem(this, ${rodadaIndex}, '${matchId}')" class="btn btn-outline btn-puxar" style="width: 100%; margin-top: 10px; font-size: 0.8rem; border-color: #d97706; color: #d97706 !important; padding:6px;">🔄 Repescagem</button>` : '';
+                    // 1. Condição: Oculta botão de repescagem se for Super 4
+                    let isSuper4 = formatoAberto.includes("Super 4");
+                    let btnRepescagem = (isLogged && !isSuper4) ? `<button onclick="abrirRepescagem(this, ${rodadaIndex}, '${matchId}')" class="btn btn-outline btn-puxar" style="width: 100%; margin-top: 5px; font-size: 0.65rem; border-color: #d97706; color: #d97706 !important; padding:4px;">🔄 Repescagem</button>` : '';
+                    
+                    // 2. Condição: Identifica quem é o texto falso (BYE) para escondê-lo
+                    let isByeA = tA_data.includes("BYE");
+                    
                     html += `
-                        <div class="bracket-match mata-mata-match resolvido" id="box-${matchId}" style="background: #f0fdf4; border-left-color: #10b981;">
-                            <strong class="t-a" data-name="${tA_data}" ${cliqueEdicaoA}>${tA_display}</strong>
-                            <div style="margin: 10px 0; color: var(--blue-link); font-size: 0.85rem; font-weight: 600; background: #eff6ff; padding: 8px; border-radius: 6px; border: 1px dashed var(--blue-link);">🚀 Avança Direto</div>
-                            <strong class="t-b" data-name="${tB_data}" ${cliqueEdicaoB}>${tB_display}</strong>
-                            <div class="repescagem-area hidden" style="margin-top: 15px; background: var(--white); padding: 12px; border-radius: 8px; border: 1px solid var(--border);">
-                                <select class="form-control select-repescagem" style="margin-bottom: 10px; padding: 8px; font-size: 0.9rem; background: #f9fafb;"></select>
-                                <div style="display: flex; gap: 8px;">
-                                    <button onclick="confirmarRepescagem(this, ${rodadaIndex}, '${matchId}')" class="btn" style="flex: 1; padding: 6px; font-size: 0.85rem;">Trocar</button>
-                                    <button onclick="cancelarRepescagem(this)" class="btn btn-outline" style="padding: 6px; font-size: 0.85rem;">❌</button>
+                        <div class="bracket-match match-card bye-card mata-mata-match resolvido" id="box-${matchId}">
+                            <!-- Só mostra o Jogador A se ele não for o BYE -->
+                            <strong class="t-a" data-name="${tA_data}" style="${isByeA ? 'display:none;' : ''}" ${cliqueEdicaoA}>${tA_display}</strong>
+                            
+                            <div style="margin: 2px 0; color: var(--blue-link); font-size: 0.75rem; font-weight: 700; text-align:center;">🚀 Avança Direto</div>
+                            
+                            <!-- Só mostra o Jogador B se ele não for o BYE -->
+                            <strong class="t-b" data-name="${tB_data}" style="${!isByeA ? 'display:none;' : ''}" ${cliqueEdicaoB}>${tB_display}</strong>
+                            
+                            <div class="repescagem-area hidden" style="margin-top: 10px;">
+                                <select class="form-control select-repescagem" style="margin-bottom: 5px; padding: 4px; font-size: 0.8rem;"></select>
+                                <div style="display: flex; gap: 5px;">
+                                    <button onclick="confirmarRepescagem(this, ${rodadaIndex}, '${matchId}')" class="btn" style="flex: 1; padding: 4px; font-size: 0.75rem;">Trocar</button>
+                                    <button onclick="cancelarRepescagem(this)" class="btn btn-outline" style="padding: 4px; font-size: 0.75rem;">❌</button>
                                 </div>
                             </div>
                             ${btnRepescagem}
