@@ -3016,7 +3016,8 @@ tipoFiltroRanking.addEventListener('change', () => {
         const modalPerfilJogador = document.getElementById('modalPerfilJogador');
         window.abrirModalHistorico = function() { document.getElementById('modalHistorico').classList.remove('hidden'); };
         window.abrirModalH2H = function() { document.getElementById('inputH2H').value = ''; document.getElementById('resultadoH2H').classList.add('hidden'); document.getElementById('modalH2H').classList.remove('hidden'); };
-        window.abrirPerfilJogador = function(nome, pontos, torneios, titulos = 0, vitorias = 0, jogos = 0) {
+        // ✅ Adicionado "async" antes de function
+        window.abrirPerfilJogador = async function(nome, pontos, torneios, titulos = 0, vitorias = 0, jogos = 0) {
             let derrotas = jogos - vitorias; let aproveitamento = jogos > 0 ? Math.round((vitorias / jogos) * 100) : 0;
             document.getElementById('perfilNome').textContent = nome; document.getElementById('perfilPontos').textContent = pontos; document.getElementById('perfilTorneios').textContent = torneios;
             document.getElementById('perfilTitulos').textContent = titulos; document.getElementById('perfilVitorias').textContent = vitorias; document.getElementById('perfilDerrotas').textContent = derrotas; document.getElementById('perfilAproveitamento').textContent = aproveitamento + '%';
@@ -3024,12 +3025,28 @@ tipoFiltroRanking.addEventListener('change', () => {
             // Injeção Dinâmica das Medalhas
             let containerBadges = document.getElementById('perfilBadgesContainer');
             if (!containerBadges) {
-                // Se o contentor ainda não existir, cria-o dinamicamente logo abaixo do subtítulo do perfil
                 let subPerfil = document.querySelector('#modalPerfilJogador p');
                 containerBadges = document.createElement('div');
                 containerBadges.id = 'perfilBadgesContainer';
                 subPerfil.parentNode.insertBefore(containerBadges, subPerfil.nextSibling);
             }
+            
+            // 1. Mensagem temporária enquanto processa os placares
+            containerBadges.innerHTML = '<div style="text-align: center; color: var(--gray); font-size: 0.85rem; padding: 10px;">A calcular medalhas...</div>';
+            
+            // 2. Baixa os placares do Firebase SE a memória estiver vazia
+            if (!window.h2hJogosCache) {
+                try {
+                    let snapDocs = [];
+                    const snap = await getDocs(collectionGroup(db, "jogos"));
+                    snap.forEach(docSnap => snapDocs.push(docSnap.data()));
+                    window.h2hJogosCache = snapDocs;
+                } catch (e) {
+                    console.log("Erro ao carregar jogos para as medalhas:", e);
+                }
+            }
+
+            // 3. Com a memória cheia, calcula e exibe as medalhas reais
             containerBadges.innerHTML = calcularBadgesJogador(nome, vitorias, jogos, torneios, titulos);
             
             // Lógica do Histórico de Pontos
