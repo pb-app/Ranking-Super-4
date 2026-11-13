@@ -2555,7 +2555,7 @@ let tB_display = tB_data.includes('&')
 
             try {
                 for (let jogador in statsIndividuais) {
-                    let stats = statsIndividuais[jogador]; let safeId = jogador.replace(/\s+/g, '_').toLowerCase(); let ref = doc(db, "rankings", rankingNome, "jogadores", safeId);
+                    let stats = statsIndividuais[jogador]; let safeId = jogador.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/['´`]/g, '').replace(/\s+/g, '_').toLowerCase(); let ref = doc(db, "rankings", rankingNome, "jogadores", safeId);
                     let snap = await getDoc(ref);
                     if (snap.exists()) {
                         let dados = snap.data();
