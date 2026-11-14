@@ -1724,33 +1724,99 @@ if (window.jogosSalvos) {
                 }
             }
 
-            seeds1.sort(() => Math.random() - 0.5);
-            seeds2.sort(() => Math.random() - 0.5);
-            let normais = restantes.sort(() => Math.random() - 0.5);
+            // 1. Mapeia quem já jogou no mesmo grupo nos últimos 5 torneios encerrados
+            let historicoGrupos = new Set();
+            let ultimos5 = Object.keys(window.torneiosDataCache || {})
+                .filter(id => id !== torneioAbertoId && window.torneiosDataCache[id].status === 'encerrado')
+                .map(id => window.torneiosDataCache[id])
+                .sort((a, b) => (b.dataCriacao?.seconds || 0) - (a.dataCriacao?.seconds || 0))
+                .slice(0, 5);
 
-            let sorteados = [];
-            if (formatoAberto.includes("Super 4")) {
-                let gruposTemporarios = Array.from({ length: numGrupos }, () => []);
-                for(let i=0; i<numGrupos; i++) { if(seeds1.length > 0) gruposTemporarios[i].push(seeds1.pop()); }
-                for(let i=0; i<numGrupos; i++) { if(seeds2.length > 0) gruposTemporarios[i].push(seeds2.pop()); }
-                
-                let idx = 0;
-                while(normais.length > 0) { gruposTemporarios[idx % numGrupos].push(normais.pop()); idx++; }
-                
-                sorteados = new Array(inscritosComPontos.length);
-                for (let g = 0; g < numGrupos; g++) {
-                    for (let j = 0; j < gruposTemporarios[g].length; j++) { sorteados[g + j * numGrupos] = gruposTemporarios[g][j]; }
+            ultimos5.forEach(t => {
+                if (t.sorteados && t.sorteados.length > 0 && t.formato && (t.formato.includes("Grupos") || t.formato.includes("Super 4"))) {
+                    let nGruposAnt = t.formato.includes("Super 4") ? Math.max(1, Math.floor(t.sorteados.length / 4)) : (t.sorteados.length >= 6 ? Math.floor(t.sorteados.length / 3) : 1);
+                    let gruposAnt = Array.from({ length: nGruposAnt }, () => []);
+                    
+                    t.sorteados.forEach((insc, idx) => { gruposAnt[idx % nGruposAnt].push(insc); });
+                    
+                    gruposAnt.forEach(g => {
+                        let nomesNoGrupo = [];
+                        g.forEach(insc => {
+                            if (insc.jogador1) nomesNoGrupo.push(insc.jogador1.trim());
+                            if (insc.jogador2) nomesNoGrupo.push(insc.jogador2.trim());
+                        });
+                        for (let i = 0; i < nomesNoGrupo.length; i++) {
+                            for (let j = i + 1; j < nomesNoGrupo.length; j++) {
+                                historicoGrupos.add(nomesNoGrupo[i] + "_com_" + nomesNoGrupo[j]);
+                                historicoGrupos.add(nomesNoGrupo[j] + "_com_" + nomesNoGrupo[i]);
+                            }
+                        }
+                    });
                 }
-                sorteados = sorteados.filter(item => item !== undefined);
-            } else if (isGrupos) {
-                sorteados = [...seeds1, ...seeds2, ...normais];
-            } else {
-                let mSeeds = inscritosComPontos.filter(i => i.isSeed || i.nivelSeed === 1 || i.nivelSeed === 2).sort(() => Math.random() - 0.5);
-                let mNormais = inscritosComPontos.filter(i => !i.isSeed && i.nivelSeed !== 1 && i.nivelSeed !== 2).sort(() => Math.random() - 0.5);
-                sorteados = [...mSeeds, ...mNormais];
+            });
+
+            // 2. Simula até 50 sorteios diferentes para encontrar o que tem MENOS repetição de grupos
+            let melhorSorteados = [];
+            let menorPenalidadeGrupo = 9999;
+
+            for (let tentativa = 0; tentativa < 50; tentativa++) {
+                let s1 = [...seeds1].sort(() => Math.random() - 0.5);
+                let s2 = [...seeds2].sort(() => Math.random() - 0.5);
+                let norm = [...restantes].sort(() => Math.random() - 0.5);
+                let tentativaSorteados = [];
+
+                if (formatoAberto.includes("Super 4")) {
+                    let gruposTemp = Array.from({ length: numGrupos }, () => []);
+                    for(let i=0; i<numGrupos; i++) { if(s1.length > 0) gruposTemp[i].push(s1.pop()); }
+                    for(let i=0; i<numGrupos; i++) { if(s2.length > 0) gruposTemp[i].push(s2.pop()); }
+                    
+                    let idx = 0;
+                    while(norm.length > 0) { gruposTemp[idx % numGrupos].push(norm.pop()); idx++; }
+                    
+                    tentativaSorteados = new Array(inscritosComPontos.length);
+                    for (let g = 0; g < numGrupos; g++) {
+                        for (let j = 0; j < gruposTemp[g].length; j++) { 
+                            tentativaSorteados[g + j * numGrupos] = gruposTemp[g][j]; 
+                        }
+                    }
+                    tentativaSorteados = tentativaSorteados.filter(item => item !== undefined);
+                } else if (isGrupos) {
+                    tentativaSorteados = [...s1, ...s2, ...norm];
+                } else {
+                    let mSeeds = inscritosComPontos.filter(i => i.isSeed || i.nivelSeed === 1 || i.nivelSeed === 2).sort(() => Math.random() - 0.5);
+                    let mNormais = inscritosComPontos.filter(i => !i.isSeed && i.nivelSeed !== 1 && i.nivelSeed !== 2).sort(() => Math.random() - 0.5);
+                    tentativaSorteados = [...mSeeds, ...mNormais];
+                    melhorSorteados = tentativaSorteados;
+                    break;
+                }
+
+                let penalidade = 0;
+                let gruposTeste = Array.from({ length: numGrupos }, () => []);
+                tentativaSorteados.forEach((jog, idx) => { gruposTeste[idx % numGrupos].push(jog); });
+
+                gruposTeste.forEach(g => {
+                    let nomes = [];
+                    g.forEach(insc => {
+                        if (insc.jogador1) nomes.push(insc.jogador1.trim());
+                        if (insc.jogador2) nomes.push(insc.jogador2.trim());
+                    });
+                    for (let i = 0; i < nomes.length; i++) {
+                        for (let j = i + 1; j < nomes.length; j++) {
+                            if (historicoGrupos.has(nomes[i] + "_com_" + nomes[j])) {
+                                penalidade++;
+                            }
+                        }
+                    }
+                });
+
+                if (penalidade < menorPenalidadeGrupo) {
+                    menorPenalidadeGrupo = penalidade;
+                    melhorSorteados = tentativaSorteados;
+                }
+                if (menorPenalidadeGrupo === 0) break;
             }
 
-            sorteados = sorteados.map(s => {
+            let sorteados = melhorSorteados.map(s => {
                 let { totalPontos, ...rest } = s;
                 return rest;
             });
@@ -2162,13 +2228,13 @@ let tB_display = tB_data.includes('&')
 
             // --- INÍCIO DA MELHORIA: ANTI-REPETIÇÃO DE CONFRONTOS ---
             
-            // 1. Busca os últimos 3 torneios finalizados no cache para aprender quem já jogou contra quem
+            // 1. Busca os últimos 5 torneios finalizados no cache para aprender quem já jogou contra quem
             window.historicoConfrontos = new Set();
             let listaTorneios = Object.keys(window.torneiosDataCache)
                 .filter(id => id !== torneioAbertoId && window.torneiosDataCache[id].status === 'encerrado')
                 .map(id => window.torneiosDataCache[id])
                 .sort((a, b) => (b.dataCriacao?.seconds || 0) - (a.dataCriacao?.seconds || 0))
-                .slice(0, 3); 
+                .slice(0, 5); 
                 
             listaTorneios.forEach(t => {
                 const addConfrontos = (fases) => {
