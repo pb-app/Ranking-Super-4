@@ -7,6 +7,22 @@
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#f26522">
+    <script>
+        (function () {
+            function aplicar(t) {
+                if (t === "escuro") document.documentElement.setAttribute("data-tema", "escuro"); else document.documentElement.removeAttribute("data-tema");
+                var b = document.getElementById("btnTema"); if (b) b.textContent = t === "escuro" ? "☀️" : "🌙";
+            }
+            var t = null; try { t = localStorage.getItem("tema"); } catch (e) {}
+            aplicar(t);
+            window.alternarTema = function () {
+                var novo = document.documentElement.getAttribute("data-tema") === "escuro" ? "claro" : "escuro";
+                try { localStorage.setItem("tema", novo); } catch (e) {}
+                aplicar(novo);
+            };
+            document.addEventListener("DOMContentLoaded", function () { aplicar(t); });
+        })();
+    </script>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Confra &amp; Play">
@@ -80,6 +96,15 @@
 
         #create-section, #details-section { background-color: var(--white); padding: 2.5rem; border-radius: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); border: 1px solid var(--border); }
         
+        /* Rodapé discreto com visitas, online e versão (não fica mais flutuando sobre o conteúdo) */
+        #rodape-info { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 10px; padding: 1.5rem 1rem 2rem; }
+        #rodape-info #contadorVisitasUI, #rodape-info #appVersionBadge { position: static !important; background: var(--white) !important; color: var(--gray) !important; border: 1px solid var(--border) !important; box-shadow: none !important; backdrop-filter: none !important; }
+        #rodape-info #contadorVisitasUI span[style*="rgba(255,255,255,0.2)"] { background: var(--border) !important; }
+        .estado-vazio { grid-column: 1 / -1; text-align: center; color: var(--gray); padding: 3rem 1rem; font-size: 1.05rem; background: var(--white); border: 1px dashed var(--border); border-radius: 12px; }
+        tr.rk-top td:first-child { box-shadow: inset 4px 0 0 var(--rk-cor); }
+        tr.rk-1 { --rk-cor: #f59e0b; background: #fffbeb; }
+        tr.rk-2 { --rk-cor: #9ca3af; background: #f9fafb; }
+        tr.rk-3 { --rk-cor: #b45309; background: #fff7ed; }
         .tournaments-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.5rem; }
         .tournament-card { background: var(--white); border-radius: 12px; padding: 1.8rem; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border: 1px solid var(--border); cursor: pointer; transition: all 0.2s ease; position: relative; overflow: hidden; }
         .tournament-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--primary); opacity: 0.8; transition: width 0.2s; }
@@ -145,6 +170,104 @@
             .match-box, .bracket-match { padding: 15px 10px; }
             .t-a, .t-b { font-size: 0.95rem; }
         }
+
+
+        /* ===== Menu fixo embaixo no celular ===== */
+        @media (max-width: 768px) {
+            header { flex-direction: row !important; justify-content: center; padding: 0.8rem 1rem; }
+            #nav-menu { position: fixed; left: 0; right: 0; bottom: 0; width: 100%; margin: 0 !important; background: var(--white); border-top: 1px solid var(--border); box-shadow: 0 -2px 10px rgba(0,0,0,0.06); padding: 8px 8px calc(8px + env(safe-area-inset-bottom)); z-index: 150; flex-wrap: nowrap !important; justify-content: space-around; gap: 6px !important; }
+            #nav-menu .tab-btn { flex: 1; padding: 0.6rem 0.3rem; font-size: 0.85rem; }
+            #nav-menu #user-menu span { display: none; }
+            #nav-menu #user-menu .btn { padding: 0.45rem 0.6rem !important; font-size: 0.75rem !important; }
+            body { padding-bottom: 80px; }
+        }
+
+        /* ===== Etiquetas nos cards ===== */
+        .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+        .chip { display: inline-block; padding: 3px 9px; border-radius: 999px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.2px; border: 1px solid transparent; }
+        .chip-andamento { background: #eff6ff; color: #2563eb; border-color: #bfdbfe; }
+        .chip-encerrado { background: #f0fdf4; color: #059669; border-color: #bbf7d0; }
+        .chip-formato { background: #fff7ed; color: #c2410c; border-color: #fed7aa; }
+
+        /* ===== Tema escuro (opcional, botão 🌙 no menu) ===== */
+        #btnTema { padding: 0; border-radius: 50%; width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; font-size: 1.1rem; cursor: pointer; background: transparent; border: 1px solid var(--border); }
+        :root[data-tema="escuro"] { --dark: #e5e7eb; --light: #0f172a; --white: #1e293b; --gray: #9ca3af; --border: #334155; --blue-link: #60a5fa; color-scheme: dark; }
+        [data-tema="escuro"] #nav-menu .tab-active { background: #0f172a; }
+        [data-tema="escuro"] #nav-menu .tab-inactive:hover { background: #334155; }
+        [data-tema="escuro"] .form-control { background-color: #0f172a; }
+        [data-tema="escuro"] .chip-andamento { background: #1e3a8a; color: #bfdbfe; border-color: #1d4ed8; }
+        [data-tema="escuro"] .chip-encerrado { background: #064e3b; color: #a7f3d0; border-color: #047857; }
+        [data-tema="escuro"] .chip-formato { background: #431407; color: #fdba74; border-color: #9a3412; }
+        [data-tema="escuro"] tr.rk-1 { background: #3a2f0b; }
+        [data-tema="escuro"] tr.rk-2 { background: #273449; }
+        [data-tema="escuro"] tr.rk-3 { background: #3b2410; }
+        [data-tema="escuro"] [style*="background: #f9fafb"],
+        [data-tema="escuro"] [style*="background:#f9fafb"],
+        [data-tema="escuro"] [style*="background-color: #f9fafb"],
+        [data-tema="escuro"] [style*="background-color:#f9fafb"],
+        [data-tema="escuro"] [style*="background: #f8fafc"],
+        [data-tema="escuro"] [style*="background:#f8fafc"],
+        [data-tema="escuro"] [style*="background-color: #f8fafc"],
+        [data-tema="escuro"] [style*="background-color:#f8fafc"],
+        [data-tema="escuro"] [style*="background: #f1f5f9"],
+        [data-tema="escuro"] [style*="background:#f1f5f9"],
+        [data-tema="escuro"] [style*="background-color: #f1f5f9"],
+        [data-tema="escuro"] [style*="background-color:#f1f5f9"],
+        [data-tema="escuro"] [style*="background: #f3f4f6"],
+        [data-tema="escuro"] [style*="background:#f3f4f6"],
+        [data-tema="escuro"] [style*="background-color: #f3f4f6"],
+        [data-tema="escuro"] [style*="background-color:#f3f4f6"],
+        [data-tema="escuro"] [style*="background: #fffbeb"],
+        [data-tema="escuro"] [style*="background:#fffbeb"],
+        [data-tema="escuro"] [style*="background-color: #fffbeb"],
+        [data-tema="escuro"] [style*="background-color:#fffbeb"],
+        [data-tema="escuro"] [style*="background: #fef2f2"],
+        [data-tema="escuro"] [style*="background:#fef2f2"],
+        [data-tema="escuro"] [style*="background-color: #fef2f2"],
+        [data-tema="escuro"] [style*="background-color:#fef2f2"],
+        [data-tema="escuro"] [style*="background: #eff6ff"],
+        [data-tema="escuro"] [style*="background:#eff6ff"],
+        [data-tema="escuro"] [style*="background-color: #eff6ff"],
+        [data-tema="escuro"] [style*="background-color:#eff6ff"],
+        [data-tema="escuro"] [style*="background: #ecfdf5"],
+        [data-tema="escuro"] [style*="background:#ecfdf5"],
+        [data-tema="escuro"] [style*="background-color: #ecfdf5"],
+        [data-tema="escuro"] [style*="background-color:#ecfdf5"],
+        [data-tema="escuro"] [style*="background: #f0fdf4"],
+        [data-tema="escuro"] [style*="background:#f0fdf4"],
+        [data-tema="escuro"] [style*="background-color: #f0fdf4"],
+        [data-tema="escuro"] [style*="background-color:#f0fdf4"],
+        [data-tema="escuro"] [style*="background: #fef3c7"],
+        [data-tema="escuro"] [style*="background:#fef3c7"],
+        [data-tema="escuro"] [style*="background-color: #fef3c7"],
+        [data-tema="escuro"] [style*="background-color:#fef3c7"],
+        [data-tema="escuro"] [style*="background: #fff7ed"],
+        [data-tema="escuro"] [style*="background:#fff7ed"],
+        [data-tema="escuro"] [style*="background-color: #fff7ed"],
+        [data-tema="escuro"] [style*="background-color:#fff7ed"],
+        [data-tema="escuro"] [style*="background: #fefce8"],
+        [data-tema="escuro"] [style*="background:#fefce8"],
+        [data-tema="escuro"] [style*="background-color: #fefce8"],
+        [data-tema="escuro"] [style*="background-color:#fefce8"],
+        [data-tema="escuro"] [style*="background: #faf5ff"],
+        [data-tema="escuro"] [style*="background:#faf5ff"],
+        [data-tema="escuro"] [style*="background-color: #faf5ff"],
+        [data-tema="escuro"] [style*="background-color:#faf5ff"],
+        [data-tema="escuro"] [style*="background: #e0e7ff"],
+        [data-tema="escuro"] [style*="background:#e0e7ff"],
+        [data-tema="escuro"] [style*="background-color: #e0e7ff"],
+        [data-tema="escuro"] [style*="background-color:#e0e7ff"],
+        [data-tema="escuro"] [style*="background: #ffffff"],
+        [data-tema="escuro"] [style*="background:#ffffff"],
+        [data-tema="escuro"] [style*="background-color: #ffffff"],
+        [data-tema="escuro"] [style*="background-color:#ffffff"],
+        [data-tema="escuro"] [style*="background: white"],
+        [data-tema="escuro"] [style*="background:white"],
+        [data-tema="escuro"] [style*="background-color: white"],
+        [data-tema="escuro"] [style*="background-color:white"],
+        [data-tema="escuro"] [style*="background: #e5e7eb"],
+        [data-tema="escuro"] [style*="background:#e5e7eb"] { background: #263248 !important; }
+        [data-tema="escuro"] [style*="background: #e5e7eb"], [data-tema="escuro"] [style*="background:#e5e7eb"] { background: #334155 !important; }
 
         /* ================================================================= */
         /* --- MELHORIA: TELAS OTIMIZADAS PARA COMPUTADOR E NOTEBOOK --- */
@@ -522,6 +645,7 @@
         <div id="nav-menu" style="display:flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-left: auto;">
             <button id="btnAbaCampeonatos" class="tab-btn tab-active">Campeonatos</button>
             <button id="btnAbaRankings" class="tab-btn tab-inactive">🏆 Ranking</button>
+            <button id="btnTema" onclick="alternarTema()" title="Alternar tema claro/escuro" aria-label="Alternar tema claro/escuro">🌙</button>
             <button id="btnInstalarAppHeader" class="btn hidden" style="background: var(--blue-link); font-size: 0.85rem; padding: 0.5rem 0.8rem;">📲 Instalar App</button>
             
             <div id="auth-area" style="display: inline-flex; align-items: center;">
@@ -615,7 +739,7 @@
 
         <section id="list-section">
             <h2 class="section-title">Campeonatos Abertos</h2>
-            <div class="tournaments-grid" id="tournaments-container"></div>
+            <div class="tournaments-grid" id="tournaments-container"><p class="estado-vazio">⏳ Carregando campeonatos…</p></div>
         </section>
 
         <section id="ranking-section" class="hidden">
@@ -760,14 +884,7 @@
         </section>
     </main>
 
-    <div id="iosInstallPopup" class="hidden" style="position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #ffffff; border: 1px solid var(--border); padding: 20px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); z-index: 9999; width: 90%; max-width: 350px; text-align: center; animation: fadeIn 0.4s ease;">
-        <h4 style="color: var(--dark); margin-bottom: 10px; font-size: 1.1rem;">📲 Instalar a App</h4>
-        <p style="font-size: 0.9rem; color: var(--gray); margin-bottom: 15px; line-height: 1.4;">
-            No seu iPhone, toque em <strong>Compartilhar</strong> <span style="font-size: 1.2rem;">📤</span> e depois selecione <br><strong style="color: var(--blue-link); display: inline-block; margin-top: 5px;">"Adicionar à Tela Inicial" ➕</strong>
-        </p>
-        <button id="btnFecharIosPopup" class="btn btn-outline" style="width: 100%; padding: 8px;">Fechar</button>
-    </div>
-
+    <footer id="rodape-info">
     <!-- Contador Discreto de Visitas e Online -->
     <div id="contadorVisitasUI" style="position: fixed; bottom: 12px; left: 12px; background: rgba(31, 41, 55, 0.85); backdrop-filter: blur(4px); color: #e5e7eb; padding: 6px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 500; display: flex; gap: 12px; z-index: 1000; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.1); transition: opacity 0.3s ease;">
         <span title="Total histórico de Visitas" style="display: flex; align-items: center; gap: 6px;">
@@ -778,6 +895,20 @@
             <span style="color: #10b981; font-size: 0.6rem; animation: piscar 2s infinite;">🟢</span> <span id="txtOnline">--</span> online
         </span>
     </div>
+    <!-- Versão Clicável para Atualizar -->
+<div id="appVersionBadge" onclick="verificarAtualizacaoApp()" style="position: fixed; bottom: 12px; right: 12px; background: rgba(31, 41, 55, 0.85); backdrop-filter: blur(4px); color: #9ca3af; padding: 5px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; z-index: 1000; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1);" title="Toque para verificar atualizações">
+    v17 🔄
+</div>
+    </footer>
+
+    <div id="iosInstallPopup" class="hidden" style="position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #ffffff; border: 1px solid var(--border); padding: 20px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); z-index: 9999; width: 90%; max-width: 350px; text-align: center; animation: fadeIn 0.4s ease;">
+        <h4 style="color: var(--dark); margin-bottom: 10px; font-size: 1.1rem;">📲 Instalar a App</h4>
+        <p style="font-size: 0.9rem; color: var(--gray); margin-bottom: 15px; line-height: 1.4;">
+            No seu iPhone, toque em <strong>Compartilhar</strong> <span style="font-size: 1.2rem;">📤</span> e depois selecione <br><strong style="color: var(--blue-link); display: inline-block; margin-top: 5px;">"Adicionar à Tela Inicial" ➕</strong>
+        </p>
+        <button id="btnFecharIosPopup" class="btn btn-outline" style="width: 100%; padding: 8px;">Fechar</button>
+    </div>
+
 
     <style>
         @keyframes piscar { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
@@ -802,7 +933,7 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        const APP_VERSION = "v14";
+        const APP_VERSION = "v17";
         let isLogged = false;
         let torneioAbertoId = null; 
         let torneioAbertoData = null; 
@@ -920,13 +1051,18 @@
         const q = query(collection(db, "campeonatos"), orderBy("dataCriacao", "desc"));
         onSnapshot(q, (snapshot) => {
             tournamentsContainer.innerHTML = ''; 
-            if (snapshot.empty) { tournamentsContainer.innerHTML = '<p style="color: var(--gray);">Nenhum campeonato aberto.</p>'; return; }
+            if (snapshot.empty) { tournamentsContainer.innerHTML = '<p class="estado-vazio">🎾 Nenhum campeonato aberto no momento.</p>'; return; }
             snapshot.forEach((docSnap) => {
                 const camp = docSnap.data();
                 const card = document.createElement('div');
                 card.className = 'tournament-card';
                 card.onclick = () => abrirPainelTorneio(docSnap.id, camp);
                 
+                const _fmt = String(camp.formato || '');
+                const _fmtCurto = _fmt.includes('Super 4') ? 'Super 4' : (_fmt.includes('Grupos') ? 'Grupos + Eliminatórias' : 'Mata-mata');
+                const _chipStatus = camp.status === 'encerrado' ? '<span class="chip chip-encerrado">✅ Encerrado</span>' : '<span class="chip chip-andamento">🔥 Em andamento</span>';
+                const _chips = `<div class="chips">${_chipStatus}<span class="chip chip-formato">${_fmtCurto}</span></div>`;
+
                 let extraInfo = '';
                 if (camp.status === 'encerrado') {
                     extraInfo = `<div style="margin-top: 15px; padding-top: 12px; border-top: 1px dashed var(--border);">`;
@@ -936,12 +1072,9 @@
                     if (camp.campeaoPrata) {
                         extraInfo += `<div style="font-size: 0.95rem; color: var(--dark);">🥈 <b style="color: #475569;">Prata:</b> ${camp.campeaoPrata.replace(/\s*&\s*/g, ' e ')}</div>`;
                     }
-                    if (!camp.campeaoOuro && !camp.campeaoPrata) {
-                        extraInfo += `<span style="display:inline-block; background:#f0fdf4; color:#10b981; padding: 4px 8px; border-radius:6px; font-size:0.85rem; font-weight:600;">✅ Finalizado</span>`;
-                    }
                     extraInfo += `</div>`;
                 } else {
-                    extraInfo = `<span style="display:inline-block; background:#eff6ff; color:#3b82f6; padding: 4px 8px; border-radius:6px; font-size:0.85rem; font-weight:600; margin-top: 15px; border: 1px solid #bfdbfe;">🔥 Em Andamento</span>`;
+                    extraInfo = '';
                 }
 
                 // Armazena no cache global para o Pop-up conseguir aceder
@@ -950,7 +1083,7 @@
                 // Botão de ver pontuação (o event.stopPropagation evita abrir o torneio por baixo)
                 let linkPontos = `<div style="margin-top: 5px;"><button onclick="event.stopPropagation(); abrirModalPontuacao('${docSnap.id}')" style="background: none; border: none; color: var(--blue-link); text-decoration: underline; cursor: pointer; font-size: 0.85rem; font-weight: 600; padding: 0;">ℹ️ Ver Pontuação</button></div>`;
 
-                card.innerHTML = `<h3>${camp.nome}</h3><p style="margin-bottom: 3px;">Ranking: ${camp.ranking}</p><p style="margin-bottom: 3px;">Formato: ${camp.formato}</p>${linkPontos}${extraInfo}`;
+                card.innerHTML = `${_chips}<h3>${camp.nome}</h3><p style="margin-bottom: 3px;">Ranking: ${camp.ranking}</p><p style="margin-bottom: 3px;">Formato: ${camp.formato}</p>${linkPontos}${extraInfo}`;
                 tournamentsContainer.appendChild(card);
             });
         });
@@ -2742,7 +2875,7 @@ let tB_display = tB_data.includes('&')
                 let titulos = jog.titulos || 0; let vitorias = jog.vitorias || 0; let jogos = jog.jogos || 0;
                 let hideAdmin = isLogged ? "" : "hidden";
 
-                html += `<tr>
+                html += `<tr class="${posicaoExibida <= 3 ? 'rk-top rk-' + posicaoExibida : ''}">
                     <td style="font-size: 1.1rem; font-weight:600;">${icone}</td>
                     <td style="text-align:left; display:flex; align-items:center; gap:10px;">
                         <div style="width:30px; height:30px; background:#e5e7eb; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.85rem;">👤</div>
@@ -3749,10 +3882,6 @@ if (window.rankingJogadoresCache) {
         </div>
     </div>
 
-    <!-- Versão Clicável para Atualizar -->
-<div id="appVersionBadge" onclick="verificarAtualizacaoApp()" style="position: fixed; bottom: 12px; right: 12px; background: rgba(31, 41, 55, 0.85); backdrop-filter: blur(4px); color: #9ca3af; padding: 5px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; z-index: 1000; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1);" title="Toque para verificar atualizações">
-    v14 🔄
-</div>
 
     
 </body>
