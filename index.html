@@ -80,6 +80,12 @@
 
         #create-section, #details-section { background-color: var(--white); padding: 2.5rem; border-radius: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); border: 1px solid var(--border); }
         
+        body { padding-bottom: 80px; } /* espaço para os selos fixos (visitas/versão) não cobrirem o conteúdo */
+        .estado-vazio { grid-column: 1 / -1; text-align: center; color: var(--gray); padding: 3rem 1rem; font-size: 1.05rem; background: var(--white); border: 1px dashed var(--border); border-radius: 12px; }
+        tr.rk-top td:first-child { box-shadow: inset 4px 0 0 var(--rk-cor); }
+        tr.rk-1 { --rk-cor: #f59e0b; background: #fffbeb; }
+        tr.rk-2 { --rk-cor: #9ca3af; background: #f9fafb; }
+        tr.rk-3 { --rk-cor: #b45309; background: #fff7ed; }
         .tournaments-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.5rem; }
         .tournament-card { background: var(--white); border-radius: 12px; padding: 1.8rem; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border: 1px solid var(--border); cursor: pointer; transition: all 0.2s ease; position: relative; overflow: hidden; }
         .tournament-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--primary); opacity: 0.8; transition: width 0.2s; }
@@ -615,7 +621,7 @@
 
         <section id="list-section">
             <h2 class="section-title">Campeonatos Abertos</h2>
-            <div class="tournaments-grid" id="tournaments-container"></div>
+            <div class="tournaments-grid" id="tournaments-container"><p class="estado-vazio">⏳ Carregando campeonatos…</p></div>
         </section>
 
         <section id="ranking-section" class="hidden">
@@ -802,7 +808,7 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        const APP_VERSION = "v14";
+        const APP_VERSION = "v15";
         let isLogged = false;
         let torneioAbertoId = null; 
         let torneioAbertoData = null; 
@@ -920,7 +926,7 @@
         const q = query(collection(db, "campeonatos"), orderBy("dataCriacao", "desc"));
         onSnapshot(q, (snapshot) => {
             tournamentsContainer.innerHTML = ''; 
-            if (snapshot.empty) { tournamentsContainer.innerHTML = '<p style="color: var(--gray);">Nenhum campeonato aberto.</p>'; return; }
+            if (snapshot.empty) { tournamentsContainer.innerHTML = '<p class="estado-vazio">🎾 Nenhum campeonato aberto no momento.</p>'; return; }
             snapshot.forEach((docSnap) => {
                 const camp = docSnap.data();
                 const card = document.createElement('div');
@@ -2742,7 +2748,7 @@ let tB_display = tB_data.includes('&')
                 let titulos = jog.titulos || 0; let vitorias = jog.vitorias || 0; let jogos = jog.jogos || 0;
                 let hideAdmin = isLogged ? "" : "hidden";
 
-                html += `<tr>
+                html += `<tr class="${posicaoExibida <= 3 ? 'rk-top rk-' + posicaoExibida : ''}">
                     <td style="font-size: 1.1rem; font-weight:600;">${icone}</td>
                     <td style="text-align:left; display:flex; align-items:center; gap:10px;">
                         <div style="width:30px; height:30px; background:#e5e7eb; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.85rem;">👤</div>
@@ -3751,7 +3757,7 @@ if (window.rankingJogadoresCache) {
 
     <!-- Versão Clicável para Atualizar -->
 <div id="appVersionBadge" onclick="verificarAtualizacaoApp()" style="position: fixed; bottom: 12px; right: 12px; background: rgba(31, 41, 55, 0.85); backdrop-filter: blur(4px); color: #9ca3af; padding: 5px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; z-index: 1000; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1);" title="Toque para verificar atualizações">
-    v14 🔄
+    v15 🔄
 </div>
 
     
