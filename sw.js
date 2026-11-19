@@ -1,50 +1,50 @@
-const CACHE_NAME = 'liga-bt-store-v11'; // Mude para v5, v6, etc., sempre que atualizar!
+const CACHE_NAME = 'liga-bt-store-v13'; // Mude a versão sempre que atualizar!
+const CORE_FILES = ['./', './manifest.json', './icon-192.png', './icon-512.png'];
 
-// Instalação: guarda os ficheiros base e força o novo service worker a assumir o controlo
+// Instalação: guarda os ficheiros base (um falhar não derruba os outros)
 self.addEventListener('install', (e) => {
-    self.skipWaiting(); 
+    self.skipWaiting();
     e.waitUntil(
-        caches.open(CACHE_NAME).then((cache) => {
-            return cache.addAll(['./']);
-        })
+        caches.open(CACHE_NAME).then((cache) =>
+            Promise.all(CORE_FILES.map((f) => cache.add(f).catch(() => null)))
+        )
     );
 });
 
-// Ativação: apaga os caches antigos do telemóvel
+// Ativação: apaga caches antigos
 self.addEventListener('activate', (e) => {
     e.waitUntil(
-        caches.keys().then((keyList) => {
-            return Promise.all(keyList.map((key) => {
-                if (key !== CACHE_NAME) {
-                    console.log('[ServiceWorker] A apagar cache antigo:', key);
-                    return caches.delete(key);
-                }
-            }));
-        })
+        caches.keys()
+            .then((keys) => Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))))
+            .then(() => self.clients.claim())
     );
-    return self.clients.claim();
 });
 
-// NOVO: Ouve o comando enviado pelo botão do rodapé para atualizar imediatamente
+// Comando do botão de versão
 self.addEventListener('message', (event) => {
-    if (event.data && event.data.type === 'SKIP_WAITING') {
-        self.skipWaiting();
-    }
+    if (event.data && event.data.type === 'SKIP_WAITING') self.skipWaiting();
 });
 
-// Fetch: Estratégia "Network First"
+// Network First, apenas GET e apenas da mesma origem
+// (Firebase, Auth e CDNs ficam fora: não passam pelo cache do SW)
 self.addEventListener('fetch', (e) => {
+    const req = e.request;
+    if (req.method !== 'GET') return;
+
+    const url = new URL(req.url);
+    if (url.origin !== self.location.origin) return;
+
     e.respondWith(
-        fetch(e.request)
+        fetch(req)
             .then((response) => {
-                const responseClone = response.clone();
-                caches.open(CACHE_NAME).then((cache) => {
-                    cache.put(e.request, responseClone);
-                });
+                if (response && response.ok) {
+                    const clone = response.clone();
+                    caches.open(CACHE_NAME).then((cache) => cache.put(req, clone)).catch(() => {});
+                }
                 return response;
             })
-            .catch(() => {
-                return caches.match(e.request);
-            })
+            .catch(() =>
+                caches.match(req).then((cached) => cached || caches.match('./') || Response.error())
+            )
     );
 });
