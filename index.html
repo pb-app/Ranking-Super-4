@@ -6,10 +6,10 @@
     <title>Ranking Confra & Play</title>
     
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#ffffff">
+    <meta name="theme-color" content="#f26522">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="Liga BT">
+    <meta name="apple-mobile-web-app-title" content="Confra &amp; Play">
     
     <link rel="apple-touch-icon" href="icon-192.png">
     <link rel="apple-touch-icon" sizes="152x152" href="icon-192.png">
@@ -785,7 +785,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, doc, updateDoc, getDocs, setDoc, getDoc, deleteDoc, collectionGroup } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, doc, updateDoc, getDocs, setDoc, getDoc, deleteDoc, collectionGroup, increment } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
         import { getDatabase, ref, onValue, onDisconnect, set } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
@@ -802,6 +802,7 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
+        const APP_VERSION = "v12";
         let isLogged = false;
         let torneioAbertoId = null; 
         let torneioAbertoData = null; 
@@ -810,12 +811,12 @@
         let inscritosUnsubscribe = null; 
         let inscritosAtuais = []; 
 
+        window.esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        window.jsArg = (s) => String(s ?? '').replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         window.nomeClicavel = function(nome) {
-    if (!nome) return '';
-    const clean = nome.trim().replace(/'/g, "\\'");
-    return `<span style="cursor:pointer; text-decoration:underline; text-underline-offset:2px;" 
-                  onclick="abrirPerfilDoTorneio('${clean}')">${nome.trim()}</span>`;
-};
+            if (!nome) return '';
+            return `<span style="cursor:pointer; text-decoration:underline; text-underline-offset:2px;" onclick="abrirPerfilDoTorneio('${jsArg(nome.trim())}')">${esc(nome.trim())}</span>`;
+        };
 
 
         window.verificarAtualizacaoApp = function() {
@@ -826,7 +827,7 @@
         navigator.serviceWorker.getRegistration().then((reg) => {
             if (!reg) {
                 alert("Nenhum serviço ativo encontrado.");
-                badge.textContent = "v5 🔄";
+                badge.textContent = APP_VERSION + " 🔄";
                 return;
             }
 
@@ -839,17 +840,17 @@
                         reg.waiting.postMessage({ type: 'SKIP_WAITING' });
                         window.location.reload();
                     } else {
-                        badge.textContent = "v5 🔄";
+                        badge.textContent = APP_VERSION + " 🔄";
                         alert("O aplicativo já está na versão mais recente!");
                     }
                 }, 1000);
             }).catch(() => {
-                badge.textContent = "v5 🔄";
+                badge.textContent = APP_VERSION + " 🔄";
                 alert("Erro ao verificar atualizações. Verifique a sua conexão.");
             });
         });
     } else {
-        badge.textContent = "v5 🔄";
+        badge.textContent = APP_VERSION + " 🔄";
         alert("O seu navegador não suporta atualizações automáticas.");
     }
 };
@@ -1091,6 +1092,7 @@ if (camp.ranking) {
         }
 
         function carregarInscritos(torneioId) {
+            if (inscritosUnsubscribe) { inscritosUnsubscribe(); inscritosUnsubscribe = null; }
             const listaUI = document.getElementById('listaInscritosUI');
             const contadorUI = document.getElementById('contadorInscritos');
             listaUI.innerHTML = '<li style="border:none; box-shadow:none; background:transparent;">Carregando...</li>';
@@ -1148,9 +1150,10 @@ let nomes = `<span style="line-height:1.4;">${nome1Final}${nome2Final}</span>${s
             const posicao = document.getElementById('subPosicaoJogador').value;
 
             if (!newName || newName === oldName) { alert("Digite um nome válido e diferente do atual."); return; }
+            if (inscritosAtuais.some(i => i.jogador1 === newName || i.jogador2 === newName)) { alert(`"${newName}" já está inscrito neste torneio.`); return; }
 
             // Troca a cor e texto do botão para mostrar que está a carregar
-            const btn = document.querySelector('#modalSubstituicao .btn');
+            const btn = document.querySelector('#modalSubstituicao button[onclick^="confirmarSubstituicao"]');
             btn.textContent = "A processar substituição..."; btn.disabled = true;
 
             try {
@@ -1249,37 +1252,6 @@ window.jogosSalvos = novosJogosSalvos;
                     }
                 }
 
-                // C. Atualiza os nomes dentro dos jogos (mantém o matchId original)
-if (window.jogosSalvos) {
-    const updates = [];
-    for (let matchId in window.jogosSalvos) {
-        let jogo = window.jogosSalvos[matchId];
-        if (!jogo) continue;
-
-        let mudou = false;
-        if (jogo.timeA && jogo.timeA.includes(oldName)) {
-            jogo.timeA = replaceInDuo(jogo.timeA);
-            mudou = true;
-        }
-        if (jogo.timeB && jogo.timeB.includes(oldName)) {
-            jogo.timeB = replaceInDuo(jogo.timeB);
-            mudou = true;
-        }
-        if (jogo.vencedor && jogo.vencedor.includes(oldName)) {
-            jogo.vencedor = replaceInDuo(jogo.vencedor);
-            mudou = true;
-        }
-
-        if (mudou) {
-            updates.push(setDoc(doc(db, "campeonatos", torneioAbertoId, "jogos", matchId), {
-                timeA: jogo.timeA,
-                timeB: jogo.timeB,
-                vencedor: jogo.vencedor || null
-            }, { merge: true }));
-        }
-    }
-    await Promise.all(updates);
-}
 
                    document.getElementById('modalSubstituicao').classList.add('hidden');
 
@@ -1406,6 +1378,7 @@ if (window.jogosSalvos) {
                 if (sA > sB || (sA === sB && gA > gB)) vencedor = timeA;
                 else if (sB > sA || (sB === sA && gB > gA)) vencedor = timeB;
 
+                if (vencedor === "") { alert("Placar inválido: não pode haver empate nem placar vazio. Informe um vencedor."); return; }
                 let matchId = matchIdPersonalizado || (timeA.replace(/\s+/g, '') + "_vs_" + timeB.replace(/\s+/g, ''));
                 
                 botao.textContent = 'Salvando...'; botao.disabled = true;
@@ -1670,7 +1643,7 @@ if (window.jogosSalvos) {
             let isGrupos = formatoAberto.includes("Grupos") || formatoAberto.includes("Super 4");
 
             if (isGrupos) {
-                if (inscritosAtuais.length % 4 !== 0) {
+                if (formatoAberto.includes("Super 4") && inscritosAtuais.length % 4 !== 0) {
                     let faltam = 4 - (inscritosAtuais.length % 4);
                     alert(`🚨 AÇÃO BLOQUEADA!\n\nPara formar os grupos corretamente, o número de inscritos deve ser múltiplo de 4.\n\nAtualmente há ${inscritosAtuais.length} inscritos. Faltam ${faltam} jogador(es) para poder gerar as chaves.`);
                     return;
@@ -1859,7 +1832,8 @@ if (window.jogosSalvos) {
             document.getElementById('btnGerarChaves').disabled = false;
             document.getElementById('painel-inscritos').classList.add('hidden');
             document.getElementById('painel-grid').classList.add('grid-expandido');
-            document.getElementById('btnMostrarInscritos').classList.add('hidden');
+            document.getElementById('btnMostrarInscritos').classList.remove('hidden');
+            document.getElementById('btnMostrarInscritos').textContent = isLogged ? "👀 Editar Lista de Inscritos" : "👥 Ver Lista de Inscritos";
             document.getElementById('avisoChaves').classList.add('hidden');
             document.getElementById('btnGerarChaves').classList.add('hidden');
         });
@@ -2513,6 +2487,17 @@ let tB_display = tB_data.includes('&')
 
         document.getElementById('btnEncerrarTorneio').addEventListener('click', async () => {
             if (!confirm("🚨 ATENÇÃO! Encerrar torneio e somar pontos?")) return;
+            {
+                const snapAtual = await getDoc(doc(db, "campeonatos", torneioAbertoId));
+                const stAtual = snapAtual.exists() ? snapAtual.data().status : null;
+                if (stAtual === "encerrado" || stAtual === "encerrando") {
+                    alert("Este torneio já foi encerrado (ou está sendo encerrado). Os pontos não serão somados de novo.");
+                    if (stAtual === "encerrado") torneioAbertoData.status = "encerrado";
+                    document.getElementById('btnEncerrarTorneio').classList.add('hidden');
+                    return;
+                }
+                await updateDoc(doc(db, "campeonatos", torneioAbertoId), { status: "encerrando" });
+            }
 
             const btn = document.getElementById('btnEncerrarTorneio');
             btn.textContent = "A processar..."; btn.disabled = true;
@@ -2586,6 +2571,11 @@ let tB_display = tB_data.includes('&')
                     });
                 });
 
+                const _finalRound = fasesArray[fasesArray.length - 1];
+                const _finalJogo = _finalRound ? (_finalRound.jogos || _finalRound)[0] : null;
+                const _pfx = chave === 'Prata' ? "MM_Prata_" : "MM_";
+                const _finalSalvo = (_finalJogo && _finalJogo.timeA && _finalJogo.timeB) ? jogosSalvos[`${_pfx}${fasesArray.length - 1}_${_finalJogo.timeA.replace(/\s+/g, '')}_vs_${_finalJogo.timeB.replace(/\s+/g, '')}`] : null;
+                const campeaoDaChave = _finalSalvo ? _finalSalvo.vencedor : null;
                 for (let equipe in maxPontosEquipe) {
                     let pontosMataMata = maxPontosEquipe[equipe];
                     let jogadores = equipe.split('&').map(j => j.trim()).filter(Boolean);
@@ -2597,11 +2587,11 @@ let tB_display = tB_data.includes('&')
 
                             if (chave === 'Ouro') { 
                                 statsIndividuais[j].pontosOuro += ptsTotaisChave; 
-                                if (pontosMataMata > 0 && pontosMataMata === (ptsConfig.campeao !== undefined ? ptsConfig.campeao : 100)) statsIndividuais[j].titulos = 1; 
+                                if (campeaoDaChave && equipe === campeaoDaChave) statsIndividuais[j].titulos = 1; 
                             }
                             if (chave === 'Prata') { 
                                 statsIndividuais[j].pontosPrata += ptsTotaisChave; 
-                                if (pontosMataMata > 0 && pontosMataMata === (ptsConfig.campeaoPrata !== undefined ? ptsConfig.campeaoPrata : 60)) statsIndividuais[j].titulos = 1; 
+                                if (campeaoDaChave && equipe === campeaoDaChave) statsIndividuais[j].titulos = 1; 
                             }
                         }
                     });
@@ -2678,7 +2668,8 @@ let tB_display = tB_data.includes('&')
                     window.h2hJogosCache = null; // Limpa o histórico H2H para incluir as novas vitórias
 
                     btn.textContent = "✅ Torneio Encerrado e Salvo!"; btn.style.background = "#10b981";
-            } catch(e) { alert("Erro ao salvar pontos."); btn.textContent = "Tentar Novamente"; btn.disabled = false; }
+            } catch(e) { alert("Erro ao salvar pontos.");
+                try { await updateDoc(doc(db, "campeonatos", torneioAbertoId), { status: "andamento" }); } catch (e2) {} btn.textContent = "Tentar Novamente"; btn.disabled = false; }
         });
 
         document.getElementById('btnExcluirTorneio').addEventListener('click', async () => {
@@ -2752,12 +2743,12 @@ let tB_display = tB_data.includes('&')
                     <td style="font-size: 1.1rem; font-weight:600;">${icone}</td>
                     <td style="text-align:left; display:flex; align-items:center; gap:10px;">
                         <div style="width:30px; height:30px; background:#e5e7eb; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.85rem;">👤</div>
-                        <a href="#" onclick="abrirPerfilJogador('${jog.nome}', ${ptsToShow}, ${jog.torneios}, ${titulos}, ${vitorias}, ${jogos})" style="color: var(--dark); text-decoration: none; font-weight: 600;">${jog.nome}</a>
+                        <a href="#" onclick="abrirPerfilJogador('${jsArg(jog.nome)}', ${ptsToShow}, ${jog.torneios}, ${titulos}, ${vitorias}, ${jogos})" style="color: var(--dark); text-decoration: none; font-weight: 600;">${esc(jog.nome)}</a>
                     </td>
                     <td style="color: ${corPts}; font-size: 1.1rem;"><strong>${ptsToShow}</strong></td>
                     <td style="color: var(--gray);">${jog.torneios || 0}</td>
                     <td class="col-acao-admin ${hideAdmin}">
-                        <button onclick="abrirModalEditarJogador('${jog.id}', '${jog.nome}', ${jog.pontos||0}, ${jog.pontosOuro||0}, ${jog.pontosPrata||0}, ${jog.torneios||0}, ${titulos}, ${vitorias}, ${jogos})" class="btn btn-outline" style="padding: 4px 10px; font-size: 0.8rem; border-color: var(--border);">Editar</button>
+                        <button onclick="abrirModalEditarJogador('${jsArg(jog.id)}', '${jsArg(jog.nome)}', ${jog.pontos||0}, ${jog.pontosOuro||0}, ${jog.pontosPrata||0}, ${jog.torneios||0}, ${titulos}, ${vitorias}, ${jogos})" class="btn btn-outline" style="padding: 4px 10px; font-size: 0.8rem; border-color: var(--border);">Editar</button>
                     </td>
                 </tr>`;
             });
@@ -3334,11 +3325,17 @@ if (window.rankingJogadoresCache) {
             let pB = vencedor === "1" ? [0] : [6];
 
             botao.textContent = 'Aguarde...'; botao.disabled = true;
-
-            let dadosDoJogo = { timeA, timeB, placarA: pA, placarB: pB, vencedor: nomeVencedor, fase: "Eliminatória", dataRegistro: serverTimestamp(), isWO: true };
-            
-            await setDoc(doc(db, "campeonatos", torneioAbertoId, "jogos", matchId), dadosDoJogo);
-            jogosSalvos[matchId] = dadosDoJogo; 
+            try {
+                let quadraExistente = jogosSalvos[matchId] ? jogosSalvos[matchId].quadra : "";
+                let dadosDoJogo = { timeA, timeB, placarA: pA, placarB: pB, vencedor: nomeVencedor, fase: "Eliminatória", dataRegistro: serverTimestamp(), isWO: true };
+                if (quadraExistente) dadosDoJogo.quadra = quadraExistente;
+                await setDoc(doc(db, "campeonatos", torneioAbertoId, "jogos", matchId), dadosDoJogo, { merge: true });
+                jogosSalvos[matchId] = dadosDoJogo;
+            } catch (e) {
+                alert("Erro ao aplicar W.O. Verifique a conexão.");
+                botao.textContent = '🛑 Aplicar W.O.'; botao.disabled = false;
+                return;
+            } 
 
             // Atualiza os botões na tela
             let matchBox = botao.closest('.bracket-match');
@@ -3698,12 +3695,7 @@ if (window.rankingJogadoresCache) {
             try {
                 // 1. Contador de Visitas (Continua no Firestore)
                 if (!sessionStorage.getItem('visitaContabilizada')) {
-                    let snap = await getDoc(docVisitas);
-                    if (snap.exists()) {
-                        await updateDoc(docVisitas, { total: (snap.data().total || 0) + 1 });
-                    } else {
-                        await setDoc(docVisitas, { total: 1 });
-                    }
+                    await setDoc(docVisitas, { total: increment(1) }, { merge: true });
                     sessionStorage.setItem('visitaContabilizada', 'true');
                 }
 
@@ -3758,7 +3750,7 @@ if (window.rankingJogadoresCache) {
 
     <!-- Versão Clicável para Atualizar -->
 <div id="appVersionBadge" onclick="verificarAtualizacaoApp()" style="position: fixed; bottom: 12px; right: 12px; background: rgba(31, 41, 55, 0.85); backdrop-filter: blur(4px); color: #9ca3af; padding: 5px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; z-index: 1000; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1);" title="Toque para verificar atualizações">
-    v11 🔄
+    v13 🔄
 </div>
 
     
