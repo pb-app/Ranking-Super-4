@@ -7,6 +7,22 @@
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#f26522">
+    <script>
+        (function () {
+            function aplicar(t) {
+                if (t === "escuro") document.documentElement.setAttribute("data-tema", "escuro"); else document.documentElement.removeAttribute("data-tema");
+                var b = document.getElementById("btnTema"); if (b) b.textContent = t === "escuro" ? "☀️" : "🌙";
+            }
+            var t = null; try { t = localStorage.getItem("tema"); } catch (e) {}
+            aplicar(t);
+            window.alternarTema = function () {
+                var novo = document.documentElement.getAttribute("data-tema") === "escuro" ? "claro" : "escuro";
+                try { localStorage.setItem("tema", novo); } catch (e) {}
+                aplicar(novo);
+            };
+            document.addEventListener("DOMContentLoaded", function () { aplicar(t); });
+        })();
+    </script>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Confra &amp; Play">
@@ -151,6 +167,105 @@
             .match-box, .bracket-match { padding: 15px 10px; }
             .t-a, .t-b { font-size: 0.95rem; }
         }
+
+
+        /* ===== Menu fixo embaixo no celular ===== */
+        @media (max-width: 768px) {
+            header { flex-direction: row !important; justify-content: center; padding: 0.8rem 1rem; }
+            #nav-menu { position: fixed; left: 0; right: 0; bottom: 0; width: 100%; margin: 0 !important; background: var(--white); border-top: 1px solid var(--border); box-shadow: 0 -2px 10px rgba(0,0,0,0.06); padding: 8px 8px calc(8px + env(safe-area-inset-bottom)); z-index: 150; flex-wrap: nowrap !important; justify-content: space-around; gap: 6px !important; }
+            #nav-menu .tab-btn { flex: 1; padding: 0.6rem 0.3rem; font-size: 0.85rem; }
+            #nav-menu #user-menu span { display: none; }
+            #nav-menu #user-menu .btn { padding: 0.45rem 0.6rem !important; font-size: 0.75rem !important; }
+            body { padding-bottom: 150px; }
+            #contadorVisitasUI, #appVersionBadge { bottom: 78px !important; }
+        }
+
+        /* ===== Etiquetas nos cards ===== */
+        .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+        .chip { display: inline-block; padding: 3px 9px; border-radius: 999px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.2px; border: 1px solid transparent; }
+        .chip-andamento { background: #eff6ff; color: #2563eb; border-color: #bfdbfe; }
+        .chip-encerrado { background: #f0fdf4; color: #059669; border-color: #bbf7d0; }
+        .chip-formato { background: #fff7ed; color: #c2410c; border-color: #fed7aa; }
+
+        /* ===== Tema escuro (opcional, botão 🌙 no menu) ===== */
+        #btnTema { padding: 0; border-radius: 50%; width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; font-size: 1.1rem; cursor: pointer; background: transparent; border: 1px solid var(--border); }
+        :root[data-tema="escuro"] { --dark: #e5e7eb; --light: #0f172a; --white: #1e293b; --gray: #9ca3af; --border: #334155; --blue-link: #60a5fa; color-scheme: dark; }
+        [data-tema="escuro"] #nav-menu .tab-active { background: #0f172a; }
+        [data-tema="escuro"] #nav-menu .tab-inactive:hover { background: #334155; }
+        [data-tema="escuro"] .form-control { background-color: #0f172a; }
+        [data-tema="escuro"] .chip-andamento { background: #1e3a8a; color: #bfdbfe; border-color: #1d4ed8; }
+        [data-tema="escuro"] .chip-encerrado { background: #064e3b; color: #a7f3d0; border-color: #047857; }
+        [data-tema="escuro"] .chip-formato { background: #431407; color: #fdba74; border-color: #9a3412; }
+        [data-tema="escuro"] tr.rk-1 { background: #3a2f0b; }
+        [data-tema="escuro"] tr.rk-2 { background: #273449; }
+        [data-tema="escuro"] tr.rk-3 { background: #3b2410; }
+        [data-tema="escuro"] [style*="background: #f9fafb"],
+        [data-tema="escuro"] [style*="background:#f9fafb"],
+        [data-tema="escuro"] [style*="background-color: #f9fafb"],
+        [data-tema="escuro"] [style*="background-color:#f9fafb"],
+        [data-tema="escuro"] [style*="background: #f8fafc"],
+        [data-tema="escuro"] [style*="background:#f8fafc"],
+        [data-tema="escuro"] [style*="background-color: #f8fafc"],
+        [data-tema="escuro"] [style*="background-color:#f8fafc"],
+        [data-tema="escuro"] [style*="background: #f1f5f9"],
+        [data-tema="escuro"] [style*="background:#f1f5f9"],
+        [data-tema="escuro"] [style*="background-color: #f1f5f9"],
+        [data-tema="escuro"] [style*="background-color:#f1f5f9"],
+        [data-tema="escuro"] [style*="background: #f3f4f6"],
+        [data-tema="escuro"] [style*="background:#f3f4f6"],
+        [data-tema="escuro"] [style*="background-color: #f3f4f6"],
+        [data-tema="escuro"] [style*="background-color:#f3f4f6"],
+        [data-tema="escuro"] [style*="background: #fffbeb"],
+        [data-tema="escuro"] [style*="background:#fffbeb"],
+        [data-tema="escuro"] [style*="background-color: #fffbeb"],
+        [data-tema="escuro"] [style*="background-color:#fffbeb"],
+        [data-tema="escuro"] [style*="background: #fef2f2"],
+        [data-tema="escuro"] [style*="background:#fef2f2"],
+        [data-tema="escuro"] [style*="background-color: #fef2f2"],
+        [data-tema="escuro"] [style*="background-color:#fef2f2"],
+        [data-tema="escuro"] [style*="background: #eff6ff"],
+        [data-tema="escuro"] [style*="background:#eff6ff"],
+        [data-tema="escuro"] [style*="background-color: #eff6ff"],
+        [data-tema="escuro"] [style*="background-color:#eff6ff"],
+        [data-tema="escuro"] [style*="background: #ecfdf5"],
+        [data-tema="escuro"] [style*="background:#ecfdf5"],
+        [data-tema="escuro"] [style*="background-color: #ecfdf5"],
+        [data-tema="escuro"] [style*="background-color:#ecfdf5"],
+        [data-tema="escuro"] [style*="background: #f0fdf4"],
+        [data-tema="escuro"] [style*="background:#f0fdf4"],
+        [data-tema="escuro"] [style*="background-color: #f0fdf4"],
+        [data-tema="escuro"] [style*="background-color:#f0fdf4"],
+        [data-tema="escuro"] [style*="background: #fef3c7"],
+        [data-tema="escuro"] [style*="background:#fef3c7"],
+        [data-tema="escuro"] [style*="background-color: #fef3c7"],
+        [data-tema="escuro"] [style*="background-color:#fef3c7"],
+        [data-tema="escuro"] [style*="background: #fff7ed"],
+        [data-tema="escuro"] [style*="background:#fff7ed"],
+        [data-tema="escuro"] [style*="background-color: #fff7ed"],
+        [data-tema="escuro"] [style*="background-color:#fff7ed"],
+        [data-tema="escuro"] [style*="background: #fefce8"],
+        [data-tema="escuro"] [style*="background:#fefce8"],
+        [data-tema="escuro"] [style*="background-color: #fefce8"],
+        [data-tema="escuro"] [style*="background-color:#fefce8"],
+        [data-tema="escuro"] [style*="background: #faf5ff"],
+        [data-tema="escuro"] [style*="background:#faf5ff"],
+        [data-tema="escuro"] [style*="background-color: #faf5ff"],
+        [data-tema="escuro"] [style*="background-color:#faf5ff"],
+        [data-tema="escuro"] [style*="background: #e0e7ff"],
+        [data-tema="escuro"] [style*="background:#e0e7ff"],
+        [data-tema="escuro"] [style*="background-color: #e0e7ff"],
+        [data-tema="escuro"] [style*="background-color:#e0e7ff"],
+        [data-tema="escuro"] [style*="background: #ffffff"],
+        [data-tema="escuro"] [style*="background:#ffffff"],
+        [data-tema="escuro"] [style*="background-color: #ffffff"],
+        [data-tema="escuro"] [style*="background-color:#ffffff"],
+        [data-tema="escuro"] [style*="background: white"],
+        [data-tema="escuro"] [style*="background:white"],
+        [data-tema="escuro"] [style*="background-color: white"],
+        [data-tema="escuro"] [style*="background-color:white"],
+        [data-tema="escuro"] [style*="background: #e5e7eb"],
+        [data-tema="escuro"] [style*="background:#e5e7eb"] { background: #263248 !important; }
+        [data-tema="escuro"] [style*="background: #e5e7eb"], [data-tema="escuro"] [style*="background:#e5e7eb"] { background: #334155 !important; }
 
         /* ================================================================= */
         /* --- MELHORIA: TELAS OTIMIZADAS PARA COMPUTADOR E NOTEBOOK --- */
@@ -528,6 +643,7 @@
         <div id="nav-menu" style="display:flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-left: auto;">
             <button id="btnAbaCampeonatos" class="tab-btn tab-active">Campeonatos</button>
             <button id="btnAbaRankings" class="tab-btn tab-inactive">🏆 Ranking</button>
+            <button id="btnTema" onclick="alternarTema()" title="Alternar tema claro/escuro" aria-label="Alternar tema claro/escuro">🌙</button>
             <button id="btnInstalarAppHeader" class="btn hidden" style="background: var(--blue-link); font-size: 0.85rem; padding: 0.5rem 0.8rem;">📲 Instalar App</button>
             
             <div id="auth-area" style="display: inline-flex; align-items: center;">
@@ -808,7 +924,7 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        const APP_VERSION = "v15";
+        const APP_VERSION = "v16";
         let isLogged = false;
         let torneioAbertoId = null; 
         let torneioAbertoData = null; 
@@ -933,6 +1049,11 @@
                 card.className = 'tournament-card';
                 card.onclick = () => abrirPainelTorneio(docSnap.id, camp);
                 
+                const _fmt = String(camp.formato || '');
+                const _fmtCurto = _fmt.includes('Super 4') ? 'Super 4' : (_fmt.includes('Grupos') ? 'Grupos + Eliminatórias' : 'Mata-mata');
+                const _chipStatus = camp.status === 'encerrado' ? '<span class="chip chip-encerrado">✅ Encerrado</span>' : '<span class="chip chip-andamento">🔥 Em andamento</span>';
+                const _chips = `<div class="chips">${_chipStatus}<span class="chip chip-formato">${_fmtCurto}</span></div>`;
+
                 let extraInfo = '';
                 if (camp.status === 'encerrado') {
                     extraInfo = `<div style="margin-top: 15px; padding-top: 12px; border-top: 1px dashed var(--border);">`;
@@ -942,12 +1063,9 @@
                     if (camp.campeaoPrata) {
                         extraInfo += `<div style="font-size: 0.95rem; color: var(--dark);">🥈 <b style="color: #475569;">Prata:</b> ${camp.campeaoPrata.replace(/\s*&\s*/g, ' e ')}</div>`;
                     }
-                    if (!camp.campeaoOuro && !camp.campeaoPrata) {
-                        extraInfo += `<span style="display:inline-block; background:#f0fdf4; color:#10b981; padding: 4px 8px; border-radius:6px; font-size:0.85rem; font-weight:600;">✅ Finalizado</span>`;
-                    }
                     extraInfo += `</div>`;
                 } else {
-                    extraInfo = `<span style="display:inline-block; background:#eff6ff; color:#3b82f6; padding: 4px 8px; border-radius:6px; font-size:0.85rem; font-weight:600; margin-top: 15px; border: 1px solid #bfdbfe;">🔥 Em Andamento</span>`;
+                    extraInfo = '';
                 }
 
                 // Armazena no cache global para o Pop-up conseguir aceder
@@ -956,7 +1074,7 @@
                 // Botão de ver pontuação (o event.stopPropagation evita abrir o torneio por baixo)
                 let linkPontos = `<div style="margin-top: 5px;"><button onclick="event.stopPropagation(); abrirModalPontuacao('${docSnap.id}')" style="background: none; border: none; color: var(--blue-link); text-decoration: underline; cursor: pointer; font-size: 0.85rem; font-weight: 600; padding: 0;">ℹ️ Ver Pontuação</button></div>`;
 
-                card.innerHTML = `<h3>${camp.nome}</h3><p style="margin-bottom: 3px;">Ranking: ${camp.ranking}</p><p style="margin-bottom: 3px;">Formato: ${camp.formato}</p>${linkPontos}${extraInfo}`;
+                card.innerHTML = `${_chips}<h3>${camp.nome}</h3><p style="margin-bottom: 3px;">Ranking: ${camp.ranking}</p><p style="margin-bottom: 3px;">Formato: ${camp.formato}</p>${linkPontos}${extraInfo}`;
                 tournamentsContainer.appendChild(card);
             });
         });
@@ -3757,7 +3875,7 @@ if (window.rankingJogadoresCache) {
 
     <!-- Versão Clicável para Atualizar -->
 <div id="appVersionBadge" onclick="verificarAtualizacaoApp()" style="position: fixed; bottom: 12px; right: 12px; background: rgba(31, 41, 55, 0.85); backdrop-filter: blur(4px); color: #9ca3af; padding: 5px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; z-index: 1000; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1);" title="Toque para verificar atualizações">
-    v15 🔄
+    v16 🔄
 </div>
 
     
