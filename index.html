@@ -96,7 +96,10 @@
 
         #create-section, #details-section { background-color: var(--white); padding: 2.5rem; border-radius: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); border: 1px solid var(--border); }
         
-        body { padding-bottom: 80px; } /* espaço para os selos fixos (visitas/versão) não cobrirem o conteúdo */
+        /* Rodapé discreto com visitas, online e versão (não fica mais flutuando sobre o conteúdo) */
+        #rodape-info { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 10px; padding: 1.5rem 1rem 2rem; }
+        #rodape-info #contadorVisitasUI, #rodape-info #appVersionBadge { position: static !important; background: var(--white) !important; color: var(--gray) !important; border: 1px solid var(--border) !important; box-shadow: none !important; backdrop-filter: none !important; }
+        #rodape-info #contadorVisitasUI span[style*="rgba(255,255,255,0.2)"] { background: var(--border) !important; }
         .estado-vazio { grid-column: 1 / -1; text-align: center; color: var(--gray); padding: 3rem 1rem; font-size: 1.05rem; background: var(--white); border: 1px dashed var(--border); border-radius: 12px; }
         tr.rk-top td:first-child { box-shadow: inset 4px 0 0 var(--rk-cor); }
         tr.rk-1 { --rk-cor: #f59e0b; background: #fffbeb; }
@@ -176,8 +179,7 @@
             #nav-menu .tab-btn { flex: 1; padding: 0.6rem 0.3rem; font-size: 0.85rem; }
             #nav-menu #user-menu span { display: none; }
             #nav-menu #user-menu .btn { padding: 0.45rem 0.6rem !important; font-size: 0.75rem !important; }
-            body { padding-bottom: 150px; }
-            #contadorVisitasUI, #appVersionBadge { bottom: 78px !important; }
+            body { padding-bottom: 80px; }
         }
 
         /* ===== Etiquetas nos cards ===== */
@@ -882,14 +884,7 @@
         </section>
     </main>
 
-    <div id="iosInstallPopup" class="hidden" style="position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #ffffff; border: 1px solid var(--border); padding: 20px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); z-index: 9999; width: 90%; max-width: 350px; text-align: center; animation: fadeIn 0.4s ease;">
-        <h4 style="color: var(--dark); margin-bottom: 10px; font-size: 1.1rem;">📲 Instalar a App</h4>
-        <p style="font-size: 0.9rem; color: var(--gray); margin-bottom: 15px; line-height: 1.4;">
-            No seu iPhone, toque em <strong>Compartilhar</strong> <span style="font-size: 1.2rem;">📤</span> e depois selecione <br><strong style="color: var(--blue-link); display: inline-block; margin-top: 5px;">"Adicionar à Tela Inicial" ➕</strong>
-        </p>
-        <button id="btnFecharIosPopup" class="btn btn-outline" style="width: 100%; padding: 8px;">Fechar</button>
-    </div>
-
+    <footer id="rodape-info">
     <!-- Contador Discreto de Visitas e Online -->
     <div id="contadorVisitasUI" style="position: fixed; bottom: 12px; left: 12px; background: rgba(31, 41, 55, 0.85); backdrop-filter: blur(4px); color: #e5e7eb; padding: 6px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 500; display: flex; gap: 12px; z-index: 1000; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.1); transition: opacity 0.3s ease;">
         <span title="Total histórico de Visitas" style="display: flex; align-items: center; gap: 6px;">
@@ -900,6 +895,20 @@
             <span style="color: #10b981; font-size: 0.6rem; animation: piscar 2s infinite;">🟢</span> <span id="txtOnline">--</span> online
         </span>
     </div>
+    <!-- Versão Clicável para Atualizar -->
+<div id="appVersionBadge" onclick="verificarAtualizacaoApp()" style="position: fixed; bottom: 12px; right: 12px; background: rgba(31, 41, 55, 0.85); backdrop-filter: blur(4px); color: #9ca3af; padding: 5px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; z-index: 1000; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1);" title="Toque para verificar atualizações">
+    v17 🔄
+</div>
+    </footer>
+
+    <div id="iosInstallPopup" class="hidden" style="position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #ffffff; border: 1px solid var(--border); padding: 20px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); z-index: 9999; width: 90%; max-width: 350px; text-align: center; animation: fadeIn 0.4s ease;">
+        <h4 style="color: var(--dark); margin-bottom: 10px; font-size: 1.1rem;">📲 Instalar a App</h4>
+        <p style="font-size: 0.9rem; color: var(--gray); margin-bottom: 15px; line-height: 1.4;">
+            No seu iPhone, toque em <strong>Compartilhar</strong> <span style="font-size: 1.2rem;">📤</span> e depois selecione <br><strong style="color: var(--blue-link); display: inline-block; margin-top: 5px;">"Adicionar à Tela Inicial" ➕</strong>
+        </p>
+        <button id="btnFecharIosPopup" class="btn btn-outline" style="width: 100%; padding: 8px;">Fechar</button>
+    </div>
+
 
     <style>
         @keyframes piscar { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
@@ -924,7 +933,7 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        const APP_VERSION = "v16";
+        const APP_VERSION = "v17";
         let isLogged = false;
         let torneioAbertoId = null; 
         let torneioAbertoData = null; 
@@ -3873,10 +3882,6 @@ if (window.rankingJogadoresCache) {
         </div>
     </div>
 
-    <!-- Versão Clicável para Atualizar -->
-<div id="appVersionBadge" onclick="verificarAtualizacaoApp()" style="position: fixed; bottom: 12px; right: 12px; background: rgba(31, 41, 55, 0.85); backdrop-filter: blur(4px); color: #9ca3af; padding: 5px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; z-index: 1000; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1);" title="Toque para verificar atualizações">
-    v16 🔄
-</div>
 
     
 </body>

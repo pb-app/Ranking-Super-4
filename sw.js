@@ -1,4 +1,4 @@
-const CACHE_NAME = 'liga-bt-store-v16'; // Mude a versão sempre que atualizar!
+const CACHE_NAME = 'liga-bt-store-v17'; // Mude a versão sempre que atualizar!
 const CORE_FILES = ['./', './manifest.json', './icon-192.png', './icon-512.png'];
 
 // Instalação: guarda os ficheiros base (um falhar não derruba os outros)
