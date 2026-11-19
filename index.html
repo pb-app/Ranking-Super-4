@@ -413,6 +413,26 @@
     animation: fadeIn 0.3s ease-out;
 }
         
+    
+        /* ===== Tema escuro: ajustes de contraste nas telas do campeonato (grupos e chaves) ===== */
+        html[data-tema="escuro"] #chavesGeradasUI > .grupo-container,
+        html[data-tema="escuro"] .grupo-container { background: var(--white) !important; border-color: var(--border) !important; }
+        html[data-tema="escuro"] .bracket-container { background: var(--white) !important; border-color: var(--border) !important; }
+        html[data-tema="escuro"] .bracket-round { border-right-color: var(--border) !important; }
+        html[data-tema="escuro"] .bracket-match { background: #0f172a !important; border-color: #475569 !important; }
+        html[data-tema="escuro"] .bracket-match:hover { border-color: #94a3b8 !important; }
+        html[data-tema="escuro"] .match-box { background: #0f172a; border-color: var(--border); }
+        html[data-tema="escuro"] .match-box.resolvido, html[data-tema="escuro"] .bracket-match.resolvido { background: #0b2a22 !important; border-left-color: #10b981 !important; }
+        html[data-tema="escuro"] .standings-table tr:hover td { background-color: #263248; }
+        html[data-tema="escuro"] .score-input { background: #0f172a; color: #f1f5f9; border-color: #475569; }
+        html[data-tema="escuro"] .score-input:disabled { background: #334155; color: #cbd5e1; border-color: #475569; }
+        html[data-tema="escuro"] .radio-group label { background: #0f172a; }
+        html[data-tema="escuro"] .radio-group label:hover { background: var(--white); }
+        html[data-tema="escuro"] .lista-inscritos li { background: #0f172a; }
+        html[data-tema="escuro"] .t-a, html[data-tema="escuro"] .t-b, html[data-tema="escuro"] .t-a span, html[data-tema="escuro"] .t-b span { color: #f1f5f9 !important; }
+        html[data-tema="escuro"] .grupo-container h3, html[data-tema="escuro"] .grupo-container h4, html[data-tema="escuro"] .bracket-round h3 { color: #e5e7eb; }
+        html[data-tema="escuro"] .bracket-round h3 { color: #9ca3af !important; }
+        html[data-tema="escuro"] .standings-table a, html[data-tema="escuro"] .match-box a { color: #e5e7eb; }
     </style>
 </head>
 <body>
@@ -897,7 +917,7 @@
     </div>
     <!-- Versão Clicável para Atualizar -->
 <div id="appVersionBadge" onclick="verificarAtualizacaoApp()" style="position: fixed; bottom: 12px; right: 12px; background: rgba(31, 41, 55, 0.85); backdrop-filter: blur(4px); color: #9ca3af; padding: 5px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; z-index: 1000; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1);" title="Toque para verificar atualizações">
-    v17 🔄
+    v18 🔄
 </div>
     </footer>
 
@@ -933,7 +953,7 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        const APP_VERSION = "v17";
+        const APP_VERSION = "v18";
         let isLogged = false;
         let torneioAbertoId = null; 
         let torneioAbertoData = null; 
