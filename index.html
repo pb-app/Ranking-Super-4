@@ -899,7 +899,7 @@
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 10px;">
                 <button id="btnVoltar" class="btn btn-outline" style="border: none; padding-left: 0; color: var(--blue-link) !important; font-weight: 600;">← Voltar</button>
                 <div style="display: flex; gap: 10px;">
-                    <button id="btnExportarExcel" onclick="exportarDadosExcel()" class="btn hidden" style="background: #10b981; color: white;">📊 Exportar Excel</button>
+                    <button id="btnExportarExcel" onclick="exportarTorneioPDF()" class="btn hidden" style="background: #10b981; color: white;">📄 Baixar PDF do Torneio</button>
                     <button id="btnExcluirTorneio" class="btn hidden" style="background: #ef4444; color: white;">🗑 Excluir Torneio</button>
                 </div>
             </div>
@@ -997,7 +997,7 @@
     </div>
     <!-- Versão Clicável para Atualizar -->
 <div id="appVersionBadge" onclick="verificarAtualizacaoApp()" style="position: fixed; bottom: 12px; right: 12px; background: rgba(31, 41, 55, 0.85); backdrop-filter: blur(4px); color: #9ca3af; padding: 5px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; z-index: 1000; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1);" title="Toque para verificar atualizações">
-    v24 🔄
+    v25 🔄
 </div>
     </footer>
 
@@ -1033,7 +1033,7 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        const APP_VERSION = "v24";
+        const APP_VERSION = "v25";
         let isLogged = false;
         let torneioAbertoId = null; 
         let torneioAbertoData = null; 
@@ -3825,33 +3825,112 @@ if (window.rankingJogadoresCache) {
         };
 
 
-          // --- FUNÇÃO PARA EXPORTAR DADOS PARA EXCEL ---
-        window.exportarDadosExcel = function() {
+
+        // --- RELATÓRIO DO TORNEIO EM PDF (mesmo estilo do PDF do ranking) ---
+        function montarHtmlRelatorioTorneio(t, insc, jogosArr, rankingArr, totOuro, totPrata) {
+            const e = window.esc;
+            const nomeRodada = (idx, total) => idx === total - 1 ? 'Final' : idx === total - 2 ? 'Semifinal' : idx === total - 3 ? 'Quartas de Final' : 'Eliminatórias';
+            const th = 'text-align:left; padding:6px 8px; font-size:11px; color:#6b7280; text-transform:uppercase; border-bottom:2px solid #e5e7eb;';
+            const td = 'padding:6px 8px; font-size:12px; border-bottom:1px solid #f1f5f9;';
+            const h2 = 'font-size:15px; font-weight:800; color:#111827; margin:18px 0 8px; padding-bottom:4px; border-bottom:2px solid #f26522;';
+
+            // Pontuação
+            const encerrado = t.status === 'encerrado';
+            let htmlPts = `<h2 style="${h2}">📊 Pontuação${encerrado ? '' : ' (parcial)'}</h2>
+                <table style="width:100%; border-collapse:collapse;"><thead><tr>
+                <th style="${th} width:36px;">#</th><th style="${th}">Jogador</th><th style="${th} text-align:center;">Grupos</th><th style="${th} text-align:center;">Ouro</th><th style="${th} text-align:center;">Prata</th><th style="${th} text-align:center;">Total</th></tr></thead><tbody>`;
+            rankingArr.forEach((r, i) => {
+                const bg = i === 0 ? '#fffbeb' : i === 1 ? '#f9fafb' : i === 2 ? '#fff7ed' : '#ffffff';
+                htmlPts += `<tr style="page-break-inside:avoid; background:${bg};"><td style="${td} font-weight:700;">${i + 1}º</td><td style="${td} font-weight:600;">${e(r["Jogador"])}</td>
+                    <td style="${td} text-align:center;">${r["Pts Fase Grupos"]}</td><td style="${td} text-align:center;">${r["Pts Mata-Mata Ouro"]}</td><td style="${td} text-align:center;">${r["Pts Mata-Mata Prata"]}</td>
+                    <td style="${td} text-align:center; font-weight:800; color:#f26522;">${r["TOTAL PONTOS"]}</td></tr>`;
+            });
+            htmlPts += '</tbody></table>';
+
+            // Jogos agrupados por fase
+            const grupos = {};
+            jogosArr.forEach(j => {
+                if (!j["Placar A"] || j["Placar A"] === '-') { if (!j["Vencedor"] || j["Vencedor"] === 'Pendente') return; }
+                const m = /^MM_(Prata_)?(\d+)_/.exec(j.id || '');
+                let ord, titulo;
+                if (m) { const prata = !!m[1], r = parseInt(m[2], 10); ord = (prata ? 2000 : 1000) + r; titulo = (prata ? '🥈 Chave Prata' : '🏆 Chave Ouro') + ' — ' + nomeRodada(r, prata ? totPrata : totOuro); }
+                else { ord = 0; titulo = 'Fase de Grupos'; }
+                (grupos[ord] = grupos[ord] || { titulo, jogos: [] }).jogos.push(j);
+            });
+            let htmlJogos = `<h2 style="${h2}">🎾 Jogos e Resultados</h2>`;
+            const ordens = Object.keys(grupos).map(Number).sort((a, b) => a - b);
+            if (ordens.length === 0) htmlJogos += '<p style="font-size:12px; color:#6b7280;">Nenhum jogo com resultado ainda.</p>';
+            ordens.forEach(o => {
+                const g = grupos[o];
+                htmlJogos += `<div style="page-break-inside:avoid; margin-bottom:10px;"><div style="font-size:12px; font-weight:700; color:#374151; margin:8px 0 4px;">${e(g.titulo)}</div>
+                    <table style="width:100%; border-collapse:collapse; table-layout:fixed;"><thead><tr><th style="${th} width:52px;">Quadra</th><th style="${th}">Dupla A</th><th style="${th} text-align:center; width:80px;">Placar</th><th style="${th}">Dupla B</th></tr></thead><tbody>`;
+                g.jogos.forEach(j => {
+                    const placar = j["Placar A"] && j["Placar A"] !== '-' ? `${e(j["Placar A"])} × ${e(j["Placar B"])}` : (j["Vencedor"] === 'W.O.' ? 'W.O.' : '—');
+                    const vA = j["Vencedor"] && j["Vencedor"] === j["Time A"], vB = j["Vencedor"] && j["Vencedor"] === j["Time B"];
+                    htmlJogos += `<tr style="page-break-inside:avoid;"><td style="${td} text-align:center; color:#6b7280;">${e(j["Quadra"])}</td>
+                        <td style="${td} ${vA ? 'font-weight:800; color:#059669;' : ''}">${e(j["Time A"])}</td><td style="${td} text-align:center; font-weight:700;">${placar}</td>
+                        <td style="${td} ${vB ? 'font-weight:800; color:#059669;' : ''}">${e(j["Time B"])}</td></tr>`;
+                });
+                htmlJogos += '</tbody></table></div>';
+            });
+
+            // Inscritos
+            let htmlInsc = `<h2 style="${h2}">👥 Inscritos (${insc.length})</h2><table style="width:100%; border-collapse:collapse;"><thead><tr><th style="${th}">Jogador 1</th><th style="${th}">Jogador 2</th><th style="${th} text-align:center; width:80px;">Cabeça</th></tr></thead><tbody>`;
+            insc.forEach(i => { htmlInsc += `<tr style="page-break-inside:avoid;"><td style="${td}">${e(i["Jogador 1"])}</td><td style="${td}">${e(i["Jogador 2"])}</td><td style="${td} text-align:center; font-weight:700; color:#d97706;">${e(i["Cabeça de Chave"])}</td></tr>`; });
+            htmlInsc += '</tbody></table>';
+
+            const dataHoje = new Date().toLocaleDateString('pt-BR');
+            return `<div style="font-family:'Poppins','Segoe UI',Arial,sans-serif; color:#111827; background:#ffffff; padding:6px;">
+                <div style="text-align:center; margin-bottom:12px;">
+                    <div style="color:#f26522; font-size:26px; font-weight:800;">Confra &amp; Play</div>
+                    <div style="font-size:17px; font-weight:700; margin-top:2px;">${e(t.nome)}</div>
+                    <div style="font-size:11px; color:#6b7280; margin-top:3px;">${e(t.formato || '')}${t.ranking ? ' · Ranking: ' + e(t.ranking) : ''} · Gerado em ${dataHoje}</div>
+                </div>${htmlPts}${htmlJogos}${htmlInsc}</div>`;
+        }
+
+        async function gerarPdfTorneio(insc, jogosArr, rankingArr) {
+            const t = torneioAbertoData;
+            const box = document.createElement('div');
+            box.innerHTML = montarHtmlRelatorioTorneio(t, insc, jogosArr, rankingArr, (window.fasesMataMata || []).length, (window.fasesPrata || []).length);
+            const wrap = document.createElement('div');
+            wrap.style.cssText = 'position:absolute; left:-10000px; top:0; width:720px;';
+            wrap.appendChild(box); document.body.appendChild(wrap);
+            try {
+                const opt = {
+                    margin: 10,
+                    filename: `Torneio_${String(t.nome).replace(/\s+/g, '_')}.pdf`,
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                    pagebreak: { mode: ['css', 'legacy'], avoid: ['tr'] }
+                };
+                await html2pdf().set(opt).from(box).save();
+            } finally { wrap.remove(); }
+        }
+
+        // --- FUNÇÃO PARA EXPORTAR O TORNEIO EM PDF ---
+        window.exportarTorneioPDF = async function() {
             if (!torneioAbertoData) return;
             
             const btn = document.getElementById('btnExportarExcel');
             let textoOriginal = btn.innerHTML;
-            btn.innerHTML = "⏳ A gerar...";
+            btn.innerHTML = "⏳ Gerando PDF...";
             btn.disabled = true;
 
             try {
-                let wb = XLSX.utils.book_new();
-
                 // 1. ABA DE INSCRITOS
                 let insc = inscritosAtuais.map(i => ({
                     "Jogador 1": i.jogador1,
                     "Jogador 2": i.jogador2 || "-",
                     "Cabeça de Chave": i.nivelSeed === 1 ? "C1" : (i.nivelSeed === 2 ? "C2" : "-")
                 }));
-                let wsInscritos = XLSX.utils.json_to_sheet(insc);
-                wsInscritos['!cols'] = [{wch: 25}, {wch: 25}, {wch: 15}]; // Largura das colunas
-                XLSX.utils.book_append_sheet(wb, wsInscritos, "Inscritos");
 
                 // 2. ABA DE JOGOS E RESULTADOS
                 let jogosArr = [];
                 for (let id in jogosSalvos) {
                     let j = jogosSalvos[id];
                     jogosArr.push({
+                        id: id,
                         "Fase": j.fase,
                         "Quadra": j.quadra || "-",
                         "Time A": j.timeA,
@@ -3861,9 +3940,6 @@ if (window.rankingJogadoresCache) {
                         "Vencedor": j.vencedor || (j.isWO ? "W.O." : "Pendente")
                     });
                 }
-                let wsJogos = XLSX.utils.json_to_sheet(jogosArr);
-                wsJogos['!cols'] = [{wch: 15}, {wch: 10}, {wch: 30}, {wch: 30}, {wch: 10}, {wch: 10}, {wch: 30}];
-                XLSX.utils.book_append_sheet(wb, wsJogos, "Jogos");
 
                 // 3. ABA DE PONTUAÇÃO (SIMULAÇÃO AO VIVO)
                 let ptsConfig = torneioAbertoData.pontosConfig || {};
@@ -3942,16 +4018,12 @@ if (window.rankingJogadoresCache) {
                 }
                 rankingArr.sort((a,b) => b["TOTAL PONTOS"] - a["TOTAL PONTOS"]);
                 
-                let wsPts = XLSX.utils.json_to_sheet(rankingArr);
-                wsPts['!cols'] = [{wch: 25}, {wch: 18}, {wch: 22}, {wch: 22}, {wch: 18}];
-                XLSX.utils.book_append_sheet(wb, wsPts, "Pontuação (Raio-X)");
-
-                // Dispara o Download
-                XLSX.writeFile(wb, `Relatorio_Confra_${torneioAbertoData.nome.replace(/\s+/g, '_')}.xlsx`);
+                // Gera e baixa o PDF
+                await gerarPdfTorneio(insc, jogosArr, rankingArr);
 
             } catch(e) {
                 console.error(e);
-                alert("Erro ao gerar Excel. Verifique os dados.");
+                alert("Erro ao gerar PDF. Verifique os dados.");
             } finally {
                 btn.innerHTML = textoOriginal;
                 btn.disabled = false;
