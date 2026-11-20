@@ -487,6 +487,8 @@
         }
         :root[data-tema="escuro"] { --conn: #64748b; }
 
+        } /* fecha o @media (min-width: 992px) que ficou aberto antes: o tema escuro abaixo vale em qualquer tela */
+
         /* ===== Tema escuro: ajustes de contraste nas telas do campeonato (grupos e chaves) ===== */
         html[data-tema="escuro"] #chavesGeradasUI > .grupo-container,
         html[data-tema="escuro"] .grupo-container { background: var(--white) !important; border-color: var(--border) !important; }
@@ -992,7 +994,7 @@
     </div>
     <!-- Versão Clicável para Atualizar -->
 <div id="appVersionBadge" onclick="verificarAtualizacaoApp()" style="position: fixed; bottom: 12px; right: 12px; background: rgba(31, 41, 55, 0.85); backdrop-filter: blur(4px); color: #9ca3af; padding: 5px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; z-index: 1000; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1);" title="Toque para verificar atualizações">
-    v21 🔄
+    v22 🔄
 </div>
     </footer>
 
@@ -1028,7 +1030,7 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        const APP_VERSION = "v21";
+        const APP_VERSION = "v22";
         let isLogged = false;
         let torneioAbertoId = null; 
         let torneioAbertoData = null; 
