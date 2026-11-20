@@ -414,6 +414,78 @@
 }
         
     
+
+        /* ===== Chave compacta no PC: Ouro numa tela, Prata logo abaixo, com linhas ligando os jogos ===== */
+        .bracket-conn, .chave-banner { display: none; }
+        @media (min-width: 992px) {
+            #mataMataUI .bracket-container {
+                display: grid !important; position: relative;
+                grid-template-columns: repeat(var(--n-rounds, 4), minmax(190px, 1fr));
+                grid-template-rows: auto auto auto auto auto;
+                column-gap: 38px; align-items: start;
+                padding: 10px 14px 14px 14px !important; overflow-x: auto;
+            }
+            #mataMataUI .bracket-round { display: contents !important; }
+            #mataMataUI .bracket-round > h3 { position: static !important; grid-row: 1; text-align: center; font-size: 0.85rem !important; padding-bottom: 4px; }
+            #mataMataUI .bracket-round > .bloco-chave-ouro { grid-row: 3; }
+            #mataMataUI .bracket-round > .bloco-chave-prata { grid-row: 5; }
+            #mataMataUI .bracket-round:nth-child(1) > * { grid-column: 1; }
+            #mataMataUI .bracket-round:nth-child(2) > * { grid-column: 2; }
+            #mataMataUI .bracket-round:nth-child(3) > * { grid-column: 3; }
+            #mataMataUI .bracket-round:nth-child(4) > * { grid-column: 4; }
+            #mataMataUI .bracket-round:nth-child(5) > * { grid-column: 5; }
+            #mataMataUI .bracket-round:nth-child(6) > * { grid-column: 6; }
+            #mataMataUI .bracket-round:nth-child(7) > * { grid-column: 7; }
+            #mataMataUI .bracket-round:nth-child(8) > * { grid-column: 8; }
+
+            #mataMataUI .bloco-chave-ouro, #mataMataUI .bloco-chave-prata {
+                display: grid !important; flex: none !important; align-self: stretch;
+                grid-template-columns: minmax(0, 1fr); container-type: inline-size;
+                grid-template-rows: repeat(var(--n1, 1), minmax(var(--slot-h, 64px), auto));
+                border-top: none !important; margin-top: 0 !important; padding-top: 0 !important;
+            }
+            #mataMataUI .bloco-chave-ouro > .chave-title, #mataMataUI .bloco-chave-prata > .chave-title { display: none !important; }
+            #mataMataUI .bloco-chave-ouro > .bracket-match, #mataMataUI .bloco-chave-prata > .bracket-match { grid-column: 1; align-self: center; margin: 3px 0 !important; position: relative; z-index: 1; }
+            #mataMataUI .bracket-match:hover { transform: none; }
+            #mataMataUI .bm-compact .t-a, #mataMataUI .bm-compact .t-b { line-height: 1.05 !important; }
+
+            .chave-banner { display: block; grid-column: 1 / -1; font-size: 1rem; font-weight: 800; padding: 0 4px 6px; }
+            .chave-banner-ouro { grid-row: 2; color: #d97706; }
+            .chave-banner-prata { grid-row: 4; color: #64748b; margin-top: 26px; border-top: 2px dashed var(--border); padding-top: 16px; }
+
+            /* Cartão compacto (placar único): nomes à esquerda, placar à direita */
+            #mataMataUI .bracket-match.bm-compact {
+                display: grid !important; grid-template-columns: 1fr auto; column-gap: 8px; row-gap: 1px; align-items: center;
+                grid-template-areas: "q q" "a sa" "b sb" "btn btn"; text-align: left !important; padding: 4px 8px !important;
+            }
+            #mataMataUI .bm-compact > br { display: none; }
+            #mataMataUI .bm-compact > div:first-child:not(.match-score):not(:last-child) { grid-area: q; justify-self: start; margin: 0 !important; white-space: nowrap; }
+            #mataMataUI .bm-compact > .t-a { grid-area: a; }
+            #mataMataUI .bm-compact > .t-b { grid-area: b; }
+            #mataMataUI .bm-compact > .match-score { display: contents; }
+            #mataMataUI .bm-compact .match-score > span { display: none; }
+            #mataMataUI .bm-compact .match-score > .p-timeA { grid-area: sa; }
+            #mataMataUI .bm-compact .match-score > .p-timeB { grid-area: sb; }
+            #mataMataUI .bm-compact > div:last-child { grid-area: btn; display: flex; flex-direction: row !important; gap: 4px; justify-content: flex-start; }
+            #mataMataUI .bm-compact > div:last-child button { margin-top: 0 !important; width: auto !important; max-width: none !important; flex: 1; white-space: nowrap; min-width: 0; overflow: hidden; text-overflow: ellipsis; padding: 2px 4px !important; font-size: 0.62rem !important; }
+            /* Tela de chaves usa mais largura e rola até o topo da chave */
+            body.modo-chave main:has(#details-section:not(.hidden)) { max-width: min(1800px, 98vw); padding-left: 1.5%; padding-right: 1.5%; }
+            #mataMataUI { scroll-margin-top: 92px; }
+            /* Colunas largas: quadra e botões na mesma linha, para o cartão ficar mais baixo */
+            @container (min-width: 330px) {
+                #mataMataUI .bracket-match.bm-compact { grid-template-columns: 1fr auto auto; grid-template-areas: "a a sa" "b b sb" "q btn btn"; }
+                #mataMataUI .bm-compact > div:last-child { justify-self: end; }
+            }
+            #mataMataUI .bm-compact .t-a br, #mataMataUI .bm-compact .t-b br { display: none; }
+            #mataMataUI .bm-compact .t-a br + span::before, #mataMataUI .bm-compact .t-b br + span::before { content: "· "; color: var(--gray); }
+            #mataMataUI .bm-compact .t-a br + span, #mataMataUI .bm-compact .t-b br + span { display: inline !important; }
+
+            .bracket-conn { display: block; position: absolute; top: 0; left: 0; pointer-events: none; z-index: 0; overflow: visible; }
+            .bracket-conn path { fill: none; stroke: var(--conn, #94a3b8); stroke-width: 1.6; stroke-dasharray: 5 4; }
+            .bracket-conn path.ok { stroke: #10b981; stroke-dasharray: none; }
+        }
+        :root[data-tema="escuro"] { --conn: #64748b; }
+
         /* ===== Tema escuro: ajustes de contraste nas telas do campeonato (grupos e chaves) ===== */
         html[data-tema="escuro"] #chavesGeradasUI > .grupo-container,
         html[data-tema="escuro"] .grupo-container { background: var(--white) !important; border-color: var(--border) !important; }
@@ -433,6 +505,8 @@
         html[data-tema="escuro"] .grupo-container h3, html[data-tema="escuro"] .grupo-container h4, html[data-tema="escuro"] .bracket-round h3 { color: #e5e7eb; }
         html[data-tema="escuro"] .bracket-round h3 { color: #9ca3af !important; }
         html[data-tema="escuro"] .standings-table a, html[data-tema="escuro"] .match-box a { color: #e5e7eb; }
+        html[data-tema="escuro"] [style*="color: #4338ca"], html[data-tema="escuro"] [style*="color:#4338ca"] { color: #a5b4fc !important; }
+        html[data-tema="escuro"] .bracket-conn path { --conn: #64748b; }
     </style>
 </head>
 <body>
@@ -917,7 +991,7 @@
     </div>
     <!-- Versão Clicável para Atualizar -->
 <div id="appVersionBadge" onclick="verificarAtualizacaoApp()" style="position: fixed; bottom: 12px; right: 12px; background: rgba(31, 41, 55, 0.85); backdrop-filter: blur(4px); color: #9ca3af; padding: 5px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; z-index: 1000; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1);" title="Toque para verificar atualizações">
-    v18 🔄
+    v19 🔄
 </div>
     </footer>
 
@@ -953,7 +1027,7 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        const APP_VERSION = "v18";
+        const APP_VERSION = "v19";
         let isLogged = false;
         let torneioAbertoId = null; 
         let torneioAbertoData = null; 
@@ -1109,6 +1183,7 @@
         });
 
         function abrirPainelTorneio(id, camp) {
+            document.body.classList.remove('modo-chave');
             torneioAbertoId = id; 
             torneioAbertoData = camp;
             formatoAberto = camp.formato; 
@@ -2016,6 +2091,7 @@ window.jogosSalvos = novosJogosSalvos;
             if (temGrupos) {
                 if (faseAtualUI === 0) {
                     // Fase de Grupos
+                    document.body.classList.remove('modo-chave');
                     chavesUI.classList.remove('oculto');
                     chavesUI.style.display = 'grid'; // Forçamos o Grid aqui temporariamente para garantir que aparece no PC e telemóvel
                     mataUI.style.display = 'none';
@@ -2027,6 +2103,7 @@ window.jogosSalvos = novosJogosSalvos;
                     else { btnMataMata.classList.add('hidden'); }
                 } else {
                     // Mata-Mata
+                    document.body.classList.add('modo-chave');
                     chavesUI.classList.add('oculto');
                     chavesUI.style.display = 'none'; 
                     mataUI.style.display = 'block';
@@ -2036,6 +2113,7 @@ window.jogosSalvos = novosJogosSalvos;
                 }
             } else {
                 // Apenas Eliminatórias
+                document.body.classList.add('modo-chave');
                 chavesUI.classList.add('oculto');
                 chavesUI.style.display = 'none'; 
                 mataUI.style.display = 'block';
@@ -2051,8 +2129,12 @@ window.jogosSalvos = novosJogosSalvos;
             });
         }
 
-        document.getElementById('btnFaseAnterior').addEventListener('click', () => { if (faseAtualUI > 0) { faseAtualUI--; atualizarUIFases(); } });
-        document.getElementById('btnFaseProxima').addEventListener('click', () => { if (faseAtualUI < nomesFases.length - 1) { faseAtualUI++; atualizarUIFases(); } });
+        function rolarParaChave() {
+            const m = document.getElementById('mataMataUI');
+            if (window.matchMedia('(min-width: 992px)').matches && m && m.style.display !== 'none') { setTimeout(() => m.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80); }
+        }
+        document.getElementById('btnFaseAnterior').addEventListener('click', () => { if (faseAtualUI > 0) { faseAtualUI--; atualizarUIFases(); rolarParaChave(); } });
+        document.getElementById('btnFaseProxima').addEventListener('click', () => { if (faseAtualUI < nomesFases.length - 1) { faseAtualUI++; atualizarUIFases(); rolarParaChave(); } });
 
         function renderizarMataMata(manterAba = false) {
             const mataMataUI = document.getElementById('mataMataUI');
@@ -2096,11 +2178,90 @@ window.jogosSalvos = novosJogosSalvos;
             }
             
             mataMataUI.innerHTML = html + '</div>';
+            prepararChaveDesktop();
             verificarEGerarPodio();
             
             if (!manterAba) { if (formatoAberto.includes("Grupos") || formatoAberto.includes("Super 4")) { faseAtualUI = 1; } else { faseAtualUI = 0; } }
             atualizarUIFases();
         }
+
+
+        // ===== Chave compacta no PC: grade, altura e linhas de ligação =====
+        function prepararChaveDesktop() {
+            const cont = document.querySelector('#mataMataUI .bracket-container');
+            if (!cont) return;
+            const rounds = [...cont.querySelectorAll(':scope > .bracket-round')];
+            cont.style.setProperty('--n-rounds', rounds.length);
+            cont.querySelectorAll(':scope > .chave-banner').forEach(e => e.remove());
+            const temPrata = !!cont.querySelector('.bloco-chave-prata');
+            if (temPrata) {
+                cont.insertAdjacentHTML('beforeend', '<div class="chave-banner chave-banner-ouro">🏆 Chave Ouro</div><div class="chave-banner chave-banner-prata">🥈 Chave Prata</div>');
+            }
+            ['ouro', 'prata'].forEach(ch => {
+                const blocos = rounds.map(r => r.querySelector(':scope > .bloco-chave-' + ch));
+                const n1 = Math.max(1, ...blocos.map(b => b ? b.querySelectorAll(':scope > .bracket-match').length : 0));
+                blocos.forEach(b => {
+                    if (!b) return;
+                    b.style.setProperty('--n1', n1);
+                    const ms = [...b.querySelectorAll(':scope > .bracket-match')];
+                    const span = Math.max(1, Math.round(n1 / Math.max(1, ms.length)));
+                    ms.forEach((m, j) => {
+                        m.style.gridRow = (j * span + 1) + ' / span ' + span;
+                        m.classList.toggle('bm-compact', !!m.querySelector(':scope > .match-score'));
+                    });
+                });
+            });
+            if (!cont.querySelector(':scope > svg.bracket-conn')) {
+                cont.insertAdjacentHTML('beforeend', '<svg class="bracket-conn" xmlns="http://www.w3.org/2000/svg"></svg>');
+            }
+            if (window._roChave) { window._roChave.disconnect(); window._roChave.observe(cont); }
+            ajustarAlturaChave();
+            agendarConexoes();
+        }
+
+        function ajustarAlturaChave() {
+            const cont = document.querySelector('#mataMataUI .bracket-container');
+            if (!cont) return;
+            const n1 = parseInt(cont.querySelector('.bloco-chave-ouro')?.style.getPropertyValue('--n1')) || 4;
+            const h = Math.max(48, Math.min(120, Math.floor((window.innerHeight - 330) / n1)));
+            cont.style.setProperty('--slot-h', h + 'px');
+        }
+
+        function desenharConexoesChave() {
+            const cont = document.querySelector('#mataMataUI .bracket-container');
+            const svg = cont && cont.querySelector(':scope > svg.bracket-conn');
+            if (!svg) return;
+            svg.innerHTML = '';
+            if (!window.matchMedia('(min-width: 992px)').matches || cont.offsetParent === null) return;
+            const cr = cont.getBoundingClientRect();
+            const ox = cr.left + cont.clientLeft - cont.scrollLeft, oy = cr.top + cont.clientTop - cont.scrollTop;
+            svg.setAttribute('width', cont.scrollWidth); svg.setAttribute('height', cont.scrollHeight);
+            const rounds = [...cont.querySelectorAll(':scope > .bracket-round')];
+            let paths = '';
+            ['ouro', 'prata'].forEach(ch => {
+                const M = rounds.map(r => { const b = r.querySelector(':scope > .bloco-chave-' + ch); return b ? [...b.querySelectorAll(':scope > .bracket-match')] : []; });
+                for (let r = 0; r < M.length - 1; r++) {
+                    M[r].forEach((src, j) => {
+                        const tgt = M[r + 1][Math.floor(j / 2)];
+                        if (!tgt) return;
+                        const a = src.getBoundingClientRect(), b = tgt.getBoundingClientRect();
+                        const x1 = a.right - ox, y1 = a.top + a.height / 2 - oy, x2 = b.left - ox, y2 = b.top + b.height / 2 - oy;
+                        const xm = (x1 + x2) / 2;
+                        paths += `<path class="${src.classList.contains('resolvido') ? 'ok' : ''}" d="M${x1} ${y1} H${xm} V${y2} H${x2}"/>`;
+                    });
+                }
+            });
+            svg.innerHTML = paths;
+        }
+
+        let _rafConn = 0;
+        function agendarConexoes() { cancelAnimationFrame(_rafConn); _rafConn = requestAnimationFrame(desenharConexoesChave); }
+        window._roChave = new ResizeObserver(agendarConexoes);
+        new MutationObserver(muts => {
+            if (muts.every(m => m.target.closest && m.target.closest('svg.bracket-conn'))) return;
+            agendarConexoes();
+        }).observe(document.getElementById('mataMataUI'), { subtree: true, childList: true, attributes: true, attributeFilter: ['class'] });
+        window.addEventListener('resize', () => { ajustarAlturaChave(); agendarConexoes(); });
 
         function gerarJogosRodada(rodadaData, rodadaIndex, chave) {
             let rodada = rodadaData.jogos ? rodadaData.jogos : rodadaData; let html = '';
