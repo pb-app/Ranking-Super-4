@@ -172,14 +172,15 @@
         }
 
 
-        /* ===== Menu fixo embaixo no celular ===== */
+        /* ===== Menu do topo no celular: tudo na mesma linha ===== */
         @media (max-width: 768px) {
-            header { flex-direction: row !important; justify-content: center; padding: 0.8rem 1rem; }
-            #nav-menu { position: fixed; left: 0; right: 0; bottom: 0; width: 100%; margin: 0 !important; background: var(--white); border-top: 1px solid var(--border); box-shadow: 0 -2px 10px rgba(0,0,0,0.06); padding: 8px 8px calc(8px + env(safe-area-inset-bottom)); z-index: 150; flex-wrap: nowrap !important; justify-content: space-around; gap: 6px !important; }
-            #nav-menu .tab-btn { flex: 1; padding: 0.6rem 0.3rem; font-size: 0.85rem; }
+            #nav-menu { flex-wrap: nowrap !important; justify-content: center; gap: 4px !important; }
+            #nav-menu .tab-btn { padding: 0.5rem 0.65rem; font-size: 0.88rem; white-space: nowrap; }
+            #btnTema, #nav-menu #btnLogin { width: 36px !important; height: 36px !important; font-size: 1rem !important; flex-shrink: 0; }
+            #nav-menu #user-menu { gap: 4px !important; }
+            #nav-menu:has(#user-menu:not(.hidden)) { flex-wrap: wrap !important; row-gap: 6px; } /* organizador logado: botões extras vão para a 2ª linha */
             #nav-menu #user-menu span { display: none; }
-            #nav-menu #user-menu .btn { padding: 0.45rem 0.6rem !important; font-size: 0.75rem !important; }
-            body { padding-bottom: 80px; }
+            #nav-menu #user-menu .btn { padding: 0.4rem 0.55rem !important; font-size: 0.78rem !important; white-space: nowrap; }
         }
 
         /* ===== Etiquetas nos cards ===== */
@@ -508,6 +509,8 @@
         html[data-tema="escuro"] .grupo-container h3, html[data-tema="escuro"] .grupo-container h4, html[data-tema="escuro"] .bracket-round h3 { color: #e5e7eb; }
         html[data-tema="escuro"] .bracket-round h3 { color: #9ca3af !important; }
         html[data-tema="escuro"] .standings-table a, html[data-tema="escuro"] .match-box a { color: #e5e7eb; }
+        html[data-tema="escuro"] [style*="background: var(--dark)"], html[data-tema="escuro"] [style*="background:var(--dark)"] { background: #334155 !important; color: #f1f5f9 !important; }
+        html[data-tema="escuro"] .btn-outline:hover:not(:disabled) { background: #263248 !important; border-color: #475569; }
         html[data-tema="escuro"] [style*="color: #4338ca"], html[data-tema="escuro"] [style*="color:#4338ca"] { color: #a5b4fc !important; }
         html[data-tema="escuro"] .bracket-conn path { --conn: #64748b; }
     </style>
@@ -994,7 +997,7 @@
     </div>
     <!-- Versão Clicável para Atualizar -->
 <div id="appVersionBadge" onclick="verificarAtualizacaoApp()" style="position: fixed; bottom: 12px; right: 12px; background: rgba(31, 41, 55, 0.85); backdrop-filter: blur(4px); color: #9ca3af; padding: 5px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; z-index: 1000; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1);" title="Toque para verificar atualizações">
-    v22 🔄
+    v24 🔄
 </div>
     </footer>
 
@@ -1030,7 +1033,7 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        const APP_VERSION = "v22";
+        const APP_VERSION = "v24";
         let isLogged = false;
         let torneioAbertoId = null; 
         let torneioAbertoData = null; 
