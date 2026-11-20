@@ -172,6 +172,17 @@
         }
 
 
+        /* ===== Menu do topo no celular: tudo na mesma linha ===== */
+        @media (max-width: 768px) {
+            #nav-menu { flex-wrap: nowrap !important; justify-content: center; gap: 4px !important; }
+            #nav-menu .tab-btn { padding: 0.5rem 0.65rem; font-size: 0.88rem; white-space: nowrap; }
+            #btnTema, #nav-menu #btnLogin { width: 36px !important; height: 36px !important; font-size: 1rem !important; flex-shrink: 0; }
+            #nav-menu #user-menu { gap: 4px !important; }
+            #nav-menu:has(#user-menu:not(.hidden)) { flex-wrap: wrap !important; row-gap: 6px; } /* organizador logado: botões extras vão para a 2ª linha */
+            #nav-menu #user-menu span { display: none; }
+            #nav-menu #user-menu .btn { padding: 0.4rem 0.55rem !important; font-size: 0.78rem !important; white-space: nowrap; }
+        }
+
         /* ===== Etiquetas nos cards ===== */
         .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
         .chip { display: inline-block; padding: 3px 9px; border-radius: 999px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.2px; border: 1px solid transparent; }
@@ -986,7 +997,7 @@
     </div>
     <!-- Versão Clicável para Atualizar -->
 <div id="appVersionBadge" onclick="verificarAtualizacaoApp()" style="position: fixed; bottom: 12px; right: 12px; background: rgba(31, 41, 55, 0.85); backdrop-filter: blur(4px); color: #9ca3af; padding: 5px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; z-index: 1000; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1);" title="Toque para verificar atualizações">
-    v23 🔄
+    v24 🔄
 </div>
     </footer>
 
@@ -1022,7 +1033,7 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        const APP_VERSION = "v23";
+        const APP_VERSION = "v24";
         let isLogged = false;
         let torneioAbertoId = null; 
         let torneioAbertoData = null; 
