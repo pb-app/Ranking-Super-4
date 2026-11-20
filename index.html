@@ -476,9 +476,10 @@
                 #mataMataUI .bracket-match.bm-compact { grid-template-columns: 1fr auto auto; grid-template-areas: "a a sa" "b b sb" "q btn btn"; }
                 #mataMataUI .bm-compact > div:last-child { justify-self: end; }
             }
-            #mataMataUI .bm-compact .t-a br, #mataMataUI .bm-compact .t-b br { display: none; }
-            #mataMataUI .bm-compact .t-a br + span::before, #mataMataUI .bm-compact .t-b br + span::before { content: "· "; color: var(--gray); }
-            #mataMataUI .bm-compact .t-a br + span, #mataMataUI .bm-compact .t-b br + span { display: inline !important; }
+            /* Um jogador embaixo do outro (nome + C1/C2 na mesma linha) */
+            #mataMataUI .bm-compact .t-a, #mataMataUI .bm-compact .t-b { font-size: 0.82rem !important; line-height: 1.15 !important; padding: 0 !important; }
+            #mataMataUI .bm-compact .t-a > span:not([style*="margin-left"]), #mataMataUI .bm-compact .t-b > span:not([style*="margin-left"]) { font-size: 0.8rem !important; }
+            #mataMataUI .bm-compact .t-b { border-top: 1px solid var(--border); padding-top: 3px !important; margin-top: 2px; }
 
             .bracket-conn { display: block; position: absolute; top: 0; left: 0; pointer-events: none; z-index: 0; overflow: visible; }
             .bracket-conn path { fill: none; stroke: var(--conn, #94a3b8); stroke-width: 1.6; stroke-dasharray: 5 4; }
@@ -991,7 +992,7 @@
     </div>
     <!-- Versão Clicável para Atualizar -->
 <div id="appVersionBadge" onclick="verificarAtualizacaoApp()" style="position: fixed; bottom: 12px; right: 12px; background: rgba(31, 41, 55, 0.85); backdrop-filter: blur(4px); color: #9ca3af; padding: 5px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; z-index: 1000; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1);" title="Toque para verificar atualizações">
-    v20 🔄
+    v21 🔄
 </div>
     </footer>
 
@@ -1027,7 +1028,7 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        const APP_VERSION = "v20";
+        const APP_VERSION = "v21";
         let isLogged = false;
         let torneioAbertoId = null; 
         let torneioAbertoData = null; 
