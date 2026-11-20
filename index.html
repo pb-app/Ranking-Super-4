@@ -991,7 +991,7 @@
     </div>
     <!-- Versão Clicável para Atualizar -->
 <div id="appVersionBadge" onclick="verificarAtualizacaoApp()" style="position: fixed; bottom: 12px; right: 12px; background: rgba(31, 41, 55, 0.85); backdrop-filter: blur(4px); color: #9ca3af; padding: 5px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; z-index: 1000; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1);" title="Toque para verificar atualizações">
-    v19 🔄
+    v20 🔄
 </div>
     </footer>
 
@@ -1027,7 +1027,7 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        const APP_VERSION = "v19";
+        const APP_VERSION = "v20";
         let isLogged = false;
         let torneioAbertoId = null; 
         let torneioAbertoData = null; 
@@ -1091,8 +1091,8 @@
             if (!playerInfo && inscritosAtuais && inscritosAtuais.length > 0) { playerInfo = inscritosAtuais.find(i => i.jogador1 === nome || i.jogador2 === nome); }
 
             if (playerInfo) {
-                if (playerInfo.nivelSeed === 1) badge = ' <span style="background: #fef3c7; color:#d97706; font-size:0.65rem; font-weight:800; padding: 2px 4px; border-radius: 4px; margin-left: 3px; vertical-align: middle;" title="Cabeça de Chave 1">⭐ C1</span>';
-                else if (playerInfo.nivelSeed === 2) badge = ' <span style="background: #f1f5f9; color:#475569; font-size:0.65rem; font-weight:800; padding: 2px 4px; border-radius: 4px; margin-left: 3px; vertical-align: middle;" title="Cabeça de Chave 2">🌟 C2</span>';
+                if (playerInfo.nivelSeed === 1) badge = ' <span style="background: #fef3c7; color:#d97706; font-size:0.65rem; font-weight:800; padding: 2px 4px; border-radius: 4px; margin-left: 3px; vertical-align: middle;" title="Cabeça de Chave 1">C1</span>';
+                else if (playerInfo.nivelSeed === 2) badge = ' <span style="background: #f1f5f9; color:#475569; font-size:0.65rem; font-weight:800; padding: 2px 4px; border-radius: 4px; margin-left: 3px; vertical-align: middle;" title="Cabeça de Chave 2">C2</span>';
             }
             return badge;
         };
@@ -1341,8 +1341,8 @@ if (camp.ranking) {
                     const li = document.createElement('li');
                     
                     let star = '';
-                    if (dados.nivelSeed === 1) star = ' <span style="background: #fef3c7; color:#d97706; font-size:0.7rem; font-weight:800; padding: 2px 5px; border-radius: 4px; margin-left: 4px;">⭐ C1</span>';
-                    else if (dados.nivelSeed === 2) star = ' <span style="background: #f1f5f9; color:#475569; font-size:0.7rem; font-weight:800; padding: 2px 5px; border-radius: 4px; margin-left: 4px;">🌟 C2</span>';
+                    if (dados.nivelSeed === 1) star = ' <span style="background: #fef3c7; color:#d97706; font-size:0.7rem; font-weight:800; padding: 2px 5px; border-radius: 4px; margin-left: 4px;">C1</span>';
+                    else if (dados.nivelSeed === 2) star = ' <span style="background: #f1f5f9; color:#475569; font-size:0.7rem; font-weight:800; padding: 2px 5px; border-radius: 4px; margin-left: 4px;">C2</span>';
                     else if (dados.isSeed) star = ' ⭐'; 
                     
                     let btnSub1 = isLogged ? `<button onclick="abrirModalSubstituicao('${idInscrito}', '${dados.jogador1}', 1)" style="background:none; border:none; cursor:pointer; font-size:1rem;" title="Substituir ${dados.jogador1}">🔄</button>` : '';
