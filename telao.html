@@ -67,6 +67,7 @@ body.sem-cursor{cursor:none}
 @keyframes flashG{0%,100%{border-color:var(--linha);box-shadow:none}15%,60%{border-color:var(--laranja);box-shadow:0 0 36px 4px rgba(242,101,34,.55)}}
 .gh{height:70px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 24px;background:linear-gradient(90deg,#f26522,#d95316);font-weight:900;letter-spacing:.06em}
 .gh b{font-size:32px}.gh span{font-size:20px;font-weight:700;opacity:.92}
+.gh .qd{opacity:1;background:#fff;color:#4338ca;font-size:21px;font-weight:900;padding:4px 16px;border-radius:999px;letter-spacing:.04em;box-shadow:0 2px 10px rgba(0,0,0,.35)}
 .gcols,.glin{display:grid;grid-template-columns:50px 1fr 56px 56px 62px 72px;align-items:center;padding:0 18px;gap:4px}
 .gcols{height:38px;flex:none;font-size:17px;font-weight:800;color:var(--mut);letter-spacing:.08em;border-bottom:1px solid var(--linha)}
 .gcols span,.glin .c{text-align:center}
@@ -121,6 +122,16 @@ svg.conn path.on{stroke:var(--ouro);stroke-width:4}
 .trava{animation:trava .6s ease}
 @keyframes trava{0%{transform:scale(1.25);color:#fff;text-shadow:0 0 18px var(--laranja)}100%{transform:none}}
 
+/* sino 6x0 */
+#overlay.sino{background:radial-gradient(900px 620px at 50% 38%,rgba(51,65,85,.985),rgba(5,10,20,.985) 72%)}
+.sino-bell{font-size:230px;line-height:1;margin-bottom:34px;transform-origin:50% 8%;animation:sinoBalanca .9s ease-in-out infinite;filter:drop-shadow(0 0 40px rgba(251,191,36,.55))}
+@keyframes sinoBalanca{0%,100%{transform:rotate(-26deg)}50%{transform:rotate(26deg)}}
+#overlay .st{font-size:40px;font-weight:900;letter-spacing:.22em;color:#e2e8f0;margin-top:2px}
+#overlay .sp{font-size:120px;font-weight:900;line-height:1;margin-top:6px;color:#fff;text-shadow:0 0 40px rgba(148,163,184,.7);animation:pneu 1.6s ease-in-out infinite}
+@keyframes pneu{50%{transform:scale(1.08)}}
+#overlay .sn{font-size:84px;font-weight:900;line-height:1.12;margin-top:22px}
+#overlay .sn div+div{margin-top:2px}
+#overlay .sv{font-size:30px;color:#cbd5e1;margin-top:34px}
 /* sorteio */
 #reel{position:absolute;left:50%;top:122px;transform:translateX(-50%);width:880px;padding:26px 40px;text-align:center;background:linear-gradient(180deg,#1d2f57,#101a31);border:2px solid var(--laranja);border-radius:26px;box-shadow:0 0 60px rgba(242,101,34,.35);z-index:6}
 #reel .t{font-size:20px;font-weight:800;letter-spacing:.2em;color:var(--laranja)}
@@ -141,7 +152,7 @@ svg.conn path.on{stroke:var(--ouro);stroke-width:4}
 @keyframes faixaNovo{0%,100%{border-color:var(--linha);box-shadow:none}10%,70%{border-color:var(--laranja);box-shadow:0 0 40px rgba(242,101,34,.6)}}
 
 /* campeão */
-#overlay{position:absolute;inset:0;z-index:20;display:none;align-items:center;justify-content:center;flex-direction:column;text-align:center;background:radial-gradient(900px 600px at 50% 40%,rgba(251,191,36,.22),rgba(5,10,20,.93) 70%)}
+#overlay{position:absolute;inset:0;z-index:20;display:none;align-items:center;justify-content:center;flex-direction:column;text-align:center;background:radial-gradient(900px 600px at 50% 40%,rgba(84,62,8,.975),rgba(5,10,20,.975) 72%)}
 #overlay.on{display:flex;animation:fadeOv .8s ease both}
 @keyframes fadeOv{from{opacity:0}to{opacity:1}}
 #overlay .tf{font-size:220px;line-height:1;animation:balanca 2.4s ease-in-out infinite;filter:drop-shadow(0 0 50px rgba(251,191,36,.8))}
@@ -262,10 +273,10 @@ function calcGrupos(c, jogos) {
   if (!temGrupos(c) || !(c.sorteados || []).length) return [];
   const sup = isSuper4(c);
   return distribuir(c).map((g, gi) => {
-    const st = {}; const ordem = []; let total = 0, feitos = 0;
+    const st = {}; const ordem = []; let total = 0, feitos = 0; const pend = new Set();
     const add = nome => { if (!st[nome]) { st[nome] = { nome, j: 0, v: 0, ss: 0, sg: 0 }; ordem.push(nome); } return st[nome]; };
     const aplicar = (id, tA, tB) => {
-      total++; const jg = jogos[id]; if (!jg) return; const r = golsDe(jg); if (!r.jogou) return; feitos++;
+      total++; const jg = jogos[id]; if (!jg) return; const r = golsDe(jg); if (!r.jogou || !jg.vencedor) { if (jg.quadra) pend.add(String(jg.quadra).trim()); return; } feitos++;
       const eq = (t, gf, gs, sf, ss_, win) => (sup ? t.split('&').map(x => x.trim()).filter(Boolean) : [t]).forEach(nm => { const o = add(nm); o.j++; o.sg += gf - gs; o.ss += sf - ss_; if (win) o.v++; });
       eq(tA, r.gA, r.gB, r.sA, r.sB, r.winA); eq(tB, r.gB, r.gA, r.sB, r.sA, r.winB);
     };
@@ -282,7 +293,7 @@ function calcGrupos(c, jogos) {
     let linhas = ordem.map(n => st[n]);
     if (feitos > 0) linhas = linhas.map((o, i) => ({ o, i })).sort((a, b) => (b.o.v - a.o.v) || (b.o.ss - a.o.ss) || (b.o.sg - a.o.sg) || (pontosRank(b.o.nome) - pontosRank(a.o.nome)) || (a.i - b.i)).map(x => x.o);
     const lim = sup ? 2 : (linhas.length >= 4 ? 3 : 2);
-    return { gi, nome: 'Grupo ' + pad2(gi + 1), linhas, total, feitos, lim, sup, nomes: new Set(ordem.flatMap(n => n.split('&').map(x => x.trim()))) };
+    return { gi, nome: 'Grupo ' + pad2(gi + 1), linhas, total, feitos, lim, sup, quadras: [...pend].filter(Boolean), nomes: new Set(ordem.flatMap(n => n.split('&').map(x => x.trim()))) };
   });
 }
 
@@ -378,7 +389,8 @@ function cardGrupoHTML(g, opt = {}) {
       <span class="c">${o.j}</span><span class="c v">${o.v}</span><span class="c">${o.ss > 0 ? '+' : ''}${o.ss}</span><span class="c ${sg}">${o.sg > 0 ? '+' : ''}${o.sg}</span></div>`;
   }).join('');
   const prog = opt.vazio ? 'sorteando…' : `${g.feitos}/${g.total} jogos`;
-  return `<div class="gcard${opt.flash ? ' flash' : ''}" data-gc="${g.gi}" style="height:${gAlt(g)}px"><div class="gh"><b>${g.nome.toUpperCase()}</b><span>${prog}</span></div>
+  const qd = !opt.vazio && g.quadras && g.quadras.length ? `<span class="qd">📍 QUADRA${g.quadras.length > 1 ? 'S' : ''} ${esc(g.quadras.join(' / '))}</span>` : '';
+  return `<div class="gcard${opt.flash ? ' flash' : ''}" data-gc="${g.gi}" style="height:${gAlt(g)}px"><div class="gh"><b>${g.nome.toUpperCase()}</b>${qd}<span>${prog}</span></div>
     <div class="gcols"><span>#</span><span>${sup ? 'JOGADOR(A)' : 'DUPLA'}</span><span>J</span><span>V</span><span>SS</span><span>SG</span></div>${linhas}</div>`;
 }
 const gAlt = g => 70 + 38 + g.linhas.length * (g.sup ? 46 : 70) + 14;
@@ -601,11 +613,37 @@ const Confete = {
     if (this.ps.length || (this.on && agora < this.fim)) this.raf = requestAnimationFrame(() => this.loop()); else { this.raf = null; ctx.clearRect(0, 0, 1920, 1080); }
   }
 };
+let AC = null;
+function audioPronto() { try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === 'suspended') AC.resume(); } catch (e) {} }
+['click', 'keydown', 'touchstart'].forEach(ev => addEventListener(ev, audioPronto));
+function tocarSino(vezes) {
+  if (!AC || AC.state !== 'running') return; const t0 = AC.currentTime;
+  for (let k = 0; k < vezes; k++) {
+    const t = t0 + k * 0.9;
+    [[1, 1], [2.0, .55], [2.76, .4], [5.4, .18], [8.93, .08]].forEach(([r, g]) => {
+      const o = AC.createOscillator(), a = AC.createGain(); o.type = 'sine'; o.frequency.value = 660 * r;
+      a.gain.setValueAtTime(0, t); a.gain.linearRampToValueAtTime(.2 * g, t + .01); a.gain.exponentialRampToValueAtTime(.0008, t + 2.4);
+      o.connect(a); a.connect(AC.destination); o.start(t); o.stop(t + 2.5);
+    });
+  }
+}
+const ehPneu = jg => !!jg && !!jg.vencedor && !jg.isWO && Array.isArray(jg.placarA) && Array.isArray(jg.placarB) && jg.placarA.some((x, i) => { const a = +x, b = +jg.placarB[i]; return (a >= 6 && b === 0) || (b >= 6 && a === 0); });
+async function mostrarSino(jg) {
+  const perdedor = jg.vencedor === jg.timeA ? jg.timeB : jg.timeA;
+  const ps = String(perdedor).split('&').map(x => x.trim()).filter(Boolean);
+  const a = Array.isArray(jg.placarA) ? jg.placarA : [], b = Array.isArray(jg.placarB) ? jg.placarB : [];
+  const i = a.findIndex((x, k) => { const p = +x, q = +b[k]; return (p >= 6 && q === 0) || (q >= 6 && p === 0); });
+  const ov = $('#overlay'); ov.classList.add('sino');
+  ov.innerHTML = `<div class="sino-bell">🔔</div><div class="st">O SINO TOCOU!</div><div class="sp">${Math.max(+a[i], +b[i])} × 0</div><div class="sn">${ps.map(p => `<div>${esc(p)}</div>`).join('')}</div><div class="sv">levou um pneu de ${esc(nomeCurto(jg.vencedor))}</div>`;
+  ov.classList.add('on'); tocarSino(6);
+  for (let k = 0; k < 7 && !S.skip; k++) await sleep(1000);
+  ov.classList.remove('on', 'sino');
+}
 async function mostrarCampeao(chave, info) {
   const unico = !(S.camp.fasesPrata || []).length; const ps = String(info.campeao).split('&').map(s => s.trim());
   const ov = $('#overlay'); const t = unico ? 'CAMPEÃO' : (chave === 'Ouro' ? 'CAMPEÃO • CHAVE OURO' : 'CAMPEÃO • CHAVE PRATA');
   ov.innerHTML = `<div class="tf">${chave === 'Ouro' ? '🏆' : '🥈'}</div><div class="ct">${t}</div><div class="cn">${ps.map(p => `<div>${esc(p)}</div>`).join('')}</div><div class="cv">Vice-campeão: ${esc(nomeCurto(info.vice))}</div>`;
-  ov.classList.add('on'); Confete.iniciar(11000);
+  ov.classList.remove('sino'); ov.classList.add('on'); Confete.iniciar(11000);
   for (let i = 0; i < 16 && !S.skip; i++) await sleep(1000); // ~16s
   Confete.parar(); ov.classList.remove('on');
 }
@@ -644,9 +682,10 @@ function onCamp(novo) {
 }
 function onInscritos(lista) { S.inscritos = lista; S.pronto.insc = true; if (!S.iniciou) { iniciarSeProntos(); return; } if (!S.anim && vista() === 'inscricoes') render(); }
 function onJogos(mapa, alterados) {
-  S.jogos = mapa; S.pronto.jogos = true; if (!S.iniciou) { iniciarSeProntos(); return; }
+  const antes = S.jogos; S.jogos = mapa; S.pronto.jogos = true; if (!S.iniciou) { iniciarSeProntos(); return; }
   verificarCampeoes(false);
   const novo = (alterados || []).filter(id => mapa[id] && mapa[id].vencedor).pop();
+  (alterados || []).forEach(id => { if (ehPneu(mapa[id]) && !ehPneu(antes[id])) { const jg = mapa[id]; enfileirar(() => mostrarSino(jg)); } });
   if (!S.anim) { render(); if (novo) atualizarFaixa(novo); }
 }
 
@@ -711,7 +750,7 @@ async function iniciarDemo(tipo) {
   const novaChave = times => { const n = times.length, p2 = Math.pow(2, Math.ceil(Math.log2(Math.max(2, n)))); let byes = p2 - n; const q = [...times], rod = []; for (let i = 0; i < p2 / 2; i++) { const a = q.shift(); let b; if (byes > 0) { b = 'BYE (Avança)'; byes--; } else b = q.shift(); rod.push({ timeA: a, timeB: b }); } const f = [{ jogos: rod }]; for (let p = p2 / 4; p >= 1; p /= 2) f.push({ jogos: Array.from({ length: p }, () => ({ timeA: null, timeB: null })) }); return f; };
   const avancar = (fs, pref) => fs.forEach((fase, r) => { const js = fasesJogos(fase), v = []; js.forEach(j => { const s = jogos[idJogo(pref, r, j.timeA, j.timeB)]; if (s && s.vencedor) v.push(s.vencedor); else if (j.timeA && ehBye(j.timeA)) v.push(j.timeB); else if (j.timeB && ehBye(j.timeB)) v.push(j.timeA); else v.push('Aguardando...'); }); if (fs[r + 1]) { let k = 0; fasesJogos(fs[r + 1]).forEach(pj => { pj.timeA = v[k++] || 'Aguardando...'; pj.timeB = v[k++] || 'Aguardando...'; }); } });
   const placar = () => { const lo = Math.floor(Math.random() * 5), tb = Math.random() < .15; return tb ? [7, 6 - Math.floor(Math.random() * 2)] : [6, lo]; };
-  let relogio = 1000; const salvar = async (id, tA, tB) => { const [w, l] = placar(); const aGanha = Math.random() < .5; jogos = { ...jogos, [id]: { timeA: tA, timeB: tB, placarA: [aGanha ? w : l], placarB: [aGanha ? l : w], vencedor: aGanha ? tA : tB, dataRegistro: { seconds: relogio++ } } }; onJogos(jogos, [id]); await pausa(1700); };
+  let relogio = 1000; const salvar = async (id, tA, tB) => { const [w, l] = placar(); const aGanha = Math.random() < .5; const q = jogos[id]?.quadra; jogos = { ...jogos, [id]: { timeA: tA, timeB: tB, placarA: [aGanha ? w : l], placarB: [aGanha ? l : w], vencedor: aGanha ? tA : tB, dataRegistro: { seconds: relogio++ }, ...(q ? { quadra: q } : {}) } }; onJogos(jogos, [id]); await pausa(1700); };
   if (elim) {
     const times = emb.map(s => `${s.jogador1} & ${s.jogador2}`); const fs = novaChave(times);
     camp.sorteados = emb; camp.fasesMataMata = fs; onCamp(JSON.parse(JSON.stringify(camp))); await esperaAnim();
@@ -721,7 +760,8 @@ async function iniciarDemo(tipo) {
     camp.sorteados = emb; onCamp(JSON.parse(JSON.stringify(camp))); await esperaAnim();
     const gr = distribuir(camp);
     const ids = [];
-    gr.forEach(g => { if (sup) { const p = g.map(x => x.jogador1); [[0, 1, 2, 3], [0, 2, 1, 3], [0, 3, 1, 2]].forEach(([a, b, x, y]) => { const tA = `${p[a]} & ${p[b]}`, tB = `${p[x]} & ${p[y]}`; ids.push([`${semEsp(tA)}_vs_${semEsp(tB)}`, tA, tB]); }); } else { const e = g.map(s => `${s.jogador1} & ${s.jogador2}`); for (let i = 0; i < e.length; i++) for (let j = i + 1; j < e.length; j++) ids.push([`${semEsp(e[i])}_vs_${semEsp(e[j])}`, e[i], e[j]]); } });
+    gr.forEach((g, gi) => { if (sup) { const p = g.map(x => x.jogador1); [[0, 1, 2, 3], [0, 2, 1, 3], [0, 3, 1, 2]].forEach(([a, b, x, y]) => { const tA = `${p[a]} & ${p[b]}`, tB = `${p[x]} & ${p[y]}`; ids.push([`${semEsp(tA)}_vs_${semEsp(tB)}`, tA, tB, gi]); }); } else { const e = g.map(s => `${s.jogador1} & ${s.jogador2}`); for (let i = 0; i < e.length; i++) for (let j = i + 1; j < e.length; j++) ids.push([`${semEsp(e[i])}_vs_${semEsp(e[j])}`, e[i], e[j], gi]); } });
+    ids.forEach(([id, a, b, gi]) => { jogos = { ...jogos, [id]: { timeA: a, timeB: b, quadra: String(gi % 3 + 1) } }; }); onJogos(jogos, []); await pausa(2500);
     for (const [id, a, b] of embaralha(ids)) await salvar(id, a, b);
     await pausa(3000);
     const cls = calcGrupos(camp, jogos); const ouro = [], prata = [];
