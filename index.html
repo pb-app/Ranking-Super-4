@@ -909,11 +909,14 @@
         <section id="details-section" class="hidden">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 10px;">
                 <button id="btnVoltar" class="btn btn-outline" style="border: none; padding-left: 0; color: var(--blue-link) !important; font-weight: 600;">← Voltar</button>
-                <div class="acoes-torneio" style="display: flex; gap: 10px;">
-                    <button id="btnTelao" onclick="abrirTelao()" class="btn" style="background: #7c3aed; color: white;" title="Abre a tela para TV/Chromecast"><span>📺 <span class="mob-oculto">Modo </span>Telão</span></button>
-                    <button id="btnLinkTelao" onclick="copiarLinkTelao()" class="btn btn-outline" style="border-color: #7c3aed; color: #7c3aed !important;" title="Copia o link para abrir na TV"><span>🔗 Link<span class="mob-oculto"> do Telão</span></span></button>
-                    <button id="btnExportarExcel" onclick="exportarTorneioPDF()" class="btn hidden" style="background: #10b981; color: white;"><span>📄 <span class="mob-oculto">Baixar </span>PDF<span class="mob-oculto"> do Torneio</span></span></button>
-                    <button id="btnExcluirTorneio" class="btn hidden" style="background: #ef4444; color: white;"><span>🗑 Excluir<span class="mob-oculto"> Torneio</span></span></button>
+                <div id="menuAcoes" class="menu-acoes">
+                    <button id="btnMenuAcoes" type="button" class="btn btn-outline menu-acoes-btn" aria-haspopup="true" aria-expanded="false" onclick="toggleMenuAcoes(event)">Ações <span class="seta">▾</span></button>
+                    <div class="menu-acoes-lista" role="menu">
+                        <button id="btnTelao" type="button" role="menuitem" onclick="abrirTelao()" class="acao-item" title="Abre a tela para TV/Chromecast"><span class="ai">📺</span><span>Modo Telão</span></button>
+                        <button id="btnLinkTelao" type="button" role="menuitem" onclick="copiarLinkTelao()" class="acao-item" title="Copia o link para abrir na TV"><span class="ai">🔗</span><span>Link do Telão</span></button>
+                        <button id="btnExportarExcel" type="button" role="menuitem" onclick="exportarTorneioPDF()" class="acao-item hidden"><span class="ai">📄</span><span>Baixar PDF do Torneio</span></button>
+                        <button id="btnExcluirTorneio" type="button" role="menuitem" class="acao-item perigo hidden"><span class="ai">🗑</span><span>Excluir Torneio</span></button>
+                    </div>
                 </div>
             </div>
             
@@ -1010,7 +1013,7 @@
     </div>
     <!-- Versão Clicável para Atualizar -->
 <div id="appVersionBadge" onclick="verificarAtualizacaoApp()" style="position: fixed; bottom: 12px; right: 12px; background: rgba(31, 41, 55, 0.85); backdrop-filter: blur(4px); color: #9ca3af; padding: 5px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; z-index: 1000; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1);" title="Toque para verificar atualizações">
-    v28 🔄
+    v29 🔄
 </div>
     </footer>
 
@@ -1026,14 +1029,26 @@
     <style>
         @keyframes piscar { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
     
-        /* v28: botões do torneio numa linha só no celular */
-        .acoes-torneio .mob-oculto { display: inline; }
-        @media (max-width: 768px) {
-            .acoes-torneio { width: 100%; flex-wrap: nowrap !important; gap: 6px !important; }
-            .acoes-torneio .btn { flex: 1 1 0; min-width: 0; padding: 9px 4px !important; font-size: 0.72rem !important; line-height: 1.15; white-space: nowrap; border-radius: 10px; }
-            .acoes-torneio .btn.hidden { display: none !important; }
-            .acoes-torneio .mob-oculto { display: none; }
-        }
+        /* v29: menu de ações do torneio (setinha) */
+        .menu-acoes { position: relative; margin-left: auto; }
+        .menu-acoes-btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px !important; }
+        .menu-acoes-btn .seta { display: inline-block; transition: transform .2s ease; font-size: 0.9em; }
+        .menu-acoes.aberto .seta { transform: rotate(180deg); }
+        .menu-acoes-lista { display: none; position: absolute; right: 0; top: calc(100% + 8px); z-index: 60; min-width: 270px; padding: 8px; background: #fff; border: 1px solid var(--border); border-radius: 16px; box-shadow: 0 14px 40px rgba(15, 23, 42, .18); }
+        .menu-acoes.aberto .menu-acoes-lista { display: block; animation: menuAbre .16s ease both; }
+        @keyframes menuAbre { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+        .acao-item { display: flex; align-items: center; gap: 12px; width: 100%; padding: 13px 14px; border: 0; background: transparent; border-radius: 10px; font: inherit; font-weight: 600; font-size: 0.95rem; color: var(--dark); text-align: left; cursor: pointer; }
+        .acao-item:hover, .acao-item:focus-visible { background: #f3f4f6; outline: none; }
+        .acao-item .ai { width: 26px; text-align: center; font-size: 1.15rem; }
+        .acao-item.perigo { color: #dc2626; margin-top: 4px; border-top: 1px solid var(--border); border-radius: 0 0 10px 10px; padding-top: 15px; }
+        .acao-item.perigo:hover { background: #fef2f2; }
+        .acao-item.hidden { display: none !important; }
+        .acao-item:disabled { opacity: .6; cursor: wait; }
+        html[data-tema="escuro"] .menu-acoes-lista { background: #1e293b !important; border-color: #334155 !important; box-shadow: 0 14px 40px rgba(0, 0, 0, .5); }
+        html[data-tema="escuro"] .acao-item { color: #e2e8f0 !important; }
+        html[data-tema="escuro"] .acao-item:hover, html[data-tema="escuro"] .acao-item:focus-visible { background: #334155 !important; }
+        html[data-tema="escuro"] .acao-item.perigo { color: #f87171 !important; border-top-color: #334155 !important; }
+        @media (max-width: 768px) { .menu-acoes-lista { min-width: min(300px, calc(100vw - 48px)); } .menu-acoes-btn { padding: 9px 14px !important; } }
     </style>
 
     <script type="module">
@@ -1055,7 +1070,7 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        const APP_VERSION = "v28";
+        const APP_VERSION = "v29";
         let isLogged = false;
         let torneioAbertoId = null; 
         let torneioAbertoData = null; 
@@ -3979,6 +3994,17 @@ if (window.rankingJogadoresCache) {
         }
 
         // --- FUNÇÃO PARA EXPORTAR O TORNEIO EM PDF ---
+        window.toggleMenuAcoes = function(e) {
+            if (e) e.stopPropagation();
+            const m = document.getElementById('menuAcoes'); const aberto = m.classList.toggle('aberto');
+            document.getElementById('btnMenuAcoes').setAttribute('aria-expanded', aberto ? 'true' : 'false');
+        };
+        window.fecharMenuAcoes = function() {
+            const m = document.getElementById('menuAcoes'); if (!m) return;
+            m.classList.remove('aberto'); document.getElementById('btnMenuAcoes').setAttribute('aria-expanded', 'false');
+        };
+        document.addEventListener('click', (e) => { if (!e.target.closest('#menuAcoes') || (e.target.closest('.acao-item') && !e.target.closest('#btnExportarExcel'))) fecharMenuAcoes(); });
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') fecharMenuAcoes(); });
         window.abrirTelao = function() {
             if (!torneioAbertoId) return;
             window.open('telao.html?id=' + encodeURIComponent(torneioAbertoId), '_blank');
