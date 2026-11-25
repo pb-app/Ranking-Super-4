@@ -538,18 +538,18 @@
 
     <!-- Perfil Viewer -->
     <div id="modalPerfilJogador" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; display: flex; justify-content: center; align-items: center;">
-        <div style="background: var(--white); padding: 2.5rem; border-radius: 16px; width: 90%; max-width: 400px; text-align: center; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
+        <div class="perfil-card" style="background: var(--white); padding: 2.5rem; border-radius: 16px; width: 90%; max-width: 400px; text-align: center; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
             <button type="button" id="btnFecharPerfilTop" style="position: absolute; top: 15px; right: 20px; background: transparent; border: none; font-size: 1.8rem; cursor: pointer; color: var(--gray); transition: 0.2s;">&times;</button>
-            <div style="font-size: 3.5rem; margin-bottom: 10px;"></div>
+            <div class="perfil-emoji" style="font-size: 3.5rem; margin-bottom: 10px;"></div>
             <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px;">
                 <button type="button" id="btnPerfilAnterior" class="perfil-seta" aria-label="Jogador anterior" title="Anterior (←)">&#8249;</button>
                 <h2 id="perfilNome" style="color: var(--dark); margin: 0; flex: 1; font-size: 1.6rem; font-weight: 800; word-break: break-word;">Nome do Jogador</h2>
                 <button type="button" id="btnPerfilProximo" class="perfil-seta" aria-label="Próximo jogador" title="Próximo (→)">&#8250;</button>
             </div>
             <div id="perfilPosicaoNav" style="font-size: 0.75rem; color: var(--gray); margin-bottom: 6px; min-height: 1em;"></div>
-            <p style="color: var(--blue-link); margin-bottom: 25px; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Estatísticas Oficiais</p>
+            <p class="perfil-sub" style="color: var(--blue-link); margin-bottom: 25px; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Estatísticas Oficiais</p>
             
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; background: #f9fafb; padding: 15px; border-radius: 12px; margin-bottom: 25px; border: 1px solid var(--border);">
+            <div class="perfil-stats" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; background: #f9fafb; padding: 15px; border-radius: 12px; margin-bottom: 25px; border: 1px solid var(--border);">
                 <div style="background: var(--white); padding: 12px 5px; border-radius: 8px; border-bottom: 3px solid var(--primary); box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
                     <div style="font-size: 1.6rem; font-weight: 700; color: var(--primary);" id="perfilPontos">0</div>
                     <div style="font-size: 0.7rem; color: var(--gray); text-transform: uppercase; font-weight: 600; margin-top: 3px;">Pontos Exibidos</div>
@@ -577,7 +577,7 @@
             </div>
 
             <!-- BOTÕES DE AÇÃO (H2H E HISTÓRICO) -->
-            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+            <div class="perfil-acoes" style="display: flex; gap: 10px; margin-bottom: 20px;">
                 <button onclick="abrirModalHistorico()" class="btn btn-outline" style="flex: 1; display: flex; flex-direction: column; align-items: center; padding: 12px 10px; gap: 8px; border-color: var(--border);">
                     <span style="font-size: 1.8rem; line-height: 1;">📊</span>
                     <span style="font-size: 0.8rem; font-weight: 600; color: var(--dark);">Últimos Jogos</span>
@@ -1013,7 +1013,7 @@
     </div>
     <!-- Versão Clicável para Atualizar -->
 <div id="appVersionBadge" onclick="verificarAtualizacaoApp()" style="position: fixed; bottom: 12px; right: 12px; background: rgba(31, 41, 55, 0.85); backdrop-filter: blur(4px); color: #9ca3af; padding: 5px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; z-index: 1000; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1);" title="Toque para verificar atualizações">
-    v29 🔄
+    v30 🔄
 </div>
     </footer>
 
@@ -1049,6 +1049,37 @@
         html[data-tema="escuro"] .acao-item:hover, html[data-tema="escuro"] .acao-item:focus-visible { background: #334155 !important; }
         html[data-tema="escuro"] .acao-item.perigo { color: #f87171 !important; border-top-color: #334155 !important; }
         @media (max-width: 768px) { .menu-acoes-lista { min-width: min(300px, calc(100vw - 48px)); } .menu-acoes-btn { padding: 9px 14px !important; } }
+            /* v30: card do atleta cabe em qualquer tela (rola por dentro se precisar) */
+        #modalPerfilJogador { padding: 12px; box-sizing: border-box; }
+        #modalPerfilJogador .perfil-card, #modalHistorico > div, #modalH2H > div { max-height: calc(100vh - 24px); max-height: calc(100dvh - 24px); overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; box-sizing: border-box; }
+        @media (max-height: 900px), (max-width: 480px) {
+            #modalPerfilJogador .perfil-card { padding: 16px 14px 14px !important; }
+            #modalPerfilJogador .perfil-emoji { display: none; }
+            #modalPerfilJogador #perfilNome { font-size: 1.3rem !important; }
+            #modalPerfilJogador .perfil-seta { width: 34px; height: 34px; font-size: 1.4rem; }
+            #modalPerfilJogador #perfilPosicaoNav { margin-bottom: 2px !important; }
+            #modalPerfilJogador .perfil-sub { margin-bottom: 8px !important; font-size: 0.78rem !important; }
+            #modalPerfilJogador #perfilBadgesContainer { margin-bottom: 8px; }
+            #modalPerfilJogador .perfil-stats { gap: 8px !important; padding: 8px !important; margin-bottom: 12px !important; }
+            #modalPerfilJogador .perfil-stats > div { padding: 7px 4px !important; }
+            #modalPerfilJogador .perfil-stats > div > div:first-child { font-size: 1.25rem !important; }
+            #modalPerfilJogador .perfil-stats > div > div:last-child { font-size: 0.62rem !important; margin-top: 1px !important; }
+            #modalPerfilJogador .perfil-acoes { margin-bottom: 10px !important; gap: 8px !important; }
+            #modalPerfilJogador .perfil-acoes .btn { padding: 8px !important; gap: 3px !important; }
+            #modalPerfilJogador .perfil-acoes .btn > span:first-child { font-size: 1.3rem !important; }
+            #btnFecharPerfil { padding: 10px !important; }
+            #btnFecharPerfilTop { top: 6px !important; right: 12px !important; font-size: 1.6rem !important; }
+        }
+        @media (max-width: 480px), (max-height: 620px) {
+            #modalPerfilJogador .perfil-stats { grid-template-columns: repeat(3, 1fr) !important; gap: 6px !important; }
+            #modalPerfilJogador .perfil-stats > div > div:last-child { font-size: 0.56rem !important; letter-spacing: -0.2px; }
+            #modalPerfilJogador #perfilBadgesContainer { zoom: 0.85; }
+        }
+        @media (max-height: 620px) {
+            #modalPerfilJogador .perfil-stats > div > div:first-child { font-size: 1.05rem !important; }
+            #modalPerfilJogador .perfil-stats > div { padding: 5px 4px !important; }
+            #modalPerfilJogador .perfil-acoes .btn > span:first-child { display: none; }
+        }
     </style>
 
     <script type="module">
@@ -1070,7 +1101,7 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        const APP_VERSION = "v29";
+        const APP_VERSION = "v30";
         let isLogged = false;
         let torneioAbertoId = null; 
         let torneioAbertoData = null; 
