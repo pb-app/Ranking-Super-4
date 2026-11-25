@@ -1013,7 +1013,7 @@
     </div>
     <!-- Versão Clicável para Atualizar -->
 <div id="appVersionBadge" onclick="verificarAtualizacaoApp()" style="position: fixed; bottom: 12px; right: 12px; background: rgba(31, 41, 55, 0.85); backdrop-filter: blur(4px); color: #9ca3af; padding: 5px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; z-index: 1000; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1);" title="Toque para verificar atualizações">
-    v33 🔄
+    v34 🔄
 </div>
     </footer>
 
@@ -1188,6 +1188,26 @@
         };
     })();
     </script>
+    <script>
+    /* Diagnóstico para navegadores de TV: mostra erros na tela em vez de ficar parado em "Carregando..." */
+    (function () {
+        function banner(txt) {
+            try {
+                var b = document.getElementById('diagErro');
+                if (!b) {
+                    b = document.createElement('div'); b.id = 'diagErro';
+                    b.style.cssText = 'position:fixed;left:0;right:0;bottom:0;z-index:2147483647;background:#7f1d1d;color:#fff;font:14px/1.4 sans-serif;padding:10px 14px;white-space:pre-wrap;word-break:break-word';
+                    (document.body || document.documentElement).appendChild(b);
+                }
+                b.textContent = txt;
+            } catch (e) {}
+        }
+        window.addEventListener('error', function (e) { banner('⚠️ Erro no navegador: ' + (e.message || 'desconhecido') + (e.lineno ? ' (linha ' + e.lineno + ')' : '') + '\nNavegador: ' + navigator.userAgent); });
+        window.addEventListener('unhandledrejection', function (e) { var r = e.reason; banner('⚠️ Falha ao carregar: ' + ((r && r.message) || r) + '\nNavegador: ' + navigator.userAgent); });
+        window.__diagBanner = banner;
+    })();
+    </script>
+    <script nomodule>document.addEventListener('DOMContentLoaded', function(){ var d=document.createElement('div'); d.style.cssText='position:fixed;left:0;right:0;top:0;background:#7f1d1d;color:#fff;font:16px sans-serif;padding:14px;z-index:99999'; d.textContent='⚠️ Este navegador é antigo demais para o aplicativo. Atualize o navegador da TV ou use o Chrome/Chromecast.'; document.body.appendChild(d); });</script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, doc, updateDoc, getDocs, setDoc, getDoc, deleteDoc, collectionGroup, increment } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
@@ -1207,7 +1227,7 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        const APP_VERSION = "v33";
+        const APP_VERSION = "v34";
         let isLogged = false;
         let torneioAbertoId = null; 
         let torneioAbertoData = null; 
@@ -1216,8 +1236,8 @@
         let inscritosUnsubscribe = null; 
         let inscritosAtuais = []; 
 
-        window.esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-        window.jsArg = (s) => String(s ?? '').replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        window.esc = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        window.jsArg = (s) => String(s == null ? '' : s).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         window.nomeClicavel = function(nome) {
             if (!nome) return '';
             return `<span style="cursor:pointer; text-decoration:underline; text-underline-offset:2px;" onclick="abrirPerfilDoTorneio('${jsArg(nome.trim())}')">${esc(nome.trim())}</span>`;
@@ -1322,6 +1342,7 @@
             }
         }
 
+        setTimeout(() => { if (/Carregando campeonatos/.test(tournamentsContainer.textContent || '') && window.__diagBanner) window.__diagBanner('⚠️ Os campeonatos não carregaram. Verifique a internet da TV. Se continuar, abra direto: ' + new URL('telao.html', location.href).href + '\nNavegador: ' + navigator.userAgent); }, 15000);
         const q = query(collection(db, "campeonatos"), orderBy("dataCriacao", "desc"));
         onSnapshot(q, (snapshot) => {
             tournamentsContainer.innerHTML = ''; 
@@ -1370,6 +1391,8 @@
                 card.innerHTML = `${_chips}<h3>${camp.nome}</h3><p style="margin-bottom: 8px;">🏅 ${camp.ranking}</p><div class="card-meta">${_meta}</div>${linkPontos}${extraInfo}`;
                 tournamentsContainer.appendChild(card);
             });
+        }, (err) => {
+            tournamentsContainer.innerHTML = '<p class="estado-vazio">⚠️ Não foi possível carregar os campeonatos. Verifique a internet.<br><small>' + esc(err && err.message) + '</small></p>';
         });
 
         function abrirPainelTorneio(id, camp) {
@@ -2120,7 +2143,7 @@ window.jogosSalvos = novosJogosSalvos;
             let ultimos5 = Object.keys(window.torneiosDataCache || {})
                 .filter(id => id !== torneioAbertoId && window.torneiosDataCache[id].status === 'encerrado')
                 .map(id => window.torneiosDataCache[id])
-                .sort((a, b) => (b.dataCriacao?.seconds || 0) - (a.dataCriacao?.seconds || 0))
+                .sort((a, b) => ((b.dataCriacao && b.dataCriacao.seconds) || 0) - ((a.dataCriacao && a.dataCriacao.seconds) || 0))
                 .slice(0, 5);
 
             ultimos5.forEach(t => {
@@ -2419,7 +2442,7 @@ window.jogosSalvos = novosJogosSalvos;
         function ajustarAlturaChave() {
             const cont = document.querySelector('#mataMataUI .bracket-container');
             if (!cont) return;
-            const n1 = parseInt(cont.querySelector('.bloco-chave-ouro')?.style.getPropertyValue('--n1')) || 4;
+            const n1 = parseInt((cont.querySelector('.bloco-chave-ouro') || {style:{getPropertyValue:()=>''}}).style.getPropertyValue('--n1')) || 4;
             const h = Math.max(48, Math.min(120, Math.floor((window.innerHeight - 330) / n1)));
             cont.style.setProperty('--slot-h', h + 'px');
         }
@@ -2603,9 +2626,9 @@ let tB_display = tB_data.includes('&')
                     let tdElement = tr.cells[0];
                     if (tdElement) {
                         let nomeT = tdElement.getAttribute('data-name') || tdElement.innerText.replace(/👤/g, '').replace(/[🥇🥈🥉]/g, '').trim();
-                        let v = parseInt(tr.cells[2]?.innerText) || 0; 
-                        let ss = parseInt(tr.cells[3]?.innerText) || 0; 
-                        let sg = parseInt(tr.cells[4]?.innerText) || 0;
+                        let v = parseInt(tr.cells[2] && tr.cells[2].innerText) || 0; 
+                        let ss = parseInt(tr.cells[3] && tr.cells[3].innerText) || 0; 
+                        let sg = parseInt(tr.cells[4] && tr.cells[4].innerText) || 0;
                         playerStatsMap[nomeT] = { v, ss, sg };
                         jogadoresGrupo.push({ nome: nomeT, v, ss, sg });
                     }
@@ -2624,8 +2647,8 @@ let tB_display = tB_data.includes('&')
                         let prataJogadores = jogadoresGrupo.slice(metade);
 
                         for (let i = 0; i < ouroJogadores.length; i += 2) {
-                            let p1 = ouroJogadores[i]?.nome;
-                            let p2 = ouroJogadores[i+1]?.nome || ouroJogadores[0]?.nome;
+                            let p1 = ouroJogadores[i] && ouroJogadores[i].nome;
+                            let p2 = (ouroJogadores[i+1] && ouroJogadores[i+1].nome) || (ouroJogadores[0] && ouroJogadores[0].nome);
                             if (p1 && p2 && p1 !== p2) {
                                 let s1 = playerStatsMap[p1] || {v:0, ss:0, sg:0}; 
                                 let s2 = playerStatsMap[p2] || {v:0, ss:0, sg:0};
@@ -2636,8 +2659,8 @@ let tB_display = tB_data.includes('&')
                         }
 
                         for (let i = 0; i < prataJogadores.length; i += 2) {
-                            let p1 = prataJogadores[i]?.nome;
-                            let p2 = prataJogadores[i+1]?.nome || prataJogadores[0]?.nome;
+                            let p1 = prataJogadores[i] && prataJogadores[i].nome;
+                            let p2 = (prataJogadores[i+1] && prataJogadores[i+1].nome) || (prataJogadores[0] && prataJogadores[0].nome);
                             if (p1 && p2 && p1 !== p2) {
                                 let s1 = playerStatsMap[p1] || {v:0, ss:0, sg:0}; 
                                 let s2 = playerStatsMap[p2] || {v:0, ss:0, sg:0};
@@ -2718,7 +2741,7 @@ let tB_display = tB_data.includes('&')
             let listaTorneios = Object.keys(window.torneiosDataCache)
                 .filter(id => id !== torneioAbertoId && window.torneiosDataCache[id].status === 'encerrado')
                 .map(id => window.torneiosDataCache[id])
-                .sort((a, b) => (b.dataCriacao?.seconds || 0) - (a.dataCriacao?.seconds || 0))
+                .sort((a, b) => ((b.dataCriacao && b.dataCriacao.seconds) || 0) - ((a.dataCriacao && a.dataCriacao.seconds) || 0))
                 .slice(0, 5); 
                 
             listaTorneios.forEach(t => {
@@ -2888,7 +2911,7 @@ let tB_display = tB_data.includes('&')
             e.preventDefault(); const b = form.querySelector('button[type="submit"]'); b.disabled = true;
             try {
                 let formatoSelecionado = document.querySelector('input[name="formato"]:checked').parentElement.textContent.trim();
-                let super4ModoVal = document.querySelector('input[name="super4Modo"]:checked')?.value || 'normal';
+                let super4ModoVal = (document.querySelector('input[name="super4Modo"]:checked') || {}).value || 'normal';
 
                 // Função auxiliar para aceitar 0 como valor válido
                 const getVal = (id, def) => { let v = parseInt(document.getElementById(id).value); return isNaN(v) ? def : v; };
@@ -3198,7 +3221,7 @@ let tB_display = tB_data.includes('&')
         window.rankingDadosCache = window.rankingDadosCache || {}; // CACHE DO RANKING GLOBAL
 
         async function carregarRanking(forcarAtualizacao = false) {
-    let rankingNome = filtroRanking.options[filtroRanking.selectedIndex]?.text; 
+    let rankingNome = (filtroRanking.options[filtroRanking.selectedIndex] || {}).text; 
     let tipoRanking = tipoFiltroRanking.value;
     if(!rankingNome) { tbodyRanking.innerHTML = '<tr><td colspan="5" style="padding: 30px;">Selecione uma categoria...</td></tr>'; return; }
     tbodyRanking.innerHTML = '<tr><td colspan="5" style="padding: 30px;">A carregar ranking...</td></tr>';
@@ -3289,8 +3312,8 @@ tipoFiltroRanking.addEventListener('change', () => {
             const cabecalho = document.getElementById('cabecalhoExportacao');
             const titulo = document.getElementById('tituloExportacao');
             
-            let cat = document.getElementById('filtroVisualRanking').options[document.getElementById('filtroVisualRanking').selectedIndex]?.text;
-            let tipo = document.getElementById('tipoFiltroRanking').options[document.getElementById('tipoFiltroRanking').selectedIndex]?.text;
+            let cat = (document.getElementById('filtroVisualRanking').options[document.getElementById('filtroVisualRanking').selectedIndex] || {}).text;
+            let tipo = (document.getElementById('tipoFiltroRanking').options[document.getElementById('tipoFiltroRanking').selectedIndex] || {}).text;
             if (!cat) { alert("Selecione um ranking primeiro."); btn.textContent = "📄 Baixar PDF"; return; }
             
             titulo.textContent = `🏆 ${cat} - ${tipo}`;
@@ -3366,7 +3389,7 @@ tipoFiltroRanking.addEventListener('change', () => {
         };
 
         document.getElementById('btnZerarRanking').addEventListener('click', () => {
-            let rankingNome = filtroRanking.options[filtroRanking.selectedIndex]?.text;
+            let rankingNome = (filtroRanking.options[filtroRanking.selectedIndex] || {}).text;
             if (!rankingNome) { alert("Selecione uma categoria primeiro."); return; }
             document.getElementById('zerarCategoriaNome').textContent = rankingNome;
             document.getElementById('modalZerarRanking').classList.remove('hidden');
@@ -3377,7 +3400,7 @@ tipoFiltroRanking.addEventListener('change', () => {
         };
 
         window.executarZerarRanking = async function(tipo) {
-            let rankingNome = filtroRanking.options[filtroRanking.selectedIndex]?.text;
+            let rankingNome = (filtroRanking.options[filtroRanking.selectedIndex] || {}).text;
             if (!rankingNome) return;
             
             let msg = tipo === 'tudo' ? 'Zerar TODOS os pontos' : (tipo === 'ouro' ? 'Zerar APENAS os pontos Ouro' : 'Zerar APENAS os pontos Prata');
@@ -3468,7 +3491,7 @@ tipoFiltroRanking.addEventListener('change', () => {
             if (torneios >= 10) {
                 badges += `<span onclick="mostrarExplicacaoMedalha('🛡️ Veterano', 'Conquistado por atletas leais que já participaram em 10 ou mais torneios oficiais na plataforma.')" style="background: #eff6ff; color: #2563eb; font-size: 0.75rem; font-weight: 700; padding: 6px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); cursor: pointer;" title="Clique para ver a explicação">🛡️ Veterano</span>`;
             }
-            let rankingNome = document.getElementById('filtroVisualRanking').options[document.getElementById('filtroVisualRanking').selectedIndex]?.text;
+            let rankingNome = (document.getElementById('filtroVisualRanking').options[document.getElementById('filtroVisualRanking').selectedIndex] || {}).text;
             let listaJogadores = window.rankingDadosCache[rankingNome] || [];
             let dadosAtleta = listaJogadores.find(j => j.nome === nome);
             // 3. 👑 Rei do Ouro (3+ títulos na Ouro; sem o detalhe Ouro/Prata nos dados antigos, usa o total)
@@ -3624,7 +3647,7 @@ tipoFiltroRanking.addEventListener('change', () => {
             containerBadges.innerHTML = calcularBadgesJogador(nome, vitorias, jogos, torneios, titulos);
             
             // Lógica do Histórico de Pontos
-            let rankingNome = document.getElementById('filtroVisualRanking').options[document.getElementById('filtroVisualRanking').selectedIndex]?.text;
+            let rankingNome = (document.getElementById('filtroVisualRanking').options[document.getElementById('filtroVisualRanking').selectedIndex] || {}).text;
             let lista = window.rankingDadosCache[rankingNome] || [];
             let playerDados = lista.find(j => j.nome === nome);
             // Aberto de dentro do campeonato: o histórico vem do ranking do próprio torneio (a lista da aba Ranking pode nem ter sido carregada)
@@ -3675,7 +3698,7 @@ if (window.rankingJogadoresCache) {
 
         window.abrirPerfilDoTorneio = function(nome) {
     window.perfilNav = null; // aberto fora do ranking: sem setas
-    const jogador = window.rankingJogadoresCache?.[nome];
+    const jogador = (window.rankingJogadoresCache || {})[nome];
     if (!jogador) {
         alert(`Jogador "${nome}" ainda não tem estatísticas no ranking.`);
         return;

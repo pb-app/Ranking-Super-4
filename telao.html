@@ -193,6 +193,26 @@ svg.conn path.on{stroke:var(--ouro);stroke-width:4}
   <div id="splash"><div class="bola">🎾</div><div id="splashTxt">Conectando…</div></div>
 </div>
 <div id="dica">Clique para tela cheia • F = tela cheia • Espaço = pular animação • Esc = trocar campeonato</div>
+    <script>
+    /* Diagnóstico para navegadores de TV: mostra erros na tela em vez de ficar parado em "Carregando..." */
+    (function () {
+        function banner(txt) {
+            try {
+                var b = document.getElementById('diagErro');
+                if (!b) {
+                    b = document.createElement('div'); b.id = 'diagErro';
+                    b.style.cssText = 'position:fixed;left:0;right:0;bottom:0;z-index:2147483647;background:#7f1d1d;color:#fff;font:14px/1.4 sans-serif;padding:10px 14px;white-space:pre-wrap;word-break:break-word';
+                    (document.body || document.documentElement).appendChild(b);
+                }
+                b.textContent = txt;
+            } catch (e) {}
+        }
+        window.addEventListener('error', function (e) { banner('⚠️ Erro no navegador: ' + (e.message || 'desconhecido') + (e.lineno ? ' (linha ' + e.lineno + ')' : '') + '\nNavegador: ' + navigator.userAgent); });
+        window.addEventListener('unhandledrejection', function (e) { var r = e.reason; banner('⚠️ Falha ao carregar: ' + ((r && r.message) || r) + '\nNavegador: ' + navigator.userAgent); });
+        window.__diagBanner = banner;
+    })();
+    </script>
+    <script nomodule>document.addEventListener('DOMContentLoaded', function(){ var d=document.createElement('div'); d.style.cssText='position:fixed;left:0;right:0;top:0;background:#7f1d1d;color:#fff;font:16px sans-serif;padding:14px;z-index:99999'; d.textContent='⚠️ Este navegador é antigo demais para o aplicativo. Atualize o navegador da TV ou use o Chrome/Chromecast.'; document.body.appendChild(d); });</script>
 
 <script type="module">
 /* =====================================================================
@@ -209,12 +229,13 @@ const QS = new URLSearchParams(location.search);
 const ID = QS.get('id'); const DEMO = QS.get('demo'); const VEL = Math.max(0.5, parseFloat(QS.get('v')) || 1);
 const $ = s => document.querySelector(s);
 const PW = 1872, PH = 832;                    // área útil do palco
-const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fm = (arr, f) => [].concat.apply([], arr.map(f));
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const semEsp = s => String(s || '').replace(/\s+/g, '');
 const pad2 = n => String(n).padStart(2, '0');
 const fasesJogos = f => (f && (f.jogos || f)) || [];
-const temGrupos = c => /Grupos|Super 4/.test(c?.formato || '');
-const isSuper4 = c => /Super 4/.test(c?.formato || '');
+const temGrupos = c => /Grupos|Super 4/.test((c && c.formato) || '');
+const isSuper4 = c => /Super 4/.test((c && c.formato) || '');
 const ehBye = n => /BYE/.test(n || '');
 const aguard = n => !n || /Aguardando/.test(n);
 
@@ -240,7 +261,7 @@ addEventListener('online', () => setConexao(true)); addEventListener('offline', 
 
 /* ---------------- utilidades de nomes ---------------- */
 function seedDe(nome) {
-  const lista = (S.camp?.sorteados || []).concat(S.inscritos);
+  const lista = ((S.camp && S.camp.sorteados) || []).concat(S.inscritos);
   const p = lista.find(i => i.jogador1 === nome || i.jogador2 === nome);
   return p ? (p.nivelSeed || 0) : 0;
 }
@@ -263,7 +284,7 @@ function distribuir(c) {
   return gr;
 }
 function golsDe(jg) {
-  const a = Array.isArray(jg?.placarA) ? jg.placarA : [], b = Array.isArray(jg?.placarB) ? jg.placarB : [];
+  const a = Array.isArray(jg && jg.placarA) ? jg.placarA : [], b = Array.isArray(jg && jg.placarB) ? jg.placarB : [];
   let gA = 0, gB = 0, sA = 0, sB = 0, jogou = false;
   for (let i = 0; i < Math.min(a.length, b.length); i++) { const x = +a[i], y = +b[i]; if (isNaN(x) || isNaN(y)) continue; jogou = true; gA += x; gB += y; if (x > y) sA++; if (y > x) sB++; }
   return { gA, gB, sA, sB, jogou, winA: sA > sB || (sA === sB && gA > gB), winB: sB > sA || (sB === sA && gB > gA) };
@@ -293,7 +314,7 @@ function calcGrupos(c, jogos) {
     let linhas = ordem.map(n => st[n]);
     if (feitos > 0) linhas = linhas.map((o, i) => ({ o, i })).sort((a, b) => (b.o.v - a.o.v) || (b.o.ss - a.o.ss) || (b.o.sg - a.o.sg) || (pontosRank(b.o.nome) - pontosRank(a.o.nome)) || (a.i - b.i)).map(x => x.o);
     const lim = sup ? 2 : (linhas.length >= 4 ? 3 : 2);
-    return { gi, nome: 'Grupo ' + pad2(gi + 1), linhas, total, feitos, lim, sup, quadras: [...pend].filter(Boolean), nomes: new Set(ordem.flatMap(n => n.split('&').map(x => x.trim()))) };
+    return { gi, nome: 'Grupo ' + pad2(gi + 1), linhas, total, feitos, lim, sup, quadras: [...pend].filter(Boolean), nomes: new Set(fm(ordem, n => n.split('&').map(x => x.trim()))) };
   });
 }
 
@@ -415,7 +436,7 @@ function htmlGrupos(opt = {}) {
 const tituloRodada = (r, R) => r === R - 1 ? 'FINAL 🏆' : r === R - 2 ? 'Semifinal' : r === R - 3 ? 'Quartas de final' : r === R - 4 ? 'Oitavas de final' : 'Rodada ' + (r + 1);
 const idJogo = (chave, r, a, b) => (chave === 'Prata' ? 'MM_Prata_' : 'MM_') + r + '_' + semEsp(a || 'Aguardando...') + '_vs_' + semEsp(b || 'Aguardando...');
 function campeaoDe(chave) {
-  const fases = chave === 'Prata' ? S.camp?.fasesPrata : S.camp?.fasesMataMata; if (!fases || !fases.length) return null;
+  const fases = chave === 'Prata' ? (S.camp && S.camp.fasesPrata) : (S.camp && S.camp.fasesMataMata); if (!fases || !fases.length) return null;
   const R = fases.length; const j = fasesJogos(fases[R - 1])[0]; if (!j || aguard(j.timeA) || aguard(j.timeB)) return null;
   const jg = S.jogos[idJogo(chave, R - 1, j.timeA, j.timeB)]; if (!jg || !jg.vencedor) return null;
   return { campeao: jg.vencedor, vice: jg.vencedor === j.timeA ? j.timeB : j.timeA };
@@ -500,8 +521,8 @@ function htmlMata(opt = {}) {
 function rotuloJogo(id, jg) {
   let m = id.match(/^MM_(Prata_)?(\d+)_/);
   if (m) {
-    const prata = !!m[1], r = +m[2]; const fases = prata ? S.camp?.fasesPrata : S.camp?.fasesMataMata; const R = fases ? fases.length : 0;
-    const ch = (S.camp?.fasesPrata || []).length ? (prata ? 'Prata • ' : 'Ouro • ') : '';
+    const prata = !!m[1], r = +m[2]; const fases = prata ? (S.camp && S.camp.fasesPrata) : (S.camp && S.camp.fasesMataMata); const R = fases ? fases.length : 0;
+    const ch = ((S.camp && S.camp.fasesPrata) || []).length ? (prata ? 'Prata • ' : 'Ouro • ') : '';
     return ch + tituloRodada(r, R || r + 1).replace(' 🏆', '');
   }
   const ps = String(jg.timeA || '').split('&')[0].trim(); const g = calcGrupos(S.camp, {}).find(x => x.nomes.has(ps));
@@ -510,7 +531,7 @@ function rotuloJogo(id, jg) {
 function ultimoResultado() {
   let best = null, bt = -1;
   for (const [id, jg] of Object.entries(S.jogos)) {
-    if (!jg || !jg.vencedor) continue; const t = jg.dataRegistro?.seconds ?? jg.dataRegistro?._seconds ?? (typeof jg.dataRegistro === 'number' ? jg.dataRegistro : 0);
+    if (!jg || !jg.vencedor) continue; const t = (jg.dataRegistro && jg.dataRegistro.seconds != null ? jg.dataRegistro.seconds : (jg.dataRegistro && jg.dataRegistro._seconds != null ? jg.dataRegistro._seconds : (typeof jg.dataRegistro === 'number' ? jg.dataRegistro : 0)));
     if (t >= bt) { bt = t; best = id; }
   }
   return best;
@@ -582,7 +603,7 @@ async function animarChaves(c, titulo) {
     $('#palco').innerHTML = htmlMata({ reveal: true, chave });
     const blocos = [...document.querySelectorAll('.bloco.rv')];
     const alvos = []; blocos.forEach(b => { const ch = b.dataset.chave; const fases = ch === 'Prata' ? m.prata : m.ouro; fasesJogos(fases[0]).forEach((jogo, j) => alvos.push({ b, ch, j, jogo })); });
-    const todos = embaralha(alvos.flatMap(a => [a.jogo.timeA, a.jogo.timeB]).filter(n => n && !ehBye(n)));
+    const todos = embaralha(fm(alvos, a => [a.jogo.timeA, a.jogo.timeB]).filter(n => n && !ehBye(n)));
     const slots = alvos.length * 2, por = Math.max(260, Math.min(900, 20000 / slots)) / VEL;
     for (const a of alvos) {
       for (const lado of ['A', 'B']) {
@@ -656,8 +677,8 @@ function verificarCampeoes(inicial) {
 }
 
 /* ======================= EVENTOS DE DADOS ======================= */
-const nomesSort = c => (c?.sorteados || []).map(i => i.jogador2 ? i.jogador1 + ' & ' + i.jogador2 : i.jogador1);
-const nomesR0 = c => ['fasesMataMata', 'fasesPrata'].flatMap(k => fasesJogos((c?.[k] || [])[0]).flatMap(j => [j.timeA, j.timeB]));
+const nomesSort = c => ((c && c.sorteados) || []).map(i => i.jogador2 ? i.jogador1 + ' & ' + i.jogador2 : i.jogador1);
+const nomesR0 = c => fm(['fasesMataMata', 'fasesPrata'], k => fm(fasesJogos(((c && c[k]) || [])[0]), j => [j.timeA, j.timeB]));
 const difPos = (a, b) => { if (a.length !== b.length) return 99; let d = 0; a.forEach((x, i) => { if (x !== b[i]) d++; }); return d; };
 const dadosPrimeiros = () => S.pronto.camp && S.pronto.insc && S.pronto.jogos;
 
@@ -724,8 +745,8 @@ async function escolherCampeonato(db, { collection, query, orderBy, getDocs }) {
   $('#splash').innerHTML = `<div style="font-size:54px">Escolha o campeonato</div><div class="pick">${lista.slice(0, 8).map((x, i) =>
     `<a href="telao.html?id=${encodeURIComponent(x.id)}" ${i === 0 ? 'autofocus' : ''}><span class="st${x.status === 'encerrado' ? ' enc' : ''}">${x.status === 'encerrado' ? 'ENCERRADO' : 'EM ANDAMENTO'}</span><h3>${esc(x.nome)}</h3><p>${esc(x.formato || '')}</p></a>`).join('')}</div>
     <small>Use as setas do controle e OK</small>`;
-  const as = [...document.querySelectorAll('.pick a')]; as[0]?.focus();
-  addEventListener('keydown', e => { const i = as.indexOf(document.activeElement); if (['ArrowRight', 'ArrowDown'].includes(e.key)) as[Math.min(as.length - 1, i + 1)]?.focus(); if (['ArrowLeft', 'ArrowUp'].includes(e.key)) as[Math.max(0, i - 1)]?.focus(); });
+  const as = [...document.querySelectorAll('.pick a')]; if (as[0]) as[0].focus();
+  addEventListener('keydown', e => { const i = as.indexOf(document.activeElement); if (['ArrowRight', 'ArrowDown'].includes(e.key)) { const t = as[Math.min(as.length - 1, i + 1)]; if (t) t.focus(); } if (['ArrowLeft', 'ArrowUp'].includes(e.key)) { const t = as[Math.max(0, i - 1)]; if (t) t.focus(); } });
 }
 
 /* ======================= DEMO (simulação) ======================= */
@@ -750,7 +771,7 @@ async function iniciarDemo(tipo) {
   const novaChave = times => { const n = times.length, p2 = Math.pow(2, Math.ceil(Math.log2(Math.max(2, n)))); let byes = p2 - n; const q = [...times], rod = []; for (let i = 0; i < p2 / 2; i++) { const a = q.shift(); let b; if (byes > 0) { b = 'BYE (Avança)'; byes--; } else b = q.shift(); rod.push({ timeA: a, timeB: b }); } const f = [{ jogos: rod }]; for (let p = p2 / 4; p >= 1; p /= 2) f.push({ jogos: Array.from({ length: p }, () => ({ timeA: null, timeB: null })) }); return f; };
   const avancar = (fs, pref) => fs.forEach((fase, r) => { const js = fasesJogos(fase), v = []; js.forEach(j => { const s = jogos[idJogo(pref, r, j.timeA, j.timeB)]; if (s && s.vencedor) v.push(s.vencedor); else if (j.timeA && ehBye(j.timeA)) v.push(j.timeB); else if (j.timeB && ehBye(j.timeB)) v.push(j.timeA); else v.push('Aguardando...'); }); if (fs[r + 1]) { let k = 0; fasesJogos(fs[r + 1]).forEach(pj => { pj.timeA = v[k++] || 'Aguardando...'; pj.timeB = v[k++] || 'Aguardando...'; }); } });
   const placar = () => { const lo = Math.floor(Math.random() * 5), tb = Math.random() < .15; return tb ? [7, 6 - Math.floor(Math.random() * 2)] : [6, lo]; };
-  let relogio = 1000; const salvar = async (id, tA, tB) => { const [w, l] = placar(); const aGanha = Math.random() < .5; const q = jogos[id]?.quadra; jogos = { ...jogos, [id]: { timeA: tA, timeB: tB, placarA: [aGanha ? w : l], placarB: [aGanha ? l : w], vencedor: aGanha ? tA : tB, dataRegistro: { seconds: relogio++ }, ...(q ? { quadra: q } : {}) } }; onJogos(jogos, [id]); await pausa(1700); };
+  let relogio = 1000; const salvar = async (id, tA, tB) => { const [w, l] = placar(); const aGanha = Math.random() < .5; const q = jogos[id] && jogos[id].quadra; jogos = { ...jogos, [id]: { timeA: tA, timeB: tB, placarA: [aGanha ? w : l], placarB: [aGanha ? l : w], vencedor: aGanha ? tA : tB, dataRegistro: { seconds: relogio++ }, ...(q ? { quadra: q } : {}) } }; onJogos(jogos, [id]); await pausa(1700); };
   if (elim) {
     const times = emb.map(s => `${s.jogador1} & ${s.jogador2}`); const fs = novaChave(times);
     camp.sorteados = emb; camp.fasesMataMata = fs; onCamp(JSON.parse(JSON.stringify(camp))); await esperaAnim();
@@ -784,7 +805,7 @@ async function iniciarDemo(tipo) {
 }
 
 /* ======================= CONTROLES ======================= */
-function telaCheia() { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen?.().catch(() => {}); }
+function telaCheia() { if (document.fullscreenElement) document.exitFullscreen(); else { const r = document.documentElement.requestFullscreen; if (r) { const pr = r.call(document.documentElement); if (pr && pr.catch) pr.catch(() => {}); } } }
 addEventListener('click', e => { if (!e.target.closest('a')) telaCheia(); });
 addEventListener('keydown', e => {
   if (e.key === 'f' || e.key === 'F') telaCheia();
