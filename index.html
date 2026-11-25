@@ -1013,7 +1013,7 @@
     </div>
     <!-- Versão Clicável para Atualizar -->
 <div id="appVersionBadge" onclick="verificarAtualizacaoApp()" style="position: fixed; bottom: 12px; right: 12px; background: rgba(31, 41, 55, 0.85); backdrop-filter: blur(4px); color: #9ca3af; padding: 5px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; z-index: 1000; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1);" title="Toque para verificar atualizações">
-    v30 🔄
+    v31 🔄
 </div>
     </footer>
 
@@ -1101,7 +1101,7 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        const APP_VERSION = "v30";
+        const APP_VERSION = "v31";
         let isLogged = false;
         let torneioAbertoId = null; 
         let torneioAbertoData = null; 
@@ -3465,7 +3465,7 @@ tipoFiltroRanking.addEventListener('change', () => {
         window.abrirModalHistorico = function() { document.getElementById('modalHistorico').classList.remove('hidden'); };
         window.abrirModalH2H = function() { document.getElementById('inputH2H').value = ''; document.getElementById('resultadoH2H').classList.add('hidden'); document.getElementById('modalH2H').classList.remove('hidden'); };
         // ✅ Adicionado "async" antes de function
-        window.abrirPerfilJogador = async function(nome, pontos, torneios, titulos = 0, vitorias = 0, jogos = 0) {
+        window.abrirPerfilJogador = async function(nome, pontos, torneios, titulos = 0, vitorias = 0, jogos = 0, historicoExterno = null) {
             const tokPerfil = window._perfilTok = (window._perfilTok || 0) + 1;
             window.atualizarSetasPerfil();
             let derrotas = jogos - vitorias; let aproveitamento = jogos > 0 ? Math.round((vitorias / jogos) * 100) : 0;
@@ -3505,7 +3505,8 @@ tipoFiltroRanking.addEventListener('change', () => {
             let rankingNome = document.getElementById('filtroVisualRanking').options[document.getElementById('filtroVisualRanking').selectedIndex]?.text;
             let lista = window.rankingDadosCache[rankingNome] || [];
             let playerDados = lista.find(j => j.nome === nome);
-            let historico = playerDados ? (playerDados.historicoPontos || []) : [];
+            // Aberto de dentro do campeonato: o histórico vem do ranking do próprio torneio (a lista da aba Ranking pode nem ter sido carregada)
+            let historico = Array.isArray(historicoExterno) ? historicoExterno : (playerDados ? (playerDados.historicoPontos || []) : []);
             
             let containerHist = document.getElementById('perfilUltimosTorneios');
             containerHist.innerHTML = '';
@@ -3563,7 +3564,8 @@ if (window.rankingJogadoresCache) {
         jogador.torneios || 0,
         jogador.titulos || 0,
         jogador.vitorias || 0,
-        jogador.jogos || 0
+        jogador.jogos || 0,
+        jogador.historicoPontos || []
     );
 };
 
