@@ -1,0 +1,1833 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0b1324">
+<title>[TV] Telão • Confra & Play</title>
+<style>
+:root{
+  --bg:#0b1324; --bg2:#111c33; --card:#15213b; --card2:#101a31; --linha:#27365a;
+  --txt:#f1f5f9; --mut:#94a3b8; --laranja:#f26522; --ouro:#fbbf24; --prata:#cbd5e1; --verde:#34d399; --verm:#f87171;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:#050a14;color:var(--txt);font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+body.sem-cursor{cursor:none}
+#stage{position:absolute;left:50%;top:50%;width:1920px;height:1080px;transform-origin:center center;overflow:hidden;
+  background:radial-gradient(1200px 700px at 15% -10%,#1b2d57 0%,transparent 60%),radial-gradient(1000px 600px at 100% 110%,#3a1d10 0%,transparent 55%),linear-gradient(180deg,var(--bg2),var(--bg))}
+
+/* ===== topo ===== */
+#topo{position:absolute;left:0;top:0;width:1920px;height:96px;padding:0 40px;display:flex;align-items:center;grid-gap:28px;border-bottom:1px solid var(--linha);background:rgba(8,14,28,.55);z-index:5}
+.logo{display:flex;align-items:center;grid-gap:14px;font-weight:900;letter-spacing:.04em;font-size:28px;white-space:nowrap}
+.logo .bola{font-size:40px}
+.logo b{color:var(--laranja)}
+#tnome{flex:1;min-width:0;text-align:center}
+#tnome h1{font-size:38px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#tnome small{display:block;font-size:19px;color:var(--mut);margin-top:2px;white-space:nowrap}
+#direita{display:flex;align-items:center;grid-gap:20px;white-space:nowrap}
+#fase{font-size:22px;font-weight:800;letter-spacing:.08em;padding:10px 22px;border-radius:999px;background:rgba(242,101,34,.16);border:1px solid rgba(242,101,34,.55);color:#ffb48a}
+#relogio{font-size:30px;font-weight:700;color:var(--mut);font-variant-numeric:tabular-nums}
+#vivo{display:flex;align-items:center;grid-gap:8px;font-size:18px;font-weight:800;color:var(--verde);letter-spacing:.06em}
+#vivo i{width:12px;height:12px;border-radius:50%;background:var(--verde);box-shadow:0 0 0 0 rgba(52,211,153,.7);animation:pulso 1.8s infinite}
+#vivo.off{color:var(--verm)} #vivo.off i{background:var(--verm);animation:none}
+@keyframes pulso{70%{box-shadow:0 0 0 12px rgba(52,211,153,0)}100%{box-shadow:0 0 0 0 rgba(52,211,153,0)}}
+
+/* ===== palco ===== */
+#palco{position:absolute;left:0;top:104px;width:1920px;height:872px;padding:20px 24px;overflow:hidden}
+.fade{animation:fadeIn .6s ease both}
+@keyframes fadeIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.ptitulo{height:84px;display:flex;align-items:center;justify-content:center;grid-gap:24px}
+.ptitulo h2{font-size:52px;font-weight:900;letter-spacing:.06em;text-transform:uppercase}
+.ptitulo .cont{font-size:46px;font-weight:900;background:var(--laranja);color:#fff;min-width:84px;text-align:center;padding:2px 22px;border-radius:16px}
+.ptitulo .pg{font-size:22px;color:var(--mut);font-weight:700}
+.grid{display:grid;justify-content:center;align-content:center}
+.cell{position:relative}
+.cell>.in{position:absolute;left:50%;top:50%;transform-origin:center center}
+.vazio-msg{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;grid-gap:18px;color:var(--mut);font-size:44px;font-weight:700}
+.vazio-msg .ic{font-size:120px}
+
+/* nomes */
+.p1{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:700}
+.p2{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500;color:#cbd5e1}
+.tbd{color:#64748b;font-style:italic;font-weight:500}
+.amp{font-style:normal;color:#64748b;margin:0 .15em}
+.sd{font-style:normal;font-size:.62em;font-weight:900;padding:.1em .4em;border-radius:6px;margin-left:.45em;vertical-align:middle}
+.sd.s1{background:#fef3c7;color:#b45309}.sd.s2{background:#e2e8f0;color:#334155}
+
+/* inscritos */
+.icard{width:380px;display:flex;align-items:center;grid-gap:16px;padding:0 18px;background:linear-gradient(180deg,var(--card),var(--card2));border:1px solid var(--linha);border-radius:16px;font-size:26px}
+.icard .n{font-size:20px;font-weight:900;color:var(--laranja);min-width:34px}
+.icard .nm{flex:1;min-width:0}
+.icard.novo{animation:popNovo 1.4s ease both}
+@keyframes popNovo{0%{transform:scale(.4);opacity:0;box-shadow:0 0 0 0 rgba(242,101,34,.9)}40%{transform:scale(1.12);opacity:1;box-shadow:0 0 40px 10px rgba(242,101,34,.55)}100%{transform:scale(1);box-shadow:none}}
+
+/* grupos */
+.gcard{width:600px;display:flex;flex-direction:column;background:linear-gradient(180deg,var(--card),var(--card2));border:1px solid var(--linha);border-radius:22px;overflow:hidden}
+.gcard.flash{animation:flashG 2.2s ease}
+@keyframes flashG{0%,100%{border-color:var(--linha);box-shadow:none}15%,60%{border-color:var(--laranja);box-shadow:0 0 36px 4px rgba(242,101,34,.55)}}
+.gh{height:70px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 24px;background:linear-gradient(90deg,#f26522,#d95316);font-weight:900;letter-spacing:.06em}
+.gh b{font-size:32px}.gh span{font-size:20px;font-weight:700;opacity:.92}
+.gh .qd{opacity:1;background:#fff;color:#4338ca;font-size:21px;font-weight:900;padding:4px 16px;border-radius:999px;letter-spacing:.04em;box-shadow:0 2px 10px rgba(0,0,0,.35)}
+.gcols,.glin{display:grid;grid-template-columns:50px 1fr 56px 56px 62px 72px;align-items:center;padding:0 18px;grid-gap:4px}
+.gcols{height:38px;flex:none;font-size:17px;font-weight:800;color:var(--mut);letter-spacing:.08em;border-bottom:1px solid var(--linha)}
+.gcols span,.glin .c{text-align:center}
+.gcols span:nth-child(2){text-align:left}
+.glin{flex:none;border-bottom:1px solid rgba(255,255,255,.05);font-size:25px}
+.glin:last-child{border-bottom:0}
+.glin .pos{font-weight:900;font-size:22px;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#1e2d4d;color:#cbd5e1}
+.glin.q-ouro .pos{background:var(--ouro);color:#3b2a00}
+.glin.q-prata .pos{background:var(--prata);color:#1e293b}
+.glin.q-ok .pos{background:var(--verde);color:#063b2a}
+.glin .nm{min-width:0}
+.glin .c{font-size:25px;color:#cbd5e1;font-variant-numeric:tabular-nums}
+.glin .c.v{font-weight:900;color:#fff}
+.glin .c.pos-sg{color:var(--verde)}.glin .c.neg-sg{color:var(--verm)}
+.fant{display:block;height:.9em;width:70%;border-radius:8px;background:linear-gradient(90deg,#1e2d4d,#2a3d66,#1e2d4d);background-size:200% 100%;animation:shimmer 1.4s linear infinite}
+@keyframes shimmer{to{background-position:-200% 0}}
+.preenche{animation:preenche .7s ease both}
+@keyframes preenche{0%{opacity:0;transform:scale(.7);filter:brightness(3)}60%{opacity:1;transform:scale(1.08)}100%{transform:none;filter:none}}
+.legenda{position:absolute;right:30px;bottom:6px;font-size:17px;color:var(--mut);display:flex;grid-gap:18px;align-items:center}
+.legenda i{display:inline-block;width:14px;height:14px;border-radius:50%;margin-right:6px;vertical-align:-2px}
+
+/* chave */
+.bloco{position:relative;margin:0 auto}
+.bnr{height:36px;display:flex;align-items:center;grid-gap:16px;font-size:24px;font-weight:900;letter-spacing:.08em}
+.bnr.ouro{color:var(--ouro)}.bnr.prata{color:var(--prata)}
+.bnr .camp{font-size:20px;font-weight:700;letter-spacing:0;color:#fff;background:rgba(251,191,36,.18);border:1px solid rgba(251,191,36,.5);padding:2px 16px;border-radius:999px}
+.bnr.prata .camp{background:rgba(203,213,225,.15);border-color:rgba(203,213,225,.5)}
+.rt{position:absolute;top:36px;height:46px;text-align:center;font-size:21px;font-weight:800;letter-spacing:.1em;color:var(--mut);text-transform:uppercase;line-height:46px}
+.rt.fin{color:var(--ouro)}
+.mc{position:absolute;display:flex;flex-direction:column;background:linear-gradient(180deg,var(--card),var(--card2));border:1px solid var(--linha);border-radius:12px;overflow:hidden;font-size:var(--fs,20px)}
+.mc .tr{flex:1;min-height:0;display:flex;align-items:center;grid-gap:8px;padding:0 10px;border-left:5px solid transparent}
+.mc .tr+.tr{border-top:1px solid rgba(255,255,255,.07)}
+.mc .nm{flex:1;min-width:0;line-height:1.12}
+.mc.inline .p1{font-weight:700}
+.mc .sc{display:flex;grid-gap:4px}
+.mc .sc b{min-width:1.7em;text-align:center;font-size:1.02em;color:#94a3b8;background:rgba(255,255,255,.06);border-radius:6px;padding:.1em 0}
+.mc .tr.win{background:linear-gradient(90deg,rgba(251,191,36,.18),rgba(251,191,36,.03));border-left-color:var(--ouro)}
+.mc .tr.win .nm{color:#fff}.mc .tr.win .sc b{color:#fff;background:rgba(251,191,36,.28)}
+.mc .tr.lose{opacity:.55}
+.mc .tr.novo{animation:novoSlot 2.2s ease}
+@keyframes novoSlot{0%,100%{background:transparent}20%,60%{background:rgba(242,101,34,.4)}}
+.mc .wo{font-size:.78em;font-weight:900;color:#fca5a5;letter-spacing:.06em}
+.mc .quadra{position:absolute;right:8px;top:-1px;font-size:.62em;font-weight:900;background:#4338ca;color:#fff;padding:.12em .7em;border-radius:0 0 8px 8px;letter-spacing:.05em}
+.mc.later{opacity:0;transition:opacity .9s ease}.rvshow .mc.later{opacity:1}
+svg.conn{position:absolute;left:0;top:0;pointer-events:none;overflow:visible}
+svg.conn path{fill:none;stroke:#34466e;stroke-width:3}
+svg.conn path.on{stroke:var(--ouro);stroke-width:4}
+.bloco.rv svg.conn{opacity:0}.bloco.rv.rvshow svg.conn{opacity:1;transition:opacity .4s}
+.bloco.rv.rvshow svg.conn path{stroke-dasharray:var(--len,600);stroke-dashoffset:var(--len,600);animation:desenha 1.2s ease forwards}
+@keyframes desenha{to{stroke-dashoffset:0}}
+.girando .p1,.girando .p2{color:var(--laranja)}
+.trava{animation:trava .6s ease}
+@keyframes trava{0%{transform:scale(1.25);color:#fff;text-shadow:0 0 18px var(--laranja)}100%{transform:none}}
+
+/* sino 6x0 */
+#overlay.sino{background:radial-gradient(900px 620px at 50% 38%,rgba(51,65,85,.985),rgba(5,10,20,.985) 72%)}
+.sino-bell{font-size:230px;line-height:1;margin-bottom:34px;transform-origin:50% 8%;animation:sinoBalanca .9s ease-in-out infinite;filter:drop-shadow(0 0 40px rgba(251,191,36,.55))}
+@keyframes sinoBalanca{0%,100%{transform:rotate(-26deg)}50%{transform:rotate(26deg)}}
+#overlay .st{font-size:40px;font-weight:900;letter-spacing:.22em;color:#e2e8f0;margin-top:2px}
+#overlay .sp{font-size:120px;font-weight:900;line-height:1;margin-top:6px;color:#fff;text-shadow:0 0 40px rgba(148,163,184,.7);animation:pneu 1.6s ease-in-out infinite}
+@keyframes pneu{50%{transform:scale(1.08)}}
+#overlay .sn{font-size:84px;font-weight:900;line-height:1.12;margin-top:22px}
+#overlay .sn div+div{margin-top:2px}
+#overlay .sv{font-size:30px;color:#cbd5e1;margin-top:34px}
+/* sorteio */
+#reel{position:absolute;left:50%;top:122px;transform:translateX(-50%);width:880px;padding:26px 40px;text-align:center;background:linear-gradient(180deg,#1d2f57,#101a31);border:2px solid var(--laranja);border-radius:26px;box-shadow:0 0 60px rgba(242,101,34,.35);z-index:6}
+#reel .t{font-size:20px;font-weight:800;letter-spacing:.2em;color:var(--laranja)}
+#reel .n{font-size:52px;font-weight:900;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#reel .d{font-size:26px;font-weight:800;color:var(--ouro);margin-top:4px;min-height:34px}
+#reel.lock .n{animation:trava .6s ease}
+.voo{position:absolute;left:0;top:0;z-index:7;font-size:30px;font-weight:900;white-space:nowrap;padding:12px 26px;background:var(--laranja);color:#fff;border-radius:14px;box-shadow:0 10px 40px rgba(242,101,34,.7);transform-origin:top left;pointer-events:none}
+
+/* faixa de resultado */
+#faixa{position:absolute;left:24px;right:24px;bottom:14px;height:64px;display:flex;align-items:center;grid-gap:22px;padding:0 28px;border-radius:18px;background:rgba(8,14,28,.82);border:1px solid var(--linha);font-size:27px;white-space:nowrap;overflow:hidden;z-index:4}
+#faixa.hide{visibility:hidden}
+#faixa .rot{font-size:18px;font-weight:900;letter-spacing:.1em;color:var(--laranja);text-transform:uppercase}
+#faixa .tx{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
+#faixa .w{font-weight:900;color:#fff}
+#faixa .l{color:var(--mut)}
+#faixa .pl{font-weight:900;color:var(--ouro);margin:0 .5em}
+#faixa.novo{animation:faixaNovo 3s ease}
+@keyframes faixaNovo{0%,100%{border-color:var(--linha);box-shadow:none}10%,70%{border-color:var(--laranja);box-shadow:0 0 40px rgba(242,101,34,.6)}}
+
+/* campeão */
+#overlay{position:absolute;top:0;right:0;bottom:0;left:0;z-index:20;display:none;align-items:center;justify-content:center;flex-direction:column;text-align:center;background:radial-gradient(900px 600px at 50% 40%,rgba(84,62,8,.975),rgba(5,10,20,.975) 72%)}
+#overlay.on{display:flex;animation:fadeOv .8s ease both}
+@keyframes fadeOv{from{opacity:0}to{opacity:1}}
+#overlay .tf{font-size:220px;line-height:1;animation:balanca 2.4s ease-in-out infinite;filter:drop-shadow(0 0 50px rgba(251,191,36,.8))}
+@keyframes balanca{50%{transform:translateY(-18px) rotate(3deg) scale(1.04)}}
+#overlay .ct{font-size:44px;font-weight:900;letter-spacing:.2em;color:var(--ouro);margin-top:6px}
+#overlay .cn{font-size:92px;font-weight:900;line-height:1.1;margin-top:24px;text-shadow:0 0 40px rgba(251,191,36,.55)}
+#overlay .cn div+div{margin-top:4px}
+#overlay .cv{font-size:34px;color:#cbd5e1;margin-top:40px}
+#confete{position:absolute;top:0;right:0;bottom:0;left:0;z-index:21;pointer-events:none}
+
+/* estados */
+#splash{position:absolute;top:0;right:0;bottom:0;left:0;z-index:30;display:flex;flex-direction:column;align-items:center;justify-content:center;grid-gap:26px;background:var(--bg);font-size:44px;font-weight:800;text-align:center;padding:0 120px}
+#splash .bola{font-size:140px;animation:quica 1s ease-in-out infinite}
+@keyframes quica{50%{transform:translateY(-40px)}}
+#splash small{font-size:26px;color:var(--mut);font-weight:500}
+.pick{display:grid;grid-template-columns:repeat(2,1fr);grid-gap:26px;width:1500px}
+.pick a{display:block;text-decoration:none;color:var(--txt);background:linear-gradient(180deg,var(--card),var(--card2));border:2px solid var(--linha);border-radius:22px;padding:26px 34px;text-align:left}
+.pick a:focus,.pick a:hover{outline:none;border-color:var(--laranja);box-shadow:0 0 40px rgba(242,101,34,.4)}
+.pick h3{font-size:36px;margin-bottom:6px}.pick p{font-size:22px;color:var(--mut);font-weight:500}
+.pick .st{display:inline-block;font-size:18px;font-weight:900;letter-spacing:.08em;padding:4px 14px;border-radius:999px;margin-bottom:10px;background:rgba(52,211,153,.18);color:var(--verde)}
+.pick .st.enc{background:rgba(148,163,184,.18);color:var(--mut)}
+#dica{position:fixed;left:50%;top:110px;transform:translateX(-50%);z-index:50;font-size:15px;color:#cbd5e1;background:rgba(0,0,0,.7);padding:8px 18px;border-radius:999px;transition:opacity .8s;pointer-events:none}
+@media (prefers-reduced-motion:reduce){.fade,.icard.novo,.preenche{animation:none}}
+
+/* gap de flex emulado */
+/* ===== topo ===== */
+#topo>*+*{margin-left:28px}
+.logo>*+*{margin-left:14px}
+#direita>*+*{margin-left:20px}
+#vivo>*+*{margin-left:8px}
+.ptitulo>*+*{margin-left:24px}
+.vazio-msg>*+*{margin-top:18px}
+/* inscritos */
+.icard>*+*{margin-left:16px}
+.legenda>*+*{margin-left:18px}
+.bnr>*+*{margin-left:16px}
+.mc .tr>*+*{margin-left:8px}
+.mc .sc>*+*{margin-left:4px}
+/* faixa de resultado */
+#faixa>*+*{margin-left:22px}
+/* estados */
+#splash>*+*{margin-top:26px}
+</style>
+<!-- GERADO por tools/gerar-telao-tv.js a partir de telao.html. Não edite à mão. -->
+</head>
+<body>
+<div id="stage">
+  <header id="topo">
+    <div class="logo"><span class="bola">🎾</span><span>CONFRA <b>&amp;</b> PLAY</span></div>
+    <div id="tnome"><h1>—</h1><small></small></div>
+    <div id="direita"><div id="fase"></div><div id="vivo"><i></i><span>AO VIVO</span></div><div id="relogio">--:--</div></div>
+  </header>
+  <main id="palco"></main>
+  <div id="reel" style="display:none"></div>
+  <div id="faixa" class="hide"></div>
+  <div id="overlay"></div>
+  <canvas id="confete" width="1920" height="1080"></canvas>
+  <div id="splash"><div class="bola">🎾</div><div id="splashTxt">Conectando…</div></div>
+</div>
+<div id="dica">Clique para tela cheia • F = tela cheia • Espaço = pular animação • Esc = trocar campeonato</div>
+    <script>
+    /* Diagnóstico para navegadores de TV: mostra erros na tela em vez de ficar parado em "Carregando..." */
+    (function () {
+        function banner(txt) {
+            try {
+                var b = document.getElementById('diagErro');
+                if (!b) {
+                    b = document.createElement('div'); b.id = 'diagErro';
+                    b.style.cssText = 'position:fixed;left:0;right:0;bottom:0;z-index:2147483647;background:#7f1d1d;color:#fff;font:14px/1.4 sans-serif;padding:10px 14px;white-space:pre-wrap;word-break:break-word';
+                    (document.body || document.documentElement).appendChild(b);
+                }
+                b.textContent = txt;
+            } catch (e) {}
+        }
+        window.addEventListener('error', function (e) { banner('⚠️ Erro no navegador: ' + (e.message || 'desconhecido') + (e.lineno ? ' (linha ' + e.lineno + ')' : '') + '\nNavegador: ' + navigator.userAgent); });
+        window.addEventListener('unhandledrejection', function (e) { var r = e.reason; banner('⚠️ Falha ao carregar: ' + ((r && r.message) || r) + '\nNavegador: ' + navigator.userAgent); });
+        window.__diagBanner = banner;
+    })();
+    </script>
+
+<script>
+(function(){
+  var P=Array.prototype,S=String.prototype,O=Object;
+  if(!O.assign)O.assign=function(t){for(var i=1;i<arguments.length;i++){var s=arguments[i];if(s)for(var k in s)if(O.prototype.hasOwnProperty.call(s,k))t[k]=s[k];}return t;};
+  if(!O.entries)O.entries=function(o){return O.keys(o).map(function(k){return[k,o[k]];});};
+  if(!O.values)O.values=function(o){return O.keys(o).map(function(k){return o[k];});};
+  if(!P.includes)P.includes=function(x){return this.indexOf(x)>=0;};
+  if(!P.find)P.find=function(f){for(var i=0;i<this.length;i++)if(f(this[i],i,this))return this[i];};
+  if(!P.findIndex)P.findIndex=function(f){for(var i=0;i<this.length;i++)if(f(this[i],i,this))return i;return -1;};
+  if(!P.fill)P.fill=function(v){for(var i=0;i<this.length;i++)this[i]=v;return this;};
+  if(!Array.from)Array.from=function(a,f){var r=[],n=a.length>>>0,i;if(a.length==null&&a.forEach){a.forEach(function(x){r.push(x);});}else for(i=0;i<n;i++)r.push(a[i]);return f?r.map(f):r;};
+  if(!S.includes)S.includes=function(x,i){return this.indexOf(x,i)>=0;};
+  if(!S.startsWith)S.startsWith=function(x,i){i=i||0;return this.substr(i,x.length)===x;};
+  if(!S.endsWith)S.endsWith=function(x){return this.length>=x.length&&this.slice(this.length-x.length)===x;};
+  if(!S.repeat)S.repeat=function(n){return new Array(n+1).join(this);};
+  if(!S.padStart)S.padStart=function(n,c){var s=String(this);c=c==null?' ':String(c);while(s.length<n)s=c+s;return s;};
+  if(!S.padEnd)S.padEnd=function(n,c){var s=String(this);c=c==null?' ':String(c);while(s.length<n)s=s+c;return s;};
+  if(!Math.trunc)Math.trunc=function(x){return x<0?Math.ceil(x):Math.floor(x);};
+  if(!Math.log2)Math.log2=function(x){return Math.log(x)/Math.LN2;};
+  if(!Number.isFinite)Number.isFinite=function(x){return typeof x==='number'&&isFinite(x);};
+  var E=window.Element&&Element.prototype;
+  if(E&&!E.matches)E.matches=E.webkitMatchesSelector||E.msMatchesSelector;
+  if(E&&!E.closest)E.closest=function(s){var e=this;while(e&&e.nodeType===1){if(e.matches(s))return e;e=e.parentElement;}return null;};
+  if(E&&!E.remove)E.remove=function(){if(this.parentNode)this.parentNode.removeChild(this);};
+  if(window.Promise&&!Promise.prototype.finally)Promise.prototype.finally=function(f){return this.then(function(v){return Promise.resolve(f()).then(function(){return v;});},function(e){return Promise.resolve(f()).then(function(){throw e;});});};
+})();
+"use strict";
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __generator = (this && this.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g = Object.create((typeof Iterator === "function" ? Iterator : Object).prototype);
+    return g.next = verb(0), g["throw"] = verb(1), g["return"] = verb(2), typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (g && (g = 0, op[0] && (_ = 0)), _) try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+};
+var __rest = (this && this.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
+            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
+                t[p[i]] = s[p[i]];
+        }
+    return t;
+};
+var __read = (this && this.__read) || function (o, n) {
+    var m = typeof Symbol === "function" && o[Symbol.iterator];
+    if (!m) return o;
+    var i = m.call(o), r, ar = [], e;
+    try {
+        while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
+    }
+    catch (error) { e = { error: error }; }
+    finally {
+        try {
+            if (r && !r.done && (m = i["return"])) m.call(i);
+        }
+        finally { if (e) throw e.error; }
+    }
+    return ar;
+};
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
+};
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
+    if (m) return m.call(o);
+    if (o && typeof o.length === "number") return {
+        next: function () {
+            if (o && i >= o.length) o = void 0;
+            return { value: o && o[i++], done: !o };
+        }
+    };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
+};
+/* =====================================================================
+   MODO TELÃO — somente leitura. Nunca grava nada no banco.
+   telao-tv.html?id=ID_DO_CAMPEONATO   (sem id: abre o campeonato em andamento)
+   telao-tv.html?demo=super4|grupos|elim[&v=2]   (simulação para visualizar)
+   ===================================================================== */
+var firebaseConfig = {
+    apiKey: "AIzaSyAzEUIZwc8vUgphMe4bpOkfOKTZIQlNsFs", authDomain: "super-4-clube.firebaseapp.com",
+    databaseURL: "https://super-4-clube-default-rtdb.firebaseio.com", projectId: "super-4-clube",
+    storageBucket: "super-4-clube.firebasestorage.app", messagingSenderId: "831325355212", appId: "1:831325355212:web:3edbfca9005fb0be20d669"
+};
+var QS = new URLSearchParams(location.search);
+var ID = QS.get('id');
+var DEMO = QS.get('demo');
+var VEL = Math.max(0.5, parseFloat(QS.get('v')) || 1);
+var $ = function (s) { return document.querySelector(s); };
+var PW = 1872, PH = 832; // área útil do palco
+var fm = function (arr, f) { return [].concat.apply([], arr.map(f)); };
+var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]); }); };
+var semEsp = function (s) { return String(s || '').replace(/\s+/g, ''); };
+var pad2 = function (n) { return String(n).padStart(2, '0'); };
+var fasesJogos = function (f) { return (f && (f.jogos || f)) || []; };
+var temGrupos = function (c) { return /Grupos|Super 4/.test((c && c.formato) || ''); };
+var isSuper4 = function (c) { return /Super 4/.test((c && c.formato) || ''); };
+var ehBye = function (n) { return /BYE/.test(n || ''); };
+var aguard = function (n) { return !n || /Aguardando/.test(n); };
+/* ---------------- estado ---------------- */
+var S = {
+    camp: null, inscritos: [], jogos: {}, rank: {},
+    pronto: { camp: false, insc: false, jogos: false }, iniciou: false,
+    anim: false, skip: false, fila: [], rodandoFila: false,
+    vista: null, pg: 0, chaveIdx: 0, ciclo: null,
+    prevInsc: null, prevFeitos: null, prevSlots: null,
+    campVisto: { Ouro: null, Prata: null }, ultimoId: null
+};
+/* ---------------- escala do palco 1920x1080 ---------------- */
+function escalar() {
+    var s = Math.min(innerWidth / 1920, innerHeight / 1080);
+    var st = $('#stage');
+    st.style.transform = "translate(-50%,-50%) scale(".concat(s, ")");
+    S.escala = s;
+}
+addEventListener('resize', escalar);
+escalar();
+setInterval(function () { var d = new Date(); $('#relogio').textContent = pad2(d.getHours()) + ':' + pad2(d.getMinutes()); }, 1000);
+function setConexao(on) { var v = $('#vivo'); v.classList.toggle('off', !on); v.querySelector('span').textContent = on ? 'AO VIVO' : 'SEM CONEXÃO'; }
+addEventListener('online', function () { return setConexao(true); });
+addEventListener('offline', function () { return setConexao(false); });
+/* ---------------- utilidades de nomes ---------------- */
+function seedDe(nome) {
+    var lista = ((S.camp && S.camp.sorteados) || []).concat(S.inscritos);
+    var p = lista.find(function (i) { return i.jogador1 === nome || i.jogador2 === nome; });
+    return p ? (p.nivelSeed || 0) : 0;
+}
+var badge = function (n) { var s = seedDe(n); return s === 1 ? '<em class="sd s1">C1</em>' : s === 2 ? '<em class="sd s2">C2</em>' : ''; };
+function equipeHTML(nome, modo) {
+    if (ehBye(nome))
+        return '<span class="tbd">BYE — avança direto 🚀</span>';
+    if (aguard(nome))
+        return '<span class="tbd">Aguardando…</span>';
+    var ps = String(nome).split('&').map(function (s) { return s.trim(); }).filter(Boolean);
+    if (ps.length > 1 && modo === 'pilha')
+        return "<span class=\"p1\">".concat(esc(ps[0])).concat(badge(ps[0]), "</span><span class=\"p2\">").concat(esc(ps[1])).concat(badge(ps[1]), "</span>");
+    return "<span class=\"p1\">".concat(ps.map(function (p) { return esc(p) + badge(p); }).join('<i class="amp">/</i>'), "</span>");
+}
+var nomeCurto = function (n) { return String(n || '').split('&').map(function (s) { return s.trim(); }).join(' / '); };
+/* ---------------- grupos e classificação ---------------- */
+function distribuir(c) {
+    var so = c.sorteados || [];
+    var n = so.length;
+    var ng = isSuper4(c) ? Math.max(1, Math.floor(n / 4)) : (n >= 6 ? Math.floor(n / 3) : 1);
+    var gr = Array.from({ length: ng }, function () { return []; });
+    so.forEach(function (s, i) { return gr[i % ng].push(s); });
+    return gr;
+}
+function golsDe(jg) {
+    var a = Array.isArray(jg && jg.placarA) ? jg.placarA : [], b = Array.isArray(jg && jg.placarB) ? jg.placarB : [];
+    var gA = 0, gB = 0, sA = 0, sB = 0, jogou = false;
+    for (var i = 0; i < Math.min(a.length, b.length); i++) {
+        var x = +a[i], y = +b[i];
+        if (isNaN(x) || isNaN(y))
+            continue;
+        jogou = true;
+        gA += x;
+        gB += y;
+        if (x > y)
+            sA++;
+        if (y > x)
+            sB++;
+    }
+    return { gA: gA, gB: gB, sA: sA, sB: sB, jogou: jogou, winA: sA > sB || (sA === sB && gA > gB), winB: sB > sA || (sB === sA && gB > gA) };
+}
+function pontosRank(nome) { return String(nome).split('&').reduce(function (t, n) { return t + (S.rank[n.trim()] || 0); }, 0); }
+function calcGrupos(c, jogos) {
+    if (!temGrupos(c) || !(c.sorteados || []).length)
+        return [];
+    var sup = isSuper4(c);
+    return distribuir(c).map(function (g, gi) {
+        var st = {};
+        var ordem = [];
+        var total = 0, feitos = 0;
+        var pend = new Set();
+        var add = function (nome) { if (!st[nome]) {
+            st[nome] = { nome: nome, j: 0, v: 0, ss: 0, sg: 0 };
+            ordem.push(nome);
+        } return st[nome]; };
+        var aplicar = function (id, tA, tB) {
+            total++;
+            var jg = jogos[id];
+            if (!jg)
+                return;
+            var r = golsDe(jg);
+            if (!r.jogou || !jg.vencedor) {
+                if (jg.quadra)
+                    pend.add(String(jg.quadra).trim());
+                return;
+            }
+            feitos++;
+            var eq = function (t, gf, gs, sf, ss_, win) { return (sup ? t.split('&').map(function (x) { return x.trim(); }).filter(Boolean) : [t]).forEach(function (nm) { var o = add(nm); o.j++; o.sg += gf - gs; o.ss += sf - ss_; if (win)
+                o.v++; }); };
+            eq(tA, r.gA, r.gB, r.sA, r.sB, r.winA);
+            eq(tB, r.gB, r.gA, r.sB, r.sA, r.winB);
+        };
+        if (sup) {
+            var p_1 = g.map(function (x) { return x.jogador1; });
+            while (p_1.length < 4)
+                p_1.push('Vaga ' + (p_1.length + 1));
+            p_1.forEach(add);
+            [[0, 1, 2, 3], [0, 2, 1, 3], [0, 3, 1, 2]].forEach(function (_a) {
+                var _b = __read(_a, 4), a = _b[0], b = _b[1], x = _b[2], y = _b[3];
+                var tA = "".concat(p_1[a], " & ").concat(p_1[b]), tB = "".concat(p_1[x], " & ").concat(p_1[y]);
+                aplicar("".concat(semEsp(tA), "_vs_").concat(semEsp(tB)), tA, tB);
+            });
+        }
+        else {
+            var eqs = g.map(function (s) { return s.jogador2 ? "".concat(s.jogador1, " & ").concat(s.jogador2) : s.jogador1; });
+            eqs.forEach(add);
+            for (var i = 0; i < eqs.length; i++)
+                for (var j = i + 1; j < eqs.length; j++)
+                    aplicar("".concat(semEsp(eqs[i]), "_vs_").concat(semEsp(eqs[j])), eqs[i], eqs[j]);
+        }
+        var linhas = ordem.map(function (n) { return st[n]; });
+        if (feitos > 0)
+            linhas = linhas.map(function (o, i) { return ({ o: o, i: i }); }).sort(function (a, b) { return (b.o.v - a.o.v) || (b.o.ss - a.o.ss) || (b.o.sg - a.o.sg) || (pontosRank(b.o.nome) - pontosRank(a.o.nome)) || (a.i - b.i); }).map(function (x) { return x.o; });
+        var lim = sup ? 2 : (linhas.length >= 4 ? 3 : 2);
+        return { gi: gi, nome: 'Grupo ' + pad2(gi + 1), linhas: linhas, total: total, feitos: feitos, lim: lim, sup: sup, quadras: __spreadArray([], __read(pend), false).filter(Boolean), nomes: new Set(fm(ordem, function (n) { return n.split('&').map(function (x) { return x.trim(); }); })) };
+    });
+}
+/* ---------------- grade adaptativa ---------------- */
+function fitGrid(n, W, H, bw, bh, gap) {
+    var best = null;
+    for (var cols = 1; cols <= Math.max(1, n); cols++) {
+        var rows = Math.ceil(n / cols), cw = (W - (cols - 1) * gap) / cols, ch = (H - (rows - 1) * gap) / rows, s = Math.min(cw / bw, ch / bh);
+        if (!best || s > best.s + 1e-6)
+            best = { cols: cols, rows: rows, cw: cw, ch: ch, s: s };
+    }
+    return best;
+}
+function paginar(n, W, H, bw, bh, minS, gap) {
+    var size = Math.max(1, n), fit = fitGrid(size, W, H, bw, bh, gap);
+    while (fit.s < minS && size > 4) {
+        size = Math.ceil(size / 2);
+        fit = fitGrid(size, W, H, bw, bh, gap);
+    }
+    return { size: size, pages: Math.ceil(n / size), fit: fit };
+}
+function gradeHTML(cells, fit, bw, bh, gap) {
+    var sc = Math.min(fit.s, 1.5);
+    return "<div class=\"grid\" style=\"grid-template-columns:repeat(".concat(fit.cols, ",").concat(fit.cw, "px);grid-auto-rows:").concat(fit.ch, "px;gap:").concat(gap, "px;height:100%\">") +
+        cells.map(function (h) { return "<div class=\"cell\" style=\"width:".concat(fit.cw, "px;height:").concat(fit.ch, "px\"><div class=\"in\" style=\"width:").concat(bw, "px;height:").concat(bh, "px;transform:translate(-50%,-50%) scale(").concat(sc, ")\">").concat(h, "</div></div>"); }).join('') + '</div>';
+}
+function cicloPaginas(pages) {
+    clearTimeout(S.ciclo);
+    S.ciclo = null;
+    if (pages > 1)
+        S.ciclo = setTimeout(function () { S.pg = (S.pg + 1) % pages; S.fadeNext = true; render(); }, 10000);
+}
+/* ---------------- vistas estáveis ---------------- */
+function vista() {
+    var c = S.camp;
+    if (!c)
+        return 'inscricoes';
+    if ((c.fasesMataMata || []).length)
+        return 'mata';
+    if (temGrupos(c) && (c.sorteados || []).length)
+        return 'grupos';
+    return 'inscricoes';
+}
+function setFase(t) { $('#fase').textContent = t; }
+function faseTexto() {
+    var c = S.camp;
+    if (!c)
+        return '';
+    if (c.status === 'encerrado')
+        return '🏁 ENCERRADO';
+    var v = vista();
+    return v === 'inscricoes' ? 'INSCRIÇÕES' : v === 'grupos' ? 'FASE DE GRUPOS' : (temGrupos(c) ? 'MATA-MATA' : 'ELIMINATÓRIAS');
+}
+function atualizarTopo() {
+    var c = S.camp;
+    if (!c)
+        return;
+    $('#tnome h1').textContent = c.nome || 'Campeonato';
+    var extra = [c.formato, c.sets, c.ranking ? 'Ranking ' + c.ranking : ''].filter(Boolean).join('  •  ');
+    $('#tnome small').textContent = extra;
+    if (!S.anim)
+        setFase(faseTexto());
+}
+function render() {
+    if (S.anim || !S.iniciou)
+        return;
+    var v = vista();
+    if (v !== S.vista) {
+        S.vista = v;
+        S.pg = 0;
+        S.chaveIdx = 0;
+        S.prevSlots = null;
+        S.fadeNext = true;
+    }
+    clearTimeout(S.ciclo);
+    S.ciclo = null;
+    var p = $('#palco');
+    var fade = S.fadeNext;
+    S.fadeNext = false;
+    if (v === 'inscricoes')
+        p.innerHTML = htmlInscricoes({ fade: fade });
+    else if (v === 'grupos')
+        p.innerHTML = htmlGrupos({ fade: fade });
+    else
+        p.innerHTML = htmlMata({ fade: fade });
+    atualizarTopo();
+    atualizarFaixa();
+}
+/* ---- inscrições ---- */
+function itensInscritos() {
+    var sup = isSuper4(S.camp);
+    return S.inscritos.map(function (i, k) { return ({ k: k, key: i.jogador1 + '|' + (i.jogador2 || ''), l: sup ? [i.jogador1] : [i.jogador1, i.jogador2].filter(Boolean), seed: i.nivelSeed || 0 }); });
+}
+function htmlInscricoes(opt) {
+    if (opt === void 0) { opt = {}; }
+    var it = itensInscritos();
+    var n = it.length;
+    var titulo = "<div class=\"ptitulo\"><h2>Inscritos</h2><span class=\"cont\">".concat(n, "</span></div>");
+    if (!n) {
+        S.prevInsc = new Set();
+        return titulo + "<div class=\"vazio-msg\" style=\"height:700px\"><div class=\"ic\">\uD83D\uDCDD</div>Aguardando inscri\u00E7\u00F5es\u2026</div>";
+    }
+    var dupla = it.some(function (x) { return x.l.length > 1; }), bw = 380, bh = dupla ? 96 : 64, gap = 18;
+    var pag = paginar(n, PW, PH - 96, bw, bh, 0.62, gap);
+    if (S.pg >= pag.pages)
+        S.pg = 0;
+    var fatia = it.slice(S.pg * pag.size, (S.pg + 1) * pag.size);
+    var prev = S.prevInsc;
+    var cur = new Set(it.map(function (x) { return x.key; }));
+    var cards = fatia.map(function (x) {
+        var nm = x.l.length > 1 ? "<span class=\"p1\">".concat(esc(x.l[0]), "</span><span class=\"p2\">").concat(esc(x.l[1]), "</span>") : "<span class=\"p1\">".concat(esc(x.l[0]), "</span>");
+        var sd = x.seed === 1 ? '<em class="sd s1">C1</em>' : x.seed === 2 ? '<em class="sd s2">C2</em>' : '';
+        var novo = prev && !prev.has(x.key) ? ' novo' : '';
+        return "<div class=\"icard".concat(novo, "\" style=\"height:").concat(bh, "px\"><span class=\"n\">").concat(pad2(x.k + 1), "</span><div class=\"nm\">").concat(nm, "</div>").concat(sd, "</div>");
+    });
+    S.prevInsc = cur;
+    cicloPaginas(pag.pages);
+    var pgTxt = pag.pages > 1 ? "<span class=\"pg\">p\u00E1gina ".concat(S.pg + 1, "/").concat(pag.pages, "</span>") : '';
+    return "<div class=\"".concat(opt.fade ? 'fade' : '', "\">").concat(titulo.replace('</div>', pgTxt + '</div>'), "<div style=\"height:").concat(PH - 96, "px\">").concat(gradeHTML(cards, pag.fit, bw, bh, gap), "</div></div>");
+}
+/* ---- grupos ---- */
+function cardGrupoHTML(g, opt) {
+    if (opt === void 0) { opt = {}; }
+    var sup = g.sup;
+    var linhas = g.linhas.map(function (o, i) {
+        var q = '';
+        if (sup)
+            q = i < 2 ? 'q-ouro' : 'q-prata';
+        else if (i < g.lim)
+            q = 'q-ok';
+        var nm = opt.vazio ? "<span class=\"fant\"></span>" : equipeHTML(o.nome, sup ? 'linha' : 'pilha');
+        var sg = o.sg > 0 ? 'pos-sg' : o.sg < 0 ? 'neg-sg' : '';
+        return "<div class=\"glin ".concat(q, "\" style=\"height:").concat(sup ? 46 : 70, "px\" data-g=\"").concat(g.gi, "\" data-s=\"").concat(i, "\"><span class=\"pos\">").concat(i + 1, "</span><div class=\"nm\">").concat(nm, "</div>\n      <span class=\"c\">").concat(o.j, "</span><span class=\"c v\">").concat(o.v, "</span><span class=\"c\">").concat(o.ss > 0 ? '+' : '').concat(o.ss, "</span><span class=\"c ").concat(sg, "\">").concat(o.sg > 0 ? '+' : '').concat(o.sg, "</span></div>");
+    }).join('');
+    var prog = opt.vazio ? 'sorteando…' : "".concat(g.feitos, "/").concat(g.total, " jogos");
+    var qd = !opt.vazio && g.quadras && g.quadras.length ? "<span class=\"qd\">\uD83D\uDCCD QUADRA".concat(g.quadras.length > 1 ? 'S' : '', " ").concat(esc(g.quadras.join(' / ')), "</span>") : '';
+    return "<div class=\"gcard".concat(opt.flash ? ' flash' : '', "\" data-gc=\"").concat(g.gi, "\" style=\"height:").concat(gAlt(g), "px\"><div class=\"gh\"><b>").concat(g.nome.toUpperCase(), "</b>").concat(qd, "<span>").concat(prog, "</span></div>\n    <div class=\"gcols\"><span>#</span><span>").concat(sup ? 'JOGADOR(A)' : 'DUPLA', "</span><span>J</span><span>V</span><span>SS</span><span>SG</span></div>").concat(linhas, "</div>");
+}
+var gAlt = function (g) { return 70 + 38 + g.linhas.length * (g.sup ? 46 : 70) + 14; };
+function htmlGrupos(opt) {
+    if (opt === void 0) { opt = {}; }
+    var grupos = opt.grupos || calcGrupos(S.camp, S.jogos);
+    if (!grupos.length)
+        return '';
+    var maxL = Math.max.apply(Math, __spreadArray([], __read(grupos.map(function (g) { return g.linhas.length; })), false)), sup = grupos[0].sup;
+    var bw = 600, bh = 70 + 38 + maxL * (sup ? 46 : 70) + 14, gap = 22;
+    var HG = opt.vazio ? PH - 30 - 200 : PH - 30;
+    var pag = paginar(grupos.length, PW, HG, bw, bh, 0.55, gap);
+    if (S.pg >= pag.pages)
+        S.pg = 0;
+    var fatia = grupos.slice(S.pg * pag.size, (S.pg + 1) * pag.size);
+    var prev = S.prevFeitos || {};
+    var cur = {};
+    grupos.forEach(function (g) { return cur[g.gi] = g.feitos; });
+    var cards = fatia.map(function (g) { return cardGrupoHTML(g, { vazio: opt.vazio, flash: !opt.vazio && S.prevFeitos && g.feitos > (prev[g.gi] || 0) }); });
+    if (!opt.vazio) {
+        S.prevFeitos = cur;
+        cicloPaginas(pag.pages);
+    }
+    var leg = sup ? "<i style=\"background:var(--ouro)\"></i>Chave Ouro<i style=\"background:var(--prata);margin-left:10px\"></i>Chave Prata" : "<i style=\"background:var(--verde)\"></i>Classificados";
+    var pgTxt = pag.pages > 1 ? "p\u00E1gina ".concat(S.pg + 1, "/").concat(pag.pages, "  \u2022  ") : '';
+    return "<div class=\"".concat(opt.fade ? 'fade' : '', "\" style=\"position:relative;height:100%;padding-top:").concat(opt.vazio ? 200 : 0, "px;box-sizing:border-box\"><div style=\"height:").concat(HG, "px\">").concat(gradeHTML(cards, pag.fit, bw, bh, gap), "</div><div class=\"legenda\">").concat(pgTxt).concat(leg, "</div></div>");
+}
+/* ---- mata-mata ---- */
+var tituloRodada = function (r, R) { return r === R - 1 ? 'FINAL 🏆' : r === R - 2 ? 'Semifinal' : r === R - 3 ? 'Quartas de final' : r === R - 4 ? 'Oitavas de final' : 'Rodada ' + (r + 1); };
+var idJogo = function (chave, r, a, b) { return (chave === 'Prata' ? 'MM_Prata_' : 'MM_') + r + '_' + semEsp(a || 'Aguardando...') + '_vs_' + semEsp(b || 'Aguardando...'); };
+function campeaoDe(chave) {
+    var fases = chave === 'Prata' ? (S.camp && S.camp.fasesPrata) : (S.camp && S.camp.fasesMataMata);
+    if (!fases || !fases.length)
+        return null;
+    var R = fases.length;
+    var j = fasesJogos(fases[R - 1])[0];
+    if (!j || aguard(j.timeA) || aguard(j.timeB))
+        return null;
+    var jg = S.jogos[idJogo(chave, R - 1, j.timeA, j.timeB)];
+    if (!jg || !jg.vencedor)
+        return null;
+    return { campeao: jg.vencedor, vice: jg.vencedor === j.timeA ? j.timeB : j.timeA };
+}
+function blocoChave(chave, fases, slotH, opt) {
+    if (opt === void 0) { opt = {}; }
+    var R = fases.length, rounds = fases.map(fasesJogos), n1 = Math.max(1, rounds[0].length);
+    var Wmax = opt.Wmax || PW, gapX = opt.Wmax ? 56 : 64, colW = Math.min(440, (Wmax - (R - 1) * gapX) / R), topo = 82, H = topo + n1 * slotH;
+    var W = R * colW + (R - 1) * gapX;
+    var ch = Math.max(36, Math.min(slotH - 12, 150)), rowH = ch / 2;
+    var pilha = rowH >= 50;
+    var fsMax = Math.max(14, Math.floor((colW - 90) / 9));
+    var fs = pilha ? Math.max(14, Math.min(26, fsMax, Math.floor((rowH - 8) / 2 / 1.12))) : Math.max(12, Math.min(26, fsMax, Math.floor(rowH * 0.5)));
+    var scW = 38;
+    var cy = function (r, j) { return topo + (j + 0.5) * (n1 / rounds[r].length) * slotH; };
+    var cards = '', titulos = '', paths = '';
+    var novoMap = {};
+    rounds.forEach(function (jogos, r) {
+        var left = r * (colW + gapX);
+        titulos += "<div class=\"rt".concat(r === R - 1 ? ' fin' : '', "\" style=\"left:").concat(left, "px;width:").concat(colW, "px").concat(colW < 300 ? ';font-size:17px;letter-spacing:.04em' : '', "\">").concat(tituloRodada(r, R), "</div>");
+        jogos.forEach(function (jogo, j) {
+            var tA = jogo.timeA || null, tB = jogo.timeB || null, bye = ehBye(tA) || ehBye(tB);
+            var id = idJogo(chave, r, tA, tB), jg = S.jogos[id];
+            var res = jg && jg.vencedor ? golsDe(jg) : null;
+            var venc = jg && jg.vencedor ? jg.vencedor : null;
+            var oculto = opt.reveal && r === 0;
+            var linha = function (nome, lado) {
+                var key = "".concat(chave, "|").concat(r, "|").concat(j, "|").concat(lado);
+                novoMap[key] = nome || '';
+                var ganhou = venc && venc === nome, perdeu = venc && venc !== nome && !bye;
+                var antes = S.prevSlots ? S.prevSlots[key] : undefined;
+                var novo = !opt.reveal && S.prevSlots && antes !== undefined && antes !== (nome || '') && !aguard(nome) ? ' novo' : '';
+                var sc = '';
+                if (res && !oculto) {
+                    var arr = lado === 'A' ? jg.placarA : jg.placarB;
+                    sc = jg.isWO ? '<span class="wo">W.O.</span>' : "<span class=\"sc\">".concat((arr || []).map(function (x) { return "<b>".concat(esc(x), "</b>"); }).join(''), "</span>");
+                }
+                var nm = oculto ? '<span class="fant" style="width:75%"></span>' : equipeHTML(nome, pilha ? 'pilha' : 'linha');
+                return "<div class=\"tr".concat(ganhou ? ' win' : '').concat(perdeu ? ' lose' : '').concat(novo, "\" data-s=\"").concat(lado, "\"><div class=\"nm\">").concat(nm, "</div>").concat(sc, "</div>");
+            };
+            var quadra = jg && jg.quadra && !venc ? "<span class=\"quadra\">\uD83D\uDCCD QUADRA ".concat(esc(jg.quadra), "</span>") : '';
+            cards += "<div class=\"mc".concat(pilha ? '' : ' inline').concat(r > 0 && opt.reveal ? ' later' : '', "\" data-k=\"").concat(chave, "|").concat(r, "|").concat(j, "\" style=\"left:").concat(left, "px;top:").concat(cy(r, j) - ch / 2, "px;width:").concat(colW, "px;height:").concat(ch, "px;--fs:").concat(fs, "px\">").concat(quadra).concat(linha(tA, 'A')).concat(linha(tB, 'B'), "</div>");
+            if (r < R - 1) {
+                var t = Math.min(rounds[r + 1].length - 1, Math.floor(j * rounds[r + 1].length / jogos.length));
+                var x1 = left + colW, y1 = cy(r, j), x2 = (r + 1) * (colW + gapX), y2 = cy(r + 1, t), xm = x1 + gapX / 2;
+                paths += "<path class=\"".concat(venc ? 'on' : '', "\" d=\"M").concat(x1, " ").concat(y1, "H").concat(xm, "V").concat(y2, "H").concat(x2, "\" style=\"--len:").concat(Math.abs(y2 - y1) + gapX + 20, "\"/>");
+            }
+        });
+    });
+    if (opt.coletaSlots)
+        Object.assign(opt.coletaSlots, novoMap);
+    var camp = campeaoDe(chave);
+    var nomeBn = chave === 'Prata' ? '🥈 CHAVE PRATA' : (opt.tituloOuro || '🏆 CHAVE OURO');
+    var cbadge = camp ? "<span class=\"camp\">\uD83C\uDFC6 ".concat(esc(nomeCurto(camp.campeao)), "</span>") : '';
+    return "<div class=\"bloco".concat(opt.reveal ? ' rv' : '', "\" data-chave=\"").concat(chave, "\" style=\"width:").concat(W, "px;height:").concat(H + 36, "px\"><div class=\"bnr ").concat(chave === 'Prata' ? 'prata' : 'ouro', "\">").concat(nomeBn).concat(cbadge, "</div>\n    <div style=\"position:absolute;left:0;top:36px;width:").concat(W, "px;height:").concat(H, "px\">").concat(titulos, "<svg class=\"conn\" width=\"").concat(W, "\" height=\"").concat(H, "\">").concat(paths, "</svg>").concat(cards, "</div></div>");
+}
+function modoChaves(c) {
+    var ouro = c.fasesMataMata || [], prata = c.fasesPrata || [];
+    var n1o = Math.max(1, fasesJogos(ouro[0]).length), n1p = prata.length ? Math.max(1, fasesJogos(prata[0]).length) : 0;
+    if (prata.length && ouro.length <= 3 && prata.length <= 3)
+        return { lado: true, juntas: false, slotO: Math.min(150, (PH - 118) / n1o), slotP: Math.min(150, (PH - 118) / n1p), ouro: ouro, prata: prata };
+    if (!prata.length)
+        return { juntas: false, slotO: Math.min(160, (PH - 82 - 36) / n1o), slotP: 0, ouro: ouro, prata: prata };
+    var slotJ = (PH - 2 * 118 - 10) / (n1o + n1p);
+    if (slotJ >= 84) {
+        var s = Math.min(150, slotJ);
+        return { juntas: true, slotO: s, slotP: s, ouro: ouro, prata: prata };
+    }
+    return { juntas: false, slotO: Math.min(160, (PH - 118) / n1o), slotP: Math.min(160, (PH - 118) / n1p), ouro: ouro, prata: prata };
+}
+function htmlMata(opt) {
+    if (opt === void 0) { opt = {}; }
+    var c = S.camp, m = modoChaves(c), slots = {};
+    var unico = !m.prata.length;
+    var html = '';
+    var tituloOuro = unico ? (temGrupos(c) ? '🏆 MATA-MATA' : '🏆 ELIMINATÓRIAS') : '🏆 CHAVE OURO';
+    if (m.lado) {
+        html += "<div style=\"display:flex;gap:48px;align-items:center;justify-content:center;width:100%\">" + blocoChave('Ouro', m.ouro, m.slotO, __assign(__assign({}, opt), { Wmax: 912, coletaSlots: slots, tituloOuro: tituloOuro })) + blocoChave('Prata', m.prata, m.slotP, __assign(__assign({}, opt), { Wmax: 912, coletaSlots: slots })) + "</div>";
+        clearTimeout(S.ciclo);
+        S.ciclo = null;
+    }
+    else if (m.juntas || unico) {
+        html += blocoChave('Ouro', m.ouro, m.slotO, __assign(__assign({}, opt), { coletaSlots: slots, tituloOuro: tituloOuro }));
+        if (m.prata.length)
+            html += "<div style=\"height:10px\"></div>" + blocoChave('Prata', m.prata, m.slotP, __assign(__assign({}, opt), { coletaSlots: slots }));
+        clearTimeout(S.ciclo);
+        S.ciclo = null;
+    }
+    else {
+        var ch = opt.chave || (S.chaveIdx % 2 === 0 ? 'Ouro' : 'Prata');
+        html += ch === 'Ouro' ? blocoChave('Ouro', m.ouro, m.slotO, __assign(__assign({}, opt), { coletaSlots: slots, tituloOuro: tituloOuro })) : blocoChave('Prata', m.prata, m.slotP, __assign(__assign({}, opt), { coletaSlots: slots }));
+        if (!opt.reveal) {
+            clearTimeout(S.ciclo);
+            S.ciclo = setTimeout(function () { S.chaveIdx++; S.prevSlots = null; S.fadeNext = true; render(); }, 18000);
+        }
+        html += "<div style=\"position:absolute;right:30px;bottom:6px;font-size:18px;color:var(--mut)\"><span style=\"color:".concat(ch === 'Ouro' ? 'var(--ouro)' : '#475569', "\">\u25CF</span> <span style=\"color:").concat(ch === 'Prata' ? 'var(--prata)' : '#475569', "\">\u25CF</span>  alternando Ouro / Prata</div>");
+    }
+    if (!opt.reveal)
+        S.prevSlots = Object.assign(S.prevSlots || {}, slots);
+    return "<div class=\"".concat(opt.fade ? 'fade' : '', "\" style=\"height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative\">").concat(html, "</div>");
+}
+/* ---- faixa do último resultado ---- */
+function rotuloJogo(id, jg) {
+    var m = id.match(/^MM_(Prata_)?(\d+)_/);
+    if (m) {
+        var prata = !!m[1], r = +m[2];
+        var fases = prata ? (S.camp && S.camp.fasesPrata) : (S.camp && S.camp.fasesMataMata);
+        var R = fases ? fases.length : 0;
+        var ch = ((S.camp && S.camp.fasesPrata) || []).length ? (prata ? 'Prata • ' : 'Ouro • ') : '';
+        return ch + tituloRodada(r, R || r + 1).replace(' 🏆', '');
+    }
+    var ps = String(jg.timeA || '').split('&')[0].trim();
+    var g = calcGrupos(S.camp, {}).find(function (x) { return x.nomes.has(ps); });
+    return g ? g.nome : 'Fase de grupos';
+}
+function ultimoResultado() {
+    var e_1, _a;
+    var best = null, bt = -1;
+    try {
+        for (var _b = __values(Object.entries(S.jogos)), _c = _b.next(); !_c.done; _c = _b.next()) {
+            var _d = __read(_c.value, 2), id = _d[0], jg = _d[1];
+            if (!jg || !jg.vencedor)
+                continue;
+            var t = (jg.dataRegistro && jg.dataRegistro.seconds != null ? jg.dataRegistro.seconds : (jg.dataRegistro && jg.dataRegistro._seconds != null ? jg.dataRegistro._seconds : (typeof jg.dataRegistro === 'number' ? jg.dataRegistro : 0)));
+            if (t >= bt) {
+                bt = t;
+                best = id;
+            }
+        }
+    }
+    catch (e_1_1) { e_1 = { error: e_1_1 }; }
+    finally {
+        try {
+            if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+        }
+        finally { if (e_1) throw e_1.error; }
+    }
+    return best;
+}
+function atualizarFaixa(novo) {
+    var f = $('#faixa');
+    var id = novo || ultimoResultado();
+    if (!id || !S.jogos[id]) {
+        f.classList.add('hide');
+        return;
+    }
+    var jg = S.jogos[id];
+    var r = golsDe(jg);
+    var a = Array.isArray(jg.placarA) ? jg.placarA : [], b = Array.isArray(jg.placarB) ? jg.placarB : [];
+    var placar = jg.isWO ? 'W.O.' : a.map(function (x, i) { return "".concat(x, "\u00D7").concat(b[i]); }).join('  ');
+    var wA = jg.vencedor === jg.timeA;
+    f.innerHTML = "<span class=\"rot\">\u00DAltimo resultado \u2022 ".concat(esc(rotuloJogo(id, jg)), "</span><span class=\"tx\"><span class=\"").concat(wA ? 'w' : 'l', "\">").concat(esc(nomeCurto(jg.timeA)), "</span><span class=\"pl\">").concat(esc(placar), "</span><span class=\"").concat(wA ? 'l' : 'w', "\">").concat(esc(nomeCurto(jg.timeB)), "</span></span>");
+    f.classList.remove('hide');
+    if (novo) {
+        f.classList.remove('novo');
+        void f.offsetWidth;
+        f.classList.add('novo');
+    }
+}
+/* ======================= ANIMAÇÕES ======================= */
+var sleep = function (ms) { return new Promise(function (res) { if (S.skip)
+    return res(); var t = setTimeout(res, ms); S.acorda = function () { clearTimeout(t); res(); }; }); };
+function pular() { if (S.anim) {
+    S.skip = true;
+    S.acorda && S.acorda();
+} }
+var embaralha = function (a) {
+    var _a;
+    a = __spreadArray([], __read(a), false);
+    for (var i = a.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        _a = __read([a[j], a[i]], 2), a[i] = _a[0], a[j] = _a[1];
+    }
+    return a;
+};
+function enfileirar(tarefa) { S.fila.push(tarefa); if (!S.rodandoFila)
+    rodarFila(); }
+function rodarFila() {
+    return __awaiter(this, void 0, void 0, function () {
+        var t, e_2;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    S.rodandoFila = true;
+                    _a.label = 1;
+                case 1:
+                    if (!S.fila.length) return [3 /*break*/, 6];
+                    t = S.fila.shift();
+                    S.anim = true;
+                    S.skip = false;
+                    clearTimeout(S.ciclo);
+                    S.ciclo = null;
+                    _a.label = 2;
+                case 2:
+                    _a.trys.push([2, 4, , 5]);
+                    return [4 /*yield*/, t()];
+                case 3:
+                    _a.sent();
+                    return [3 /*break*/, 5];
+                case 4:
+                    e_2 = _a.sent();
+                    console.error('animação', e_2);
+                    return [3 /*break*/, 5];
+                case 5:
+                    $('#reel').style.display = 'none';
+                    $('#overlay').classList.remove('on');
+                    document.querySelectorAll('.voo').forEach(function (x) { return x.remove(); });
+                    S.anim = false;
+                    return [3 /*break*/, 1];
+                case 6:
+                    S.rodandoFila = false;
+                    S.vista = null;
+                    S.prevSlots = null;
+                    S.prevFeitos = null;
+                    S.fadeNext = true;
+                    render();
+                    return [2 /*return*/];
+            }
+        });
+    });
+}
+var rectPalco = function (el) { var r = el.getBoundingClientRect(), s = $('#stage').getBoundingClientRect(), k = S.escala; return { x: (r.left - s.left) / k, y: (r.top - s.top) / k, w: r.width / k, h: r.height / k }; };
+function animarSorteioGrupos(c) {
+    return __awaiter(this, void 0, void 0, function () {
+        var sorteados, gr, sup, vazios, nomeDe, pool, ng, n, por, giro, voo, reel, voos, _loop_1, i;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    setFase('🎲 SORTEIO DOS GRUPOS');
+                    sorteados = c.sorteados, gr = distribuir(c), sup = isSuper4(c);
+                    vazios = gr.map(function (g, gi) { return ({ gi: gi, nome: 'Grupo ' + pad2(gi + 1), linhas: g.map(function () { return ({ nome: '', j: 0, v: 0, ss: 0, sg: 0 }); }), total: 0, feitos: 0, lim: 0, sup: sup }); });
+                    $('#palco').innerHTML = htmlGrupos({ grupos: vazios, vazio: true });
+                    nomeDe = function (s) { return s.jogador2 && !sup ? "".concat(s.jogador1, " & ").concat(s.jogador2) : s.jogador1; };
+                    pool = sorteados.map(nomeDe), ng = gr.length, n = sorteados.length;
+                    por = Math.max(380, Math.min(1100, 26000 / n)) / VEL, giro = por * 0.6, voo = por * 0.5;
+                    reel = $('#reel');
+                    reel.style.display = 'block';
+                    reel.classList.remove('lock');
+                    voos = [];
+                    _loop_1 = function (i) {
+                        var gi, si, nome, slot, nEl, t0, dst, src, chip, cw, ch, x0, y0, x1, y1, an;
+                        return __generator(this, function (_b) {
+                            switch (_b.label) {
+                                case 0:
+                                    gi = i % ng, si = Math.floor(i / ng), nome = nomeDe(sorteados[i]);
+                                    slot = document.querySelector(".glin[data-g=\"".concat(gi, "\"][data-s=\"").concat(si, "\"] .nm"));
+                                    if (!slot)
+                                        return [2 /*return*/, "continue"];
+                                    if (S.skip) {
+                                        slot.innerHTML = equipeHTML(nome, sup ? 'linha' : 'pilha');
+                                        return [2 /*return*/, "continue"];
+                                    }
+                                    reel.classList.remove('lock');
+                                    reel.innerHTML = "<div class=\"t\">SORTEANDO ".concat(i + 1, "/").concat(n, "</div><div class=\"n\"></div><div class=\"d\"></div>");
+                                    nEl = reel.querySelector('.n');
+                                    t0 = performance.now();
+                                    _b.label = 1;
+                                case 1:
+                                    if (!(performance.now() - t0 < giro && !S.skip)) return [3 /*break*/, 3];
+                                    nEl.textContent = nomeCurto(pool[Math.floor(Math.random() * pool.length)]);
+                                    return [4 /*yield*/, sleep(60)];
+                                case 2:
+                                    _b.sent();
+                                    return [3 /*break*/, 1];
+                                case 3:
+                                    nEl.textContent = nomeCurto(nome);
+                                    reel.querySelector('.d').textContent = '→ GRUPO ' + pad2(gi + 1);
+                                    reel.classList.add('lock');
+                                    dst = rectPalco(slot.closest('.glin')), src = rectPalco(reel);
+                                    chip = document.createElement('div');
+                                    chip.className = 'voo';
+                                    chip.textContent = nomeCurto(nome);
+                                    $('#stage').appendChild(chip);
+                                    cw = chip.offsetWidth, ch = chip.offsetHeight;
+                                    x0 = src.x + src.w / 2 - cw / 2, y0 = src.y + src.h / 2 - ch / 2, x1 = dst.x + 80, y1 = dst.y + dst.h / 2 - ch / 2 * .5;
+                                    an = chip.animate ? chip.animate([{ transform: "translate(".concat(x0, "px,").concat(y0, "px) scale(1)"), opacity: 1 }, { transform: "translate(".concat(x1, "px,").concat(y1, "px) scale(.55)"), opacity: .95 }], { duration: voo, easing: 'cubic-bezier(.25,.8,.3,1)', fill: 'forwards' }) : { finished: Promise.reject(new Error('sem animate')) };
+                                    voos.push(an.finished.then(function () { chip.remove(); slot.innerHTML = equipeHTML(nome, sup ? 'linha' : 'pilha'); slot.classList.add('preenche'); }).catch(function () { chip.remove(); slot.innerHTML = equipeHTML(nome, sup ? 'linha' : 'pilha'); }));
+                                    return [4 /*yield*/, sleep(Math.max(120, por * 0.45))];
+                                case 4:
+                                    _b.sent();
+                                    return [2 /*return*/];
+                            }
+                        });
+                    };
+                    i = 0;
+                    _a.label = 1;
+                case 1:
+                    if (!(i < n)) return [3 /*break*/, 4];
+                    return [5 /*yield**/, _loop_1(i)];
+                case 2:
+                    _a.sent();
+                    _a.label = 3;
+                case 3:
+                    i++;
+                    return [3 /*break*/, 1];
+                case 4: return [4 /*yield*/, Promise.all(voos)];
+                case 5:
+                    _a.sent();
+                    reel.style.display = 'none';
+                    document.querySelectorAll('.gh span').forEach(function (e) { return e.textContent = '0/' + (sup ? 3 : '·') + ' jogos'; });
+                    return [4 /*yield*/, sleep(2200 / VEL)];
+                case 6:
+                    _a.sent();
+                    return [2 /*return*/];
+            }
+        });
+    });
+}
+function animarChaves(c, titulo) {
+    return __awaiter(this, void 0, void 0, function () {
+        var m, etapas, _loop_2, etapas_1, etapas_1_1, chave, e_3_1;
+        var e_3, _a;
+        return __generator(this, function (_b) {
+            switch (_b.label) {
+                case 0:
+                    setFase(titulo);
+                    m = modoChaves(c);
+                    etapas = (m.lado || m.juntas || !m.prata.length) ? [null] : ['Ouro', 'Prata'];
+                    _loop_2 = function (chave) {
+                        var blocos, alvos, todos, slots, por, alvos_1, alvos_1_1, a, _c, _d, lado, nome, el, t0, e_4_1, e_5_1;
+                        var e_5, _e, e_4, _f;
+                        return __generator(this, function (_g) {
+                            switch (_g.label) {
+                                case 0:
+                                    $('#palco').innerHTML = htmlMata({ reveal: true, chave: chave });
+                                    blocos = Array.prototype.slice.call(document.querySelectorAll('.bloco.rv'));
+                                    alvos = [];
+                                    blocos.forEach(function (b) { var ch = b.dataset.chave; var fases = ch === 'Prata' ? m.prata : m.ouro; fasesJogos(fases[0]).forEach(function (jogo, j) { return alvos.push({ b: b, ch: ch, j: j, jogo: jogo }); }); });
+                                    todos = embaralha(fm(alvos, function (a) { return [a.jogo.timeA, a.jogo.timeB]; }).filter(function (n) { return n && !ehBye(n); }));
+                                    slots = alvos.length * 2, por = Math.max(260, Math.min(900, 20000 / slots)) / VEL;
+                                    _g.label = 1;
+                                case 1:
+                                    _g.trys.push([1, 15, 16, 17]);
+                                    alvos_1 = (e_5 = void 0, __values(alvos)), alvos_1_1 = alvos_1.next();
+                                    _g.label = 2;
+                                case 2:
+                                    if (!!alvos_1_1.done) return [3 /*break*/, 14];
+                                    a = alvos_1_1.value;
+                                    _g.label = 3;
+                                case 3:
+                                    _g.trys.push([3, 11, 12, 13]);
+                                    _c = (e_4 = void 0, __values(['A', 'B'])), _d = _c.next();
+                                    _g.label = 4;
+                                case 4:
+                                    if (!!_d.done) return [3 /*break*/, 10];
+                                    lado = _d.value;
+                                    nome = lado === 'A' ? a.jogo.timeA : a.jogo.timeB;
+                                    el = a.b.querySelector(".mc[data-k=\"".concat(a.ch, "|0|").concat(a.j, "\"] .tr[data-s=\"").concat(lado, "\"] .nm"));
+                                    if (!el)
+                                        return [3 /*break*/, 9];
+                                    if (ehBye(nome)) {
+                                        el.innerHTML = equipeHTML(nome, 'linha');
+                                        return [3 /*break*/, 9];
+                                    }
+                                    t0 = performance.now();
+                                    el.classList.add('girando');
+                                    _g.label = 5;
+                                case 5:
+                                    if (!(performance.now() - t0 < por * 0.8 && !S.skip)) return [3 /*break*/, 7];
+                                    el.innerHTML = "<span class=\"p1\">".concat(esc(nomeCurto(todos[Math.floor(Math.random() * todos.length)] || '…')), "</span>");
+                                    return [4 /*yield*/, sleep(55)];
+                                case 6:
+                                    _g.sent();
+                                    return [3 /*break*/, 5];
+                                case 7:
+                                    el.classList.remove('girando');
+                                    el.innerHTML = equipeHTML(nome, el.closest('.mc').classList.contains('inline') ? 'linha' : 'pilha');
+                                    el.classList.add('trava');
+                                    return [4 /*yield*/, sleep(por * 0.2)];
+                                case 8:
+                                    _g.sent();
+                                    _g.label = 9;
+                                case 9:
+                                    _d = _c.next();
+                                    return [3 /*break*/, 4];
+                                case 10: return [3 /*break*/, 13];
+                                case 11:
+                                    e_4_1 = _g.sent();
+                                    e_4 = { error: e_4_1 };
+                                    return [3 /*break*/, 13];
+                                case 12:
+                                    try {
+                                        if (_d && !_d.done && (_f = _c.return)) _f.call(_c);
+                                    }
+                                    finally { if (e_4) throw e_4.error; }
+                                    return [7 /*endfinally*/];
+                                case 13:
+                                    alvos_1_1 = alvos_1.next();
+                                    return [3 /*break*/, 2];
+                                case 14: return [3 /*break*/, 17];
+                                case 15:
+                                    e_5_1 = _g.sent();
+                                    e_5 = { error: e_5_1 };
+                                    return [3 /*break*/, 17];
+                                case 16:
+                                    try {
+                                        if (alvos_1_1 && !alvos_1_1.done && (_e = alvos_1.return)) _e.call(alvos_1);
+                                    }
+                                    finally { if (e_5) throw e_5.error; }
+                                    return [7 /*endfinally*/];
+                                case 17: return [4 /*yield*/, sleep(500 / VEL)];
+                                case 18:
+                                    _g.sent();
+                                    blocos.forEach(function (b) { return b.classList.add('rvshow'); });
+                                    document.querySelectorAll('.rv .mc.later').forEach(function (x) { return x.classList.add('show'); });
+                                    return [4 /*yield*/, sleep(2600 / VEL)];
+                                case 19:
+                                    _g.sent();
+                                    return [2 /*return*/];
+                            }
+                        });
+                    };
+                    _b.label = 1;
+                case 1:
+                    _b.trys.push([1, 6, 7, 8]);
+                    etapas_1 = __values(etapas), etapas_1_1 = etapas_1.next();
+                    _b.label = 2;
+                case 2:
+                    if (!!etapas_1_1.done) return [3 /*break*/, 5];
+                    chave = etapas_1_1.value;
+                    return [5 /*yield**/, _loop_2(chave)];
+                case 3:
+                    _b.sent();
+                    _b.label = 4;
+                case 4:
+                    etapas_1_1 = etapas_1.next();
+                    return [3 /*break*/, 2];
+                case 5: return [3 /*break*/, 8];
+                case 6:
+                    e_3_1 = _b.sent();
+                    e_3 = { error: e_3_1 };
+                    return [3 /*break*/, 8];
+                case 7:
+                    try {
+                        if (etapas_1_1 && !etapas_1_1.done && (_a = etapas_1.return)) _a.call(etapas_1);
+                    }
+                    finally { if (e_3) throw e_3.error; }
+                    return [7 /*endfinally*/];
+                case 8: return [2 /*return*/];
+            }
+        });
+    });
+}
+/* ---- campeão + confete ---- */
+var Confete = {
+    cv: $('#confete'), ctx: $('#confete').getContext('2d'), ps: [], on: false, fim: 0,
+    iniciar: function (ms) { this.on = true; this.fim = performance.now() + ms; this.ps = []; if (!this.raf)
+        this.loop(); },
+    parar: function () { this.on = false; },
+    loop: function () {
+        var _this = this;
+        var _a = this, ctx = _a.ctx, cv = _a.cv, agora = performance.now();
+        ctx.clearRect(0, 0, 1920, 1080);
+        if (this.on && agora < this.fim)
+            for (var i = 0; i < 6; i++)
+                this.ps.push({ x: Math.random() * 1920, y: -20, vx: (Math.random() - .5) * 5, vy: 3 + Math.random() * 6, r: 6 + Math.random() * 10, rot: Math.random() * 6, vr: (Math.random() - .5) * .35, cor: ['#fbbf24', '#f26522', '#34d399', '#60a5fa', '#f472b6', '#fff'][Math.floor(Math.random() * 6)] });
+        this.ps.forEach(function (p) { p.x += p.vx; p.y += p.vy; p.vy += .06; p.rot += p.vr; ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot); ctx.fillStyle = p.cor; ctx.fillRect(-p.r / 2, -p.r / 3, p.r, p.r * .6); ctx.restore(); });
+        this.ps = this.ps.filter(function (p) { return p.y < 1100; });
+        if (this.ps.length || (this.on && agora < this.fim))
+            this.raf = requestAnimationFrame(function () { return _this.loop(); });
+        else {
+            this.raf = null;
+            ctx.clearRect(0, 0, 1920, 1080);
+        }
+    }
+};
+var AC = null;
+function audioPronto() { try {
+    AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+    if (AC.state === 'suspended')
+        AC.resume();
+}
+catch (e) { } }
+['click', 'keydown', 'touchstart'].forEach(function (ev) { return addEventListener(ev, audioPronto); });
+function tocarSino(vezes) {
+    if (!AC || AC.state !== 'running')
+        return;
+    var t0 = AC.currentTime;
+    var _loop_3 = function (k) {
+        var t = t0 + k * 0.9;
+        [[1, 1], [2.0, .55], [2.76, .4], [5.4, .18], [8.93, .08]].forEach(function (_a) {
+            var _b = __read(_a, 2), r = _b[0], g = _b[1];
+            var o = AC.createOscillator(), a = AC.createGain();
+            o.type = 'sine';
+            o.frequency.value = 660 * r;
+            a.gain.setValueAtTime(0, t);
+            a.gain.linearRampToValueAtTime(.2 * g, t + .01);
+            a.gain.exponentialRampToValueAtTime(.0008, t + 2.4);
+            o.connect(a);
+            a.connect(AC.destination);
+            o.start(t);
+            o.stop(t + 2.5);
+        });
+    };
+    for (var k = 0; k < vezes; k++) {
+        _loop_3(k);
+    }
+}
+var ehPneu = function (jg) { return !!jg && !!jg.vencedor && !jg.isWO && Array.isArray(jg.placarA) && Array.isArray(jg.placarB) && jg.placarA.some(function (x, i) { var a = +x, b = +jg.placarB[i]; return (a >= 6 && b === 0) || (b >= 6 && a === 0); }); };
+function mostrarSino(jg) {
+    return __awaiter(this, void 0, void 0, function () {
+        var perdedor, ps, a, b, i, ov, k;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    perdedor = jg.vencedor === jg.timeA ? jg.timeB : jg.timeA;
+                    ps = String(perdedor).split('&').map(function (x) { return x.trim(); }).filter(Boolean);
+                    a = Array.isArray(jg.placarA) ? jg.placarA : [], b = Array.isArray(jg.placarB) ? jg.placarB : [];
+                    i = a.findIndex(function (x, k) { var p = +x, q = +b[k]; return (p >= 6 && q === 0) || (q >= 6 && p === 0); });
+                    ov = $('#overlay');
+                    ov.classList.add('sino');
+                    ov.innerHTML = "<div class=\"sino-bell\">\uD83D\uDD14</div><div class=\"st\">O SINO TOCOU!</div><div class=\"sp\">".concat(Math.max(+a[i], +b[i]), " \u00D7 0</div><div class=\"sn\">").concat(ps.map(function (p) { return "<div>".concat(esc(p), "</div>"); }).join(''), "</div><div class=\"sv\">levou um pneu de ").concat(esc(nomeCurto(jg.vencedor)), "</div>");
+                    ov.classList.add('on');
+                    tocarSino(6);
+                    k = 0;
+                    _a.label = 1;
+                case 1:
+                    if (!(k < 7 && !S.skip)) return [3 /*break*/, 4];
+                    return [4 /*yield*/, sleep(1000)];
+                case 2:
+                    _a.sent();
+                    _a.label = 3;
+                case 3:
+                    k++;
+                    return [3 /*break*/, 1];
+                case 4:
+                    ov.classList.remove('on', 'sino');
+                    return [2 /*return*/];
+            }
+        });
+    });
+}
+function mostrarCampeao(chave, info) {
+    return __awaiter(this, void 0, void 0, function () {
+        var unico, ps, ov, t, i;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    unico = !(S.camp.fasesPrata || []).length;
+                    ps = String(info.campeao).split('&').map(function (s) { return s.trim(); });
+                    ov = $('#overlay');
+                    t = unico ? 'CAMPEÃO' : (chave === 'Ouro' ? 'CAMPEÃO • CHAVE OURO' : 'CAMPEÃO • CHAVE PRATA');
+                    ov.innerHTML = "<div class=\"tf\">".concat(chave === 'Ouro' ? '🏆' : '🥈', "</div><div class=\"ct\">").concat(t, "</div><div class=\"cn\">").concat(ps.map(function (p) { return "<div>".concat(esc(p), "</div>"); }).join(''), "</div><div class=\"cv\">Vice-campe\u00E3o: ").concat(esc(nomeCurto(info.vice)), "</div>");
+                    ov.classList.remove('sino');
+                    ov.classList.add('on');
+                    Confete.iniciar(11000);
+                    i = 0;
+                    _a.label = 1;
+                case 1:
+                    if (!(i < 16 && !S.skip)) return [3 /*break*/, 4];
+                    return [4 /*yield*/, sleep(1000)];
+                case 2:
+                    _a.sent(); // ~16s
+                    _a.label = 3;
+                case 3:
+                    i++;
+                    return [3 /*break*/, 1];
+                case 4:
+                    Confete.parar();
+                    ov.classList.remove('on');
+                    return [2 /*return*/];
+            }
+        });
+    });
+}
+function verificarCampeoes(inicial) {
+    ['Ouro', 'Prata'].forEach(function (ch) {
+        var info = campeaoDe(ch);
+        var visto = S.campVisto[ch];
+        if (info && info.campeao !== visto) {
+            S.campVisto[ch] = info.campeao;
+            if (!inicial)
+                enfileirar(function () { return mostrarCampeao(ch, info); });
+        }
+        else if (!info)
+            S.campVisto[ch] = null;
+    });
+}
+/* ======================= EVENTOS DE DADOS ======================= */
+var nomesSort = function (c) { return ((c && c.sorteados) || []).map(function (i) { return i.jogador2 ? i.jogador1 + ' & ' + i.jogador2 : i.jogador1; }); };
+var nomesR0 = function (c) { return fm(['fasesMataMata', 'fasesPrata'], function (k) { return fm(fasesJogos(((c && c[k]) || [])[0]), function (j) { return [j.timeA, j.timeB]; }); }); };
+var difPos = function (a, b) { if (a.length !== b.length)
+    return 99; var d = 0; a.forEach(function (x, i) { if (x !== b[i])
+    d++; }); return d; };
+var dadosPrimeiros = function () { return S.pronto.camp && S.pronto.insc && S.pronto.jogos; };
+function iniciarSeProntos() {
+    if (S.iniciou || !dadosPrimeiros())
+        return;
+    S.iniciou = true;
+    $('#splash').style.display = 'none';
+    verificarCampeoes(true);
+    render();
+    setTimeout(function () { return $('#dica').style.opacity = 0; }, 9000);
+}
+function onCamp(novo) {
+    var ant = S.camp;
+    S.camp = novo;
+    S.pronto.camp = true;
+    if (!S.iniciou) {
+        iniciarSeProntos();
+        return;
+    }
+    var aS = nomesSort(ant), nS = nomesSort(novo), aM = nomesR0(ant), nM = nomesR0(novo);
+    var sortMudou = nS.length > 0 && (aS.length === 0 || difPos(aS, nS) > 2);
+    var mataMudou = nM.length > 0 && (aM.length === 0 || difPos(aM, nM) > 2);
+    if (temGrupos(novo)) {
+        if (sortMudou && !nM.length) {
+            var snap_1 = JSON.parse(JSON.stringify(novo));
+            enfileirar(function () { return animarSorteioGrupos(snap_1); });
+        }
+        else if (mataMudou) {
+            var snap_2 = JSON.parse(JSON.stringify(novo));
+            enfileirar(function () { return animarChaves(snap_2, '⚔️ MATA-MATA'); });
+        }
+    }
+    else if ((sortMudou || mataMudou) && nM.length) {
+        var snap_3 = JSON.parse(JSON.stringify(novo));
+        enfileirar(function () { return animarChaves(snap_3, '🎲 SORTEIO DAS CHAVES'); });
+    }
+    verificarCampeoes(false);
+    if (!S.anim)
+        render();
+}
+function onInscritos(lista) { S.inscritos = lista; S.pronto.insc = true; if (!S.iniciou) {
+    iniciarSeProntos();
+    return;
+} if (!S.anim && vista() === 'inscricoes')
+    render(); }
+function onJogos(mapa, alterados) {
+    var antes = S.jogos;
+    S.jogos = mapa;
+    S.pronto.jogos = true;
+    if (!S.iniciou) {
+        iniciarSeProntos();
+        return;
+    }
+    verificarCampeoes(false);
+    var novo = (alterados || []).filter(function (id) { return mapa[id] && mapa[id].vencedor; }).pop();
+    (alterados || []).forEach(function (id) { if (ehPneu(mapa[id]) && !ehPneu(antes[id])) {
+        var jg_1 = mapa[id];
+        enfileirar(function () { return mostrarSino(jg_1); });
+    } });
+    if (!S.anim) {
+        render();
+        if (novo)
+            atualizarFaixa(novo);
+    }
+}
+/* ======================= FIRESTORE (REST) ======================= */
+function splashMsg(html, sub) { $('#splash').style.display = 'flex'; $('#splash').innerHTML = '<div class="bola">🎾</div><div>' + html + '</div>' + (sub ? '<small>' + sub + '</small>' : ''); }
+var FS = 'https://firestore.googleapis.com/v1/projects/' + firebaseConfig.projectId + '/databases/(default)/documents';
+function fsVal(v) {
+    if (!v)
+        return null;
+    if ('stringValue' in v)
+        return v.stringValue;
+    if ('integerValue' in v)
+        return Number(v.integerValue);
+    if ('doubleValue' in v)
+        return v.doubleValue;
+    if ('booleanValue' in v)
+        return v.booleanValue;
+    if ('timestampValue' in v) {
+        var t = Date.parse(String(v.timestampValue).replace(/\.\d+Z$/, 'Z'));
+        return { seconds: Math.floor(t / 1000), nanoseconds: 0 };
+    }
+    if ('arrayValue' in v)
+        return (v.arrayValue.values || []).map(fsVal);
+    if ('mapValue' in v)
+        return fsObj(v.mapValue.fields);
+    return null;
+}
+function fsObj(f) { var o = {}; Object.keys(f || {}).forEach(function (k) { o[k] = fsVal(f[k]); }); return o; }
+function http(url) {
+    return new Promise(function (ok, err) {
+        var x = new XMLHttpRequest();
+        x.open('GET', url);
+        x.timeout = 20000;
+        x.onload = function () { if (x.status >= 200 && x.status < 300) {
+            try {
+                ok(JSON.parse(x.responseText));
+            }
+            catch (e) {
+                err(e);
+            }
+        }
+        else {
+            var e = new Error('HTTP ' + x.status);
+            e.status = x.status;
+            err(e);
+        } };
+        x.onerror = function () { return err(new Error('sem conexão')); };
+        x.ontimeout = function () { return err(new Error('tempo esgotado')); };
+        x.send();
+    });
+}
+var segs = function (p) { return p.split('/').map(encodeURIComponent).join('/'); };
+function idDe(nome) { var i = nome.split('/').pop(); try {
+    return /%[0-9A-Fa-f]{2}/.test(i) ? decodeURIComponent(i) : i;
+}
+catch (e) {
+    return i;
+} }
+function fsLista(caminho) {
+    return __awaiter(this, void 0, void 0, function () {
+        var docs, tok, r;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    docs = [], tok = '';
+                    _a.label = 1;
+                case 1: return [4 /*yield*/, http(FS + '/' + segs(caminho) + '?pageSize=300' + (tok ? '&pageToken=' + encodeURIComponent(tok) : ''))];
+                case 2:
+                    r = _a.sent();
+                    docs = docs.concat(r.documents || []);
+                    tok = r.nextPageToken || '';
+                    _a.label = 3;
+                case 3:
+                    if (tok) return [3 /*break*/, 1];
+                    _a.label = 4;
+                case 4: return [2 /*return*/, docs.map(function (d) { return ({ id: idDe(d.name), data: fsObj(d.fields) }); })];
+            }
+        });
+    });
+}
+function iniciarFirebase() {
+    return __awaiter(this, void 0, void 0, function () {
+        function ciclo() {
+            return __awaiter(this, void 0, void 0, function () {
+                var res, c, jc, ins, ji, mapa_1, jm_1, alt, e_6;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            _a.trys.push([0, 2, , 3]);
+                            return [4 /*yield*/, Promise.all([
+                                    http(FS + '/campeonatos/' + encodeURIComponent(ID)),
+                                    fsLista('campeonatos/' + ID + '/inscritos'),
+                                    fsLista('campeonatos/' + ID + '/jogos')
+                                ])];
+                        case 1:
+                            res = _a.sent();
+                            c = fsObj(res[0].fields), jc = JSON.stringify(c);
+                            setConexao(true);
+                            if (jc !== ultCamp) {
+                                ultCamp = jc;
+                                onCamp(c);
+                            }
+                            if (c.ranking && c.ranking !== rankingCarregado) {
+                                rankingCarregado = c.ranking;
+                                fsLista('rankings/' + c.ranking + '/jogadores').then(function (l) { var r = {}; l.forEach(function (d) { r[d.data.nome] = d.data.pontos || 0; }); S.rank = r; }).catch(function () { });
+                            }
+                            ins = res[1].map(function (d) { return d.data; }).sort(function (a, b) { return ((a.dataCriacao && a.dataCriacao.seconds) || 0) - ((b.dataCriacao && b.dataCriacao.seconds) || 0); });
+                            ji = JSON.stringify(ins);
+                            if (ji !== ultInsc) {
+                                ultInsc = ji;
+                                onInscritos(ins);
+                            }
+                            mapa_1 = {}, jm_1 = {};
+                            res[2].forEach(function (d) { mapa_1[d.id] = d.data; jm_1[d.id] = JSON.stringify(d.data); });
+                            alt = antJogos ? Object.keys(jm_1).filter(function (id) { return antJogos[id] !== jm_1[id]; }) : [];
+                            if (antJogos === null || alt.length || Object.keys(jm_1).length !== Object.keys(antJogos).length) {
+                                antJogos = jm_1;
+                                onJogos(mapa_1, alt);
+                            }
+                            return [3 /*break*/, 3];
+                        case 2:
+                            e_6 = _a.sent();
+                            erro(e_6);
+                            return [3 /*break*/, 3];
+                        case 3:
+                            setTimeout(ciclo, 4000);
+                            return [2 /*return*/];
+                    }
+                });
+            });
+        }
+        var ultCamp, ultInsc, antJogos, rankingCarregado, erro;
+        return __generator(this, function (_a) {
+            if (!ID)
+                return [2 /*return*/, escolherCampeonato()];
+            ultCamp = null, ultInsc = null, antJogos = null, rankingCarregado = null;
+            erro = function (e) {
+                console.error(e);
+                if (e && e.status === 404) {
+                    splashMsg('Campeonato não encontrado', 'Use Esc para escolher outro.');
+                    return;
+                }
+                setConexao(false);
+                if (!S.iniciou)
+                    splashMsg('Não foi possível ler os dados', e && e.status === 403 ? 'Sem permissão de leitura no banco.' : 'Verifique a internet da TV. (' + (e && e.message) + ')');
+            };
+            ciclo();
+            return [2 /*return*/];
+        });
+    });
+}
+function escolherCampeonato() {
+    return __awaiter(this, void 0, void 0, function () {
+        var l, lista, ativos, as;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, fsLista('campeonatos')];
+                case 1:
+                    l = _a.sent();
+                    lista = l.map(function (d) { return Object.assign({ id: d.id }, d.data); }).sort(function (a, b) { return ((b.dataCriacao && b.dataCriacao.seconds) || 0) - ((a.dataCriacao && a.dataCriacao.seconds) || 0); });
+                    ativos = lista.filter(function (x) { return x.status !== 'encerrado'; });
+                    if (ativos.length === 1 && !QS.get('escolher')) {
+                        location.replace('telao-tv.html?id=' + encodeURIComponent(ativos[0].id));
+                        return [2 /*return*/];
+                    }
+                    if (!lista.length) {
+                        splashMsg('Nenhum campeonato encontrado');
+                        return [2 /*return*/];
+                    }
+                    $('#splash').style.display = 'flex';
+                    $('#splash').innerHTML = "<div style=\"font-size:54px\">Escolha o campeonato</div><div class=\"pick\">".concat(lista.slice(0, 8).map(function (x, i) {
+                        return "<a href=\"telao-tv.html?id=".concat(encodeURIComponent(x.id), "\" ").concat(i === 0 ? 'autofocus' : '', "><span class=\"st").concat(x.status === 'encerrado' ? ' enc' : '', "\">").concat(x.status === 'encerrado' ? 'ENCERRADO' : 'EM ANDAMENTO', "</span><h3>").concat(esc(x.nome), "</h3><p>").concat(esc(x.formato || ''), "</p></a>");
+                    }).join(''), "</div>\n    <small>Use as setas do controle e OK</small>");
+                    as = Array.prototype.slice.call(document.querySelectorAll('.pick a'));
+                    if (as[0])
+                        as[0].focus();
+                    addEventListener('keydown', function (e) { var i = as.indexOf(document.activeElement); if (['ArrowRight', 'ArrowDown'].includes(e.key)) {
+                        var t = as[Math.min(as.length - 1, i + 1)];
+                        if (t)
+                            t.focus();
+                    } if (['ArrowLeft', 'ArrowUp'].includes(e.key)) {
+                        var t = as[Math.max(0, i - 1)];
+                        if (t)
+                            t.focus();
+                    } });
+                    return [2 /*return*/];
+            }
+        });
+    });
+}
+/* ======================= DEMO (simulação) ======================= */
+function iniciarDemo(tipo) {
+    return __awaiter(this, void 0, void 0, function () {
+        function jogarChave(fs, chave) {
+            return __awaiter(this, void 0, void 0, function () {
+                var r, _a, _b, j, e_8_1;
+                var e_8, _c;
+                return __generator(this, function (_d) {
+                    switch (_d.label) {
+                        case 0:
+                            r = 0;
+                            _d.label = 1;
+                        case 1:
+                            if (!(r < fs.length)) return [3 /*break*/, 11];
+                            _d.label = 2;
+                        case 2:
+                            _d.trys.push([2, 8, 9, 10]);
+                            _a = (e_8 = void 0, __values(fasesJogos(fs[r]))), _b = _a.next();
+                            _d.label = 3;
+                        case 3:
+                            if (!!_b.done) return [3 /*break*/, 7];
+                            j = _b.value;
+                            if (aguard(j.timeA) || aguard(j.timeB) || ehBye(j.timeA) || ehBye(j.timeB))
+                                return [3 /*break*/, 6];
+                            return [4 /*yield*/, salvar(idJogo(chave, r, j.timeA, j.timeB), j.timeA, j.timeB)];
+                        case 4:
+                            _d.sent();
+                            avancar(fs, chave);
+                            onCamp(JSON.parse(JSON.stringify(camp)));
+                            return [4 /*yield*/, pausa(500)];
+                        case 5:
+                            _d.sent();
+                            _d.label = 6;
+                        case 6:
+                            _b = _a.next();
+                            return [3 /*break*/, 3];
+                        case 7: return [3 /*break*/, 10];
+                        case 8:
+                            e_8_1 = _d.sent();
+                            e_8 = { error: e_8_1 };
+                            return [3 /*break*/, 10];
+                        case 9:
+                            try {
+                                if (_b && !_b.done && (_c = _a.return)) _c.call(_a);
+                            }
+                            finally { if (e_8) throw e_8.error; }
+                            return [7 /*endfinally*/];
+                        case 10:
+                            r++;
+                            return [3 /*break*/, 1];
+                        case 11: return [2 /*return*/];
+                    }
+                });
+            });
+        }
+        var NOMES, sup, elim, formato, nIns, camp, insc, jogos, pausa, esperaAnim, todos, i, emb, fases, novaChave, avancar, placar, relogio, salvar, times, fs, gr, ids_1, _a, _b, _c, id, a, b, e_7_1, cls, ouro_1, prata_1;
+        var e_7, _d;
+        var _this = this;
+        return __generator(this, function (_e) {
+            switch (_e.label) {
+                case 0:
+                    NOMES = ['Rafael Lima', 'Bruno Costa', 'Carla Mendes', 'Diego Alves', 'Eduarda Rocha', 'Fábio Nunes', 'Gabriela Souza', 'Henrique Dias', 'Isabela Prado', 'João Pedro', 'Karina Melo', 'Lucas Ferreira', 'Mariana Teixeira', 'Nicolas Barros', 'Olívia Campos', 'Paulo Henrique', 'Quésia Ramos', 'Ricardo Moura', 'Sabrina Lopes', 'Thiago Martins', 'Úrsula Pires', 'Vitor Hugo', 'Wesley Cardoso', 'Yasmin Duarte', 'Zeca Pagodinho', 'Amanda Reis', 'Breno Salles', 'Camila Vidal', 'Daniel Faria', 'Elisa Pacheco', 'Felipe Araújo', 'Giovana Lacerda'];
+                    sup = tipo === 'super4', elim = tipo === 'elim';
+                    formato = sup ? 'Super 4 (Ouro e Prata)' : elim ? 'Apenas Eliminatórias' : 'Grupos + Eliminatórias';
+                    nIns = sup ? 24 : elim ? 11 : 12;
+                    camp = { nome: 'Open Confra & Play (DEMO)', formato: formato, ranking: 'Categoria A', sets: '1 Set (até 6 games)', status: 'andamento', sorteados: [], fasesMataMata: [], fasesPrata: [] };
+                    insc = [], jogos = {};
+                    pausa = function (ms) { return new Promise(function (r) { return setTimeout(r, ms / VEL); }); };
+                    esperaAnim = function () { return __awaiter(_this, void 0, void 0, function () { return __generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0: return [4 /*yield*/, pausa(1200)];
+                            case 1:
+                                _a.sent();
+                                _a.label = 2;
+                            case 2:
+                                if (!(S.anim || S.rodandoFila)) return [3 /*break*/, 4];
+                                return [4 /*yield*/, pausa(500)];
+                            case 3:
+                                _a.sent();
+                                return [3 /*break*/, 2];
+                            case 4: return [4 /*yield*/, pausa(1500)];
+                            case 5:
+                                _a.sent();
+                                return [2 /*return*/];
+                        }
+                    }); }); };
+                    onCamp(__assign({}, camp));
+                    onInscritos([]);
+                    onJogos({}, []);
+                    return [4 /*yield*/, pausa(2500)];
+                case 1:
+                    _e.sent();
+                    todos = embaralha(NOMES).slice(0, sup ? nIns : nIns * 2);
+                    i = 0;
+                    _e.label = 2;
+                case 2:
+                    if (!(i < nIns)) return [3 /*break*/, 5];
+                    insc = __spreadArray(__spreadArray([], __read(insc), false), [sup ? { jogador1: todos[i], nivelSeed: i < 2 ? i + 1 : 0 } : { jogador1: todos[i * 2], jogador2: todos[i * 2 + 1], nivelSeed: i < 2 ? i + 1 : 0 }], false);
+                    onInscritos(insc);
+                    return [4 /*yield*/, pausa(420)];
+                case 3:
+                    _e.sent();
+                    _e.label = 4;
+                case 4:
+                    i++;
+                    return [3 /*break*/, 2];
+                case 5: return [4 /*yield*/, pausa(3000)];
+                case 6:
+                    _e.sent();
+                    emb = embaralha(insc.map(function (_a, i) {
+                        var nivelSeed = _a.nivelSeed, r = __rest(_a, ["nivelSeed"]);
+                        return (__assign(__assign({}, r), { nivelSeed: insc[i].nivelSeed }));
+                    }));
+                    fases = [];
+                    novaChave = function (times) { var n = times.length, p2 = Math.pow(2, Math.ceil(Math.log2(Math.max(2, n)))); var byes = p2 - n; var q = __spreadArray([], __read(times), false), rod = []; for (var i = 0; i < p2 / 2; i++) {
+                        var a = q.shift();
+                        var b = void 0;
+                        if (byes > 0) {
+                            b = 'BYE (Avança)';
+                            byes--;
+                        }
+                        else
+                            b = q.shift();
+                        rod.push({ timeA: a, timeB: b });
+                    } var f = [{ jogos: rod }]; for (var p = p2 / 4; p >= 1; p /= 2)
+                        f.push({ jogos: Array.from({ length: p }, function () { return ({ timeA: null, timeB: null }); }) }); return f; };
+                    avancar = function (fs, pref) { return fs.forEach(function (fase, r) { var js = fasesJogos(fase), v = []; js.forEach(function (j) { var s = jogos[idJogo(pref, r, j.timeA, j.timeB)]; if (s && s.vencedor)
+                        v.push(s.vencedor);
+                    else if (j.timeA && ehBye(j.timeA))
+                        v.push(j.timeB);
+                    else if (j.timeB && ehBye(j.timeB))
+                        v.push(j.timeA);
+                    else
+                        v.push('Aguardando...'); }); if (fs[r + 1]) {
+                        var k_1 = 0;
+                        fasesJogos(fs[r + 1]).forEach(function (pj) { pj.timeA = v[k_1++] || 'Aguardando...'; pj.timeB = v[k_1++] || 'Aguardando...'; });
+                    } }); };
+                    placar = function () { var lo = Math.floor(Math.random() * 5), tb = Math.random() < .15; return tb ? [7, 6 - Math.floor(Math.random() * 2)] : [6, lo]; };
+                    relogio = 1000;
+                    salvar = function (id, tA, tB) { return __awaiter(_this, void 0, void 0, function () {
+                        var _a, w, l, aGanha, q;
+                        var _b;
+                        return __generator(this, function (_c) {
+                            switch (_c.label) {
+                                case 0:
+                                    _a = __read(placar(), 2), w = _a[0], l = _a[1];
+                                    aGanha = Math.random() < .5;
+                                    q = jogos[id] && jogos[id].quadra;
+                                    jogos = __assign(__assign({}, jogos), (_b = {}, _b[id] = __assign({ timeA: tA, timeB: tB, placarA: [aGanha ? w : l], placarB: [aGanha ? l : w], vencedor: aGanha ? tA : tB, dataRegistro: { seconds: relogio++ } }, (q ? { quadra: q } : {})), _b));
+                                    onJogos(jogos, [id]);
+                                    return [4 /*yield*/, pausa(1700)];
+                                case 1:
+                                    _c.sent();
+                                    return [2 /*return*/];
+                            }
+                        });
+                    }); };
+                    if (!elim) return [3 /*break*/, 9];
+                    times = emb.map(function (s) { return "".concat(s.jogador1, " & ").concat(s.jogador2); });
+                    fs = novaChave(times);
+                    camp.sorteados = emb;
+                    camp.fasesMataMata = fs;
+                    onCamp(JSON.parse(JSON.stringify(camp)));
+                    return [4 /*yield*/, esperaAnim()];
+                case 7:
+                    _e.sent();
+                    avancar(fs, 'Ouro');
+                    onCamp(JSON.parse(JSON.stringify(camp)));
+                    return [4 /*yield*/, jogarChave(fs, 'Ouro')];
+                case 8:
+                    _e.sent();
+                    return [3 /*break*/, 24];
+                case 9:
+                    camp.sorteados = emb;
+                    onCamp(JSON.parse(JSON.stringify(camp)));
+                    return [4 /*yield*/, esperaAnim()];
+                case 10:
+                    _e.sent();
+                    gr = distribuir(camp);
+                    ids_1 = [];
+                    gr.forEach(function (g, gi) { if (sup) {
+                        var p_2 = g.map(function (x) { return x.jogador1; });
+                        [[0, 1, 2, 3], [0, 2, 1, 3], [0, 3, 1, 2]].forEach(function (_a) {
+                            var _b = __read(_a, 4), a = _b[0], b = _b[1], x = _b[2], y = _b[3];
+                            var tA = "".concat(p_2[a], " & ").concat(p_2[b]), tB = "".concat(p_2[x], " & ").concat(p_2[y]);
+                            ids_1.push(["".concat(semEsp(tA), "_vs_").concat(semEsp(tB)), tA, tB, gi]);
+                        });
+                    }
+                    else {
+                        var e = g.map(function (s) { return "".concat(s.jogador1, " & ").concat(s.jogador2); });
+                        for (var i = 0; i < e.length; i++)
+                            for (var j = i + 1; j < e.length; j++)
+                                ids_1.push(["".concat(semEsp(e[i]), "_vs_").concat(semEsp(e[j])), e[i], e[j], gi]);
+                    } });
+                    ids_1.forEach(function (_a) {
+                        var _b;
+                        var _c = __read(_a, 4), id = _c[0], a = _c[1], b = _c[2], gi = _c[3];
+                        jogos = __assign(__assign({}, jogos), (_b = {}, _b[id] = { timeA: a, timeB: b, quadra: String(gi % 3 + 1) }, _b));
+                    });
+                    onJogos(jogos, []);
+                    return [4 /*yield*/, pausa(2500)];
+                case 11:
+                    _e.sent();
+                    _e.label = 12;
+                case 12:
+                    _e.trys.push([12, 17, 18, 19]);
+                    _a = __values(embaralha(ids_1)), _b = _a.next();
+                    _e.label = 13;
+                case 13:
+                    if (!!_b.done) return [3 /*break*/, 16];
+                    _c = __read(_b.value, 3), id = _c[0], a = _c[1], b = _c[2];
+                    return [4 /*yield*/, salvar(id, a, b)];
+                case 14:
+                    _e.sent();
+                    _e.label = 15;
+                case 15:
+                    _b = _a.next();
+                    return [3 /*break*/, 13];
+                case 16: return [3 /*break*/, 19];
+                case 17:
+                    e_7_1 = _e.sent();
+                    e_7 = { error: e_7_1 };
+                    return [3 /*break*/, 19];
+                case 18:
+                    try {
+                        if (_b && !_b.done && (_d = _a.return)) _d.call(_a);
+                    }
+                    finally { if (e_7) throw e_7.error; }
+                    return [7 /*endfinally*/];
+                case 19: return [4 /*yield*/, pausa(3000)];
+                case 20:
+                    _e.sent();
+                    cls = calcGrupos(camp, jogos);
+                    ouro_1 = [], prata_1 = [];
+                    cls.forEach(function (g) { if (sup) {
+                        ouro_1.push("".concat(g.linhas[0].nome, " & ").concat(g.linhas[1].nome));
+                        prata_1.push("".concat(g.linhas[2].nome, " & ").concat(g.linhas[3].nome));
+                    }
+                    else
+                        g.linhas.slice(0, g.lim).forEach(function (l) { return ouro_1.push(l.nome); }); });
+                    camp.fasesMataMata = novaChave(embaralha(ouro_1));
+                    camp.fasesPrata = sup ? novaChave(embaralha(prata_1)) : [];
+                    avancar(camp.fasesMataMata, 'Ouro');
+                    if (camp.fasesPrata.length)
+                        avancar(camp.fasesPrata, 'Prata');
+                    onCamp(JSON.parse(JSON.stringify(camp)));
+                    return [4 /*yield*/, esperaAnim()];
+                case 21:
+                    _e.sent();
+                    return [4 /*yield*/, jogarChave(camp.fasesMataMata, 'Ouro')];
+                case 22:
+                    _e.sent();
+                    if (!camp.fasesPrata.length) return [3 /*break*/, 24];
+                    return [4 /*yield*/, jogarChave(camp.fasesPrata, 'Prata')];
+                case 23:
+                    _e.sent();
+                    _e.label = 24;
+                case 24:
+                    camp.status = 'encerrado';
+                    onCamp(JSON.parse(JSON.stringify(camp)));
+                    return [2 /*return*/];
+            }
+        });
+    });
+}
+/* ======================= CONTROLES ======================= */
+function telaCheia() { if (document.fullscreenElement)
+    document.exitFullscreen();
+else {
+    var r = document.documentElement.requestFullscreen;
+    if (r) {
+        var pr = r.call(document.documentElement);
+        if (pr && pr.catch)
+            pr.catch(function () { });
+    }
+} }
+addEventListener('click', function (e) { if (!e.target.closest('a'))
+    telaCheia(); });
+addEventListener('keydown', function (e) {
+    if (e.key === 'f' || e.key === 'F')
+        telaCheia();
+    else if (e.key === ' ') {
+        e.preventDefault();
+        pular();
+    }
+    else if (e.key === 'Escape' && !document.fullscreenElement)
+        location.href = 'telao-tv.html?escolher=1';
+    else if (e.key === 'r' || e.key === 'R')
+        location.reload();
+});
+var tCursor;
+addEventListener('mousemove', function () { document.body.classList.remove('sem-cursor'); clearTimeout(tCursor); tCursor = setTimeout(function () { return document.body.classList.add('sem-cursor'); }, 3000); });
+function manterTelaLigada() {
+    return __awaiter(this, void 0, void 0, function () { var e_9; return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                _a.trys.push([0, 3, , 4]);
+                if (!navigator.wakeLock) return [3 /*break*/, 2];
+                return [4 /*yield*/, navigator.wakeLock.request('screen')];
+            case 1:
+                _a.sent();
+                _a.label = 2;
+            case 2: return [3 /*break*/, 4];
+            case 3:
+                e_9 = _a.sent();
+                return [3 /*break*/, 4];
+            case 4: return [2 /*return*/];
+        }
+    }); });
+}
+manterTelaLigada();
+document.addEventListener('visibilitychange', function () { if (!document.hidden)
+    manterTelaLigada(); });
+if (DEMO) {
+    $('#splash').style.display = 'none';
+    iniciarDemo(DEMO === '1' ? 'super4' : DEMO);
+}
+else
+    iniciarFirebase().catch(function (e) { console.error(e); splashMsg('Não foi possível conectar', 'Verifique a internet da TV e recarregue (tecla R).'); });
+
+</script>
+</body>
+</html>

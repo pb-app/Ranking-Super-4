@@ -1013,7 +1013,7 @@
     </div>
     <!-- Versão Clicável para Atualizar -->
 <div id="appVersionBadge" onclick="verificarAtualizacaoApp()" style="position: fixed; bottom: 12px; right: 12px; background: rgba(31, 41, 55, 0.85); backdrop-filter: blur(4px); color: #9ca3af; padding: 5px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; z-index: 1000; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1);" title="Toque para verificar atualizações">
-    v34 🔄
+    v35 🔄
 </div>
     </footer>
 
@@ -1207,7 +1207,7 @@
         window.__diagBanner = banner;
     })();
     </script>
-    <script nomodule>document.addEventListener('DOMContentLoaded', function(){ var d=document.createElement('div'); d.style.cssText='position:fixed;left:0;right:0;top:0;background:#7f1d1d;color:#fff;font:16px sans-serif;padding:14px;z-index:99999'; d.textContent='⚠️ Este navegador é antigo demais para o aplicativo. Atualize o navegador da TV ou use o Chrome/Chromecast.'; document.body.appendChild(d); });</script>
+    <script nomodule>document.addEventListener('DOMContentLoaded', function(){ var d=document.createElement('div'); d.style.cssText='position:fixed;left:0;right:0;top:0;background:#7f1d1d;color:#fff;font:16px sans-serif;padding:14px;z-index:99999'; d.innerHTML='⚠️ Este navegador é antigo demais para o aplicativo completo. Para usar na TV, abra o Telão: <a href="telao-tv.html" style="color:#fde68a;font-weight:bold">telao-tv.html</a><br><small>'+navigator.userAgent+'</small>'; document.body.appendChild(d); });</script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, doc, updateDoc, getDocs, setDoc, getDoc, deleteDoc, collectionGroup, increment } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
@@ -1227,7 +1227,7 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        const APP_VERSION = "v34";
+        const APP_VERSION = "v35";
         let isLogged = false;
         let torneioAbertoId = null; 
         let torneioAbertoData = null; 
