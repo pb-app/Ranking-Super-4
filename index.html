@@ -1013,7 +1013,7 @@
     </div>
     <!-- Versão Clicável para Atualizar -->
 <div id="appVersionBadge" onclick="verificarAtualizacaoApp()" style="position: fixed; bottom: 12px; right: 12px; background: rgba(31, 41, 55, 0.85); backdrop-filter: blur(4px); color: #9ca3af; padding: 5px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; z-index: 1000; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1);" title="Toque para verificar atualizações">
-    v32 🔄
+    v33 🔄
 </div>
     </footer>
 
@@ -1207,7 +1207,7 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        const APP_VERSION = "v32";
+        const APP_VERSION = "v33";
         let isLogged = false;
         let torneioAbertoId = null; 
         let torneioAbertoData = null; 
@@ -2265,6 +2265,13 @@ window.jogosSalvos = novosJogosSalvos;
             const btnProx = document.getElementById('btnFaseProxima');
             const painelTroca = document.getElementById('painelTrocaGrupos'); 
             
+            // Antes do sorteio (sem grupos nem mata-mata gerados) só aparecem inscrições + "Gerar Confrontos"
+            const _jaSorteado = torneioAbertoData && ((torneioAbertoData.sorteados || []).length > 0 || (torneioAbertoData.fasesMataMata || []).length > 0);
+            if (!_jaSorteado) {
+                navegador.classList.add('hidden'); painelTroca.classList.add('hidden');
+                document.getElementById('btnMontarMataMata').classList.add('hidden');
+                return;
+            }
             if (!nomesFases || nomesFases.length === 0) { navegador.classList.add('hidden'); return; }
             navegador.classList.remove('hidden'); titulo.textContent = nomesFases[faseAtualUI];
             
