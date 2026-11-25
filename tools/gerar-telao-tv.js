@@ -109,6 +109,10 @@ js = js.replace(/\[\.\.\.(document\.querySelectorAll\([^)]*\))\]/g, 'Array.proto
 // Web Animations pode não existir: cai no caminho de erro (que já coloca o nome no lugar)
 js = js.replace('const an = chip.animate(', 'const an = chip.animate ? chip.animate(')
        .replace("{ duration: voo, easing: 'cubic-bezier(.25,.8,.3,1)', fill: 'forwards' });", "{ duration: voo, easing: 'cubic-bezier(.25,.8,.3,1)', fill: 'forwards' }) : { finished: Promise.reject(new Error('sem animate')) };");
+// fallback do grid (navegadores sem CSS Grid): o JS passa tamanhos por variáveis CSS
+const gridAntes = 'style="grid-template-columns:repeat(${fit.cols},${fit.cw}px)';
+if (!js.includes(gridAntes)) throw new Error('grid inline não encontrado');
+js = js.replace(gridAntes, 'style="--cw:${fit.cw}px;--ch:${fit.ch}px;--g:${gap}px;grid-template-columns:repeat(${fit.cols},${fit.cw}px)');
 // versão local deste arquivo
 js = js.replace(/telao-tv\.html\?escolher=1/g, 'telao-tv.html?escolher=1');
 
@@ -167,7 +171,24 @@ function cssLegado(css) {
     return m;
   });
   css = css.replace(/(^|[;{\s])gap:/g, '$1grid-gap:'); // grid antigo entende grid-gap
-  return css + '\n/* gap de flex emulado */\n' + extra;
+  const semGrid = `
+/* navegadores sem CSS Grid (Chrome < 57): troca grid por flex */
+@supports not (display:grid){
+  .grid{display:flex;flex-wrap:wrap;justify-content:center;align-content:center}
+  .grid{width:calc(100% + var(--g));height:calc(100% + var(--g)) !important;margin:0 calc(var(--g) * -1) calc(var(--g) * -1) 0}
+  .grid>*{flex:none;margin:0 var(--g) var(--g) 0}
+  .gcols,.glin{display:flex;align-items:center}
+  .gcols>*,.glin>*{flex:none;margin-left:4px}
+  .gcols>*:nth-child(1),.glin>*:nth-child(1){width:50px;margin-left:0}
+  .gcols>*:nth-child(2),.glin>*:nth-child(2){flex:1 1 0px;width:auto;min-width:0}
+  .gcols>*:nth-child(3),.glin>*:nth-child(3){width:56px}
+  .gcols>*:nth-child(4),.glin>*:nth-child(4){width:56px}
+  .gcols>*:nth-child(5),.glin>*:nth-child(5){width:62px}
+  .gcols>*:nth-child(6),.glin>*:nth-child(6){width:72px}
+  .pick{display:flex;flex-wrap:wrap;width:1500px}
+  .pick>*{width:737px;margin:13px}
+}`;
+  return css + '\n/* gap de flex emulado */\n' + extra + semGrid;
 }
 const mC = src.match(/<style>([\s\S]*?)<\/style>/);
 const css = cssLegado(mC[1]);

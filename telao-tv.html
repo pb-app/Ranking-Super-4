@@ -195,7 +195,23 @@ svg.conn path.on{stroke:var(--ouro);stroke-width:4}
 #faixa>*+*{margin-left:22px}
 /* estados */
 #splash>*+*{margin-top:26px}
-</style>
+
+/* navegadores sem CSS Grid (Chrome < 57): troca grid por flex */
+@supports not (display:grid){
+  .grid{display:flex;flex-wrap:wrap;justify-content:center;align-content:center}
+  .grid{width:calc(100% + var(--g));height:calc(100% + var(--g)) !important;margin:0 calc(var(--g) * -1) calc(var(--g) * -1) 0}
+  .grid>*{flex:none;margin:0 var(--g) var(--g) 0}
+  .gcols,.glin{display:flex;align-items:center}
+  .gcols>*,.glin>*{flex:none;margin-left:4px}
+  .gcols>*:nth-child(1),.glin>*:nth-child(1){width:50px;margin-left:0}
+  .gcols>*:nth-child(2),.glin>*:nth-child(2){flex:1 1 0px;width:auto;min-width:0}
+  .gcols>*:nth-child(3),.glin>*:nth-child(3){width:56px}
+  .gcols>*:nth-child(4),.glin>*:nth-child(4){width:56px}
+  .gcols>*:nth-child(5),.glin>*:nth-child(5){width:62px}
+  .gcols>*:nth-child(6),.glin>*:nth-child(6){width:72px}
+  .pick{display:flex;flex-wrap:wrap;width:1500px}
+  .pick>*{width:737px;margin:13px}
+}</style>
 <!-- GERADO por tools/gerar-telao-tv.js a partir de telao.html. Não edite à mão. -->
 </head>
 <body>
@@ -521,7 +537,7 @@ function paginar(n, W, H, bw, bh, minS, gap) {
 }
 function gradeHTML(cells, fit, bw, bh, gap) {
     var sc = Math.min(fit.s, 1.5);
-    return "<div class=\"grid\" style=\"grid-template-columns:repeat(".concat(fit.cols, ",").concat(fit.cw, "px);grid-auto-rows:").concat(fit.ch, "px;gap:").concat(gap, "px;height:100%\">") +
+    return "<div class=\"grid\" style=\"--cw:".concat(fit.cw, "px;--ch:").concat(fit.ch, "px;--g:").concat(gap, "px;grid-template-columns:repeat(").concat(fit.cols, ",").concat(fit.cw, "px);grid-auto-rows:").concat(fit.ch, "px;gap:").concat(gap, "px;height:100%\">") +
         cells.map(function (h) { return "<div class=\"cell\" style=\"width:".concat(fit.cw, "px;height:").concat(fit.ch, "px\"><div class=\"in\" style=\"width:").concat(bw, "px;height:").concat(bh, "px;transform:translate(-50%,-50%) scale(").concat(sc, ")\">").concat(h, "</div></div>"); }).join('') + '</div>';
 }
 function cicloPaginas(pages) {
