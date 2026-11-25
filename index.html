@@ -910,6 +910,8 @@
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 10px;">
                 <button id="btnVoltar" class="btn btn-outline" style="border: none; padding-left: 0; color: var(--blue-link) !important; font-weight: 600;">← Voltar</button>
                 <div style="display: flex; gap: 10px;">
+                    <button id="btnTelao" onclick="abrirTelao()" class="btn" style="background: #7c3aed; color: white;" title="Abre a tela para TV/Chromecast">📺 Modo Telão</button>
+                    <button id="btnLinkTelao" onclick="copiarLinkTelao()" class="btn btn-outline" style="border-color: #7c3aed; color: #7c3aed !important;" title="Copia o link para abrir na TV">🔗 Link do Telão</button>
                     <button id="btnExportarExcel" onclick="exportarTorneioPDF()" class="btn hidden" style="background: #10b981; color: white;">📄 Baixar PDF do Torneio</button>
                     <button id="btnExcluirTorneio" class="btn hidden" style="background: #ef4444; color: white;">🗑 Excluir Torneio</button>
                 </div>
@@ -1008,7 +1010,7 @@
     </div>
     <!-- Versão Clicável para Atualizar -->
 <div id="appVersionBadge" onclick="verificarAtualizacaoApp()" style="position: fixed; bottom: 12px; right: 12px; background: rgba(31, 41, 55, 0.85); backdrop-filter: blur(4px); color: #9ca3af; padding: 5px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; z-index: 1000; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1);" title="Toque para verificar atualizações">
-    v26 🔄
+    v27 🔄
 </div>
     </footer>
 
@@ -1044,7 +1046,7 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        const APP_VERSION = "v26";
+        const APP_VERSION = "v27";
         let isLogged = false;
         let torneioAbertoId = null; 
         let torneioAbertoData = null; 
@@ -3968,6 +3970,17 @@ if (window.rankingJogadoresCache) {
         }
 
         // --- FUNÇÃO PARA EXPORTAR O TORNEIO EM PDF ---
+        window.abrirTelao = function() {
+            if (!torneioAbertoId) return;
+            window.open('telao.html?id=' + encodeURIComponent(torneioAbertoId), '_blank');
+        };
+        window.copiarLinkTelao = async function() {
+            if (!torneioAbertoId) return;
+            const url = new URL('telao.html?id=' + encodeURIComponent(torneioAbertoId), location.href).href;
+            try { await navigator.clipboard.writeText(url); alert('Link do telão copiado!\n\nAbra na TV (navegador da Smart TV) ou transmita a aba pelo Chromecast.\n\nDica: na TV, basta abrir ' + new URL('telao.html', location.href).href + ' que ele abre o campeonato em andamento sozinho.'); }
+            catch (e) { prompt('Copie o link do telão:', url); }
+        };
+
         window.exportarTorneioPDF = async function() {
             if (!torneioAbertoData) return;
             
