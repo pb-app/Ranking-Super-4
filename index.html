@@ -1013,7 +1013,7 @@
     </div>
     <!-- Versão Clicável para Atualizar -->
 <div id="appVersionBadge" onclick="verificarAtualizacaoApp()" style="position: fixed; bottom: 12px; right: 12px; background: rgba(31, 41, 55, 0.85); backdrop-filter: blur(4px); color: #9ca3af; padding: 5px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; z-index: 1000; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1);" title="Toque para verificar atualizações">
-    v31 🔄
+    v32 🔄
 </div>
     </footer>
 
@@ -1080,8 +1080,114 @@
             #modalPerfilJogador .perfil-stats > div { padding: 5px 4px !important; }
             #modalPerfilJogador .perfil-acoes .btn > span:first-child { display: none; }
         }
+
+        /* ===== v32: avisos (toast) e diálogos próprios ===== */
+        #toastBox { position: fixed; top: 14px; left: 50%; transform: translateX(-50%); z-index: 100000; display: flex; flex-direction: column; gap: 8px; width: min(440px, calc(100vw - 24px)); pointer-events: none; }
+        .toast { pointer-events: auto; display: flex; align-items: flex-start; gap: 10px; background: var(--white); color: var(--dark); border: 1px solid var(--border); border-left: 5px solid var(--gray); border-radius: 12px; padding: 12px 14px; box-shadow: 0 10px 28px rgba(0,0,0,.18); font-size: .92rem; line-height: 1.4; white-space: pre-line; cursor: pointer; animation: toastIn .22s ease-out; }
+        .toast .t-ico { font-size: 1.1rem; line-height: 1.3; flex-shrink: 0; }
+        .toast .t-msg { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+        .toast.t-ok { border-left-color: #10b981; } .toast.t-erro { border-left-color: #ef4444; } .toast.t-aviso { border-left-color: #f59e0b; }
+        .toast.t-sai { opacity: 0; transform: translateY(-10px); transition: all .22s ease; }
+        @keyframes toastIn { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: none; } }
+        .dlg-fundo { position: fixed; inset: 0; z-index: 100001; background: rgba(15,23,42,.55); display: flex; align-items: center; justify-content: center; padding: 16px; animation: dlgFade .15s ease-out; }
+        @keyframes dlgFade { from { opacity: 0; } to { opacity: 1; } }
+        .dlg { background: var(--white); color: var(--dark); border: 1px solid var(--border); border-radius: 16px; width: min(420px, 100%); padding: 20px 20px 16px; box-shadow: 0 24px 60px rgba(0,0,0,.35); animation: dlgPop .18s ease-out; max-height: 90vh; overflow: auto; }
+        @keyframes dlgPop { from { transform: scale(.94); opacity: 0; } to { transform: none; opacity: 1; } }
+        .dlg h4 { font-size: 1.1rem; font-weight: 800; margin-bottom: 8px; }
+        .dlg.perigo h4 { color: #dc2626; }
+        .dlg p { color: var(--gray); font-size: .95rem; line-height: 1.45; white-space: pre-line; margin-bottom: 14px; overflow-wrap: anywhere; }
+        .dlg input { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; font-size: 1rem; margin-bottom: 14px; background: var(--white); color: var(--dark); }
+        .dlg .dlg-acoes { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
+        .dlg .dlg-acoes.empilhado { flex-direction: column; }
+        .dlg .dlg-acoes button { padding: 10px 16px; border-radius: 10px; border: 1px solid var(--border); background: transparent; color: var(--dark); font-weight: 700; font-size: .95rem; cursor: pointer; font-family: inherit; }
+        .dlg .dlg-acoes button.dlg-ok { background: var(--primary); border-color: var(--primary); color: #fff; }
+        .dlg.perigo .dlg-acoes button.dlg-ok { background: #dc2626; border-color: #dc2626; }
+        .dlg .dlg-acoes button:active { transform: scale(.97); }
+
+        .chip-inscricoes { background: #f1f5f9; color: #475569; border-color: #cbd5e1; }
+        [data-tema="escuro"] .chip-inscricoes { background: #1e293b; color: #cbd5e1; border-color: #475569; }
+        .card-meta { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: .85rem; color: var(--gray); margin-bottom: 4px; }
+        .card-meta span { white-space: nowrap; }
     </style>
 
+    <script>
+    /* v32: avisos (toast) no lugar do alert() e diálogos próprios no lugar de confirm()/prompt() */
+    (function () {
+        function caixa() {
+            let c = document.getElementById('toastBox');
+            if (!c) { c = document.createElement('div'); c.id = 'toastBox'; c.setAttribute('role', 'status'); c.setAttribute('aria-live', 'polite'); document.body.appendChild(c); }
+            return c;
+        }
+        window.toast = function (msg, tipo) {
+            let texto = String(msg == null ? '' : msg).trim();
+            if (!texto) return;
+            if (!tipo) {
+                if (/^\s*✅|sucesso|criado|copiad|atualizada com|conclu[ií]da|mais recente|exclu[ií]do com/i.test(texto)) tipo = 'ok';
+                else if (/erro|falha|não foi poss/i.test(texto)) tipo = 'erro';
+                else tipo = 'aviso';
+            }
+            texto = texto.replace(/^\s*(✅|🚨|⚠️|❌|ℹ️)\s*/, '');
+            const icone = { ok: '✅', erro: '❌', aviso: '⚠️' }[tipo] || 'ℹ️';
+            const el = document.createElement('div');
+            el.className = 'toast t-' + tipo;
+            const i = document.createElement('span'); i.className = 't-ico'; i.textContent = icone;
+            const m = document.createElement('span'); m.className = 't-msg'; m.textContent = texto;
+            el.appendChild(i); el.appendChild(m);
+            const box = caixa();
+            box.appendChild(el);
+            while (box.children.length > 4) box.removeChild(box.firstChild);
+            const fechar = () => { if (!el.parentNode) return; el.classList.add('t-sai'); setTimeout(() => el.remove(), 230); };
+            el.addEventListener('click', fechar);
+            setTimeout(fechar, Math.min(10000, 3200 + texto.length * 45));
+        };
+        window.alert = function (msg) { window.toast(msg); };
+
+        // Diálogo genérico. Retorna Promise: true/false (confirmar), texto/null (input) ou o valor do botão escolhido.
+        window.dialogo = function (o) {
+            return new Promise((resolve) => {
+                o = o || {};
+                const fundo = document.createElement('div'); fundo.className = 'dlg-fundo';
+                const d = document.createElement('div'); d.className = 'dlg' + (o.perigo ? ' perigo' : '');
+                d.setAttribute('role', 'dialog'); d.setAttribute('aria-modal', 'true');
+                const h = document.createElement('h4'); h.textContent = o.titulo || 'Confirmar'; d.appendChild(h);
+                if (o.msg) { const p = document.createElement('p'); p.textContent = o.msg; d.appendChild(p); }
+                let inp = null;
+                if (o.input) { inp = document.createElement('input'); inp.type = 'text'; inp.value = o.valor || ''; if (o.placeholder) inp.placeholder = o.placeholder; d.appendChild(inp); }
+                const ac = document.createElement('div'); ac.className = 'dlg-acoes' + (o.botoes ? ' empilhado' : ''); d.appendChild(ac);
+                let fechado = false;
+                const fim = (v) => { if (fechado) return; fechado = true; document.removeEventListener('keydown', tecla, true); fundo.remove(); resolve(v); };
+                const cancelVal = o.input || o.botoes ? null : false;
+                const mk = (txt, cls, fn) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = txt; if (cls) b.className = cls; b.addEventListener('click', fn); ac.appendChild(b); return b; };
+                let primeiro;
+                if (o.botoes) {
+                    o.botoes.forEach((bt, k) => { const b = mk(bt.txt, 'dlg-ok', () => fim(bt.val)); if (!k) primeiro = b; });
+                    mk(o.cancelar || 'Cancelar', '', () => fim(null));
+                } else {
+                    mk(o.cancelar || 'Cancelar', '', () => fim(cancelVal));
+                    primeiro = mk(o.ok || (o.input ? 'Salvar' : 'Confirmar'), 'dlg-ok', () => fim(o.input ? inp.value : true));
+                }
+                function tecla(e) {
+                    if (e.key === 'Escape') { e.preventDefault(); fim(cancelVal); }
+                    else if (e.key === 'Enter' && inp && document.activeElement === inp) { e.preventDefault(); fim(inp.value); }
+                }
+                document.addEventListener('keydown', tecla, true);
+                fundo.addEventListener('mousedown', (e) => { if (e.target === fundo) fim(cancelVal); });
+                fundo.appendChild(d); document.body.appendChild(fundo);
+                setTimeout(() => { if (inp) { inp.focus(); inp.select(); } else if (primeiro) primeiro.focus(); }, 30);
+            });
+        };
+        window.confirmar = function (msg, opt) {
+            opt = opt || {};
+            let texto = String(msg || ''), perigo = !!opt.perigo;
+            if (/^\s*🚨/.test(texto)) { perigo = true; texto = texto.replace(/^\s*🚨\s*/, ''); }
+            return window.dialogo({ titulo: opt.titulo || (perigo ? 'Atenção' : 'Confirmar'), msg: texto, perigo: perigo, ok: opt.ok, cancelar: opt.cancelar });
+        };
+        window.perguntar = function (msg, valor, opt) {
+            opt = opt || {};
+            return window.dialogo({ titulo: opt.titulo || 'Informe', msg: msg, input: true, valor: valor, placeholder: opt.placeholder, ok: opt.ok });
+        };
+    })();
+    </script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, doc, updateDoc, getDocs, setDoc, getDoc, deleteDoc, collectionGroup, increment } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
@@ -1101,7 +1207,7 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        const APP_VERSION = "v31";
+        const APP_VERSION = "v32";
         let isLogged = false;
         let torneioAbertoId = null; 
         let torneioAbertoData = null; 
@@ -1228,7 +1334,17 @@
                 
                 const _fmt = String(camp.formato || '');
                 const _fmtCurto = _fmt.includes('Super 4') ? 'Super 4' : (_fmt.includes('Grupos') ? 'Grupos + Eliminatórias' : 'Mata-mata');
-                const _chipStatus = camp.status === 'encerrado' ? '<span class="chip chip-encerrado">✅ Encerrado</span>' : '<span class="chip chip-andamento">🔥 Em andamento</span>';
+                const _nSort = (camp.sorteados || []).length;
+                const _temMM = (camp.fasesMataMata || []).length > 0;
+                const _etapa = camp.status === 'encerrado' ? 'encerrado' : (_temMM ? 'mata' : (_nSort > 0 ? 'grupos' : 'inscricoes'));
+                const _chipStatus = _etapa === 'encerrado' ? '<span class="chip chip-encerrado">✅ Encerrado</span>'
+                    : (_etapa === 'inscricoes' ? '<span class="chip chip-inscricoes">📝 Inscrições abertas</span>'
+                    : `<span class="chip chip-andamento">🔥 ${_etapa === 'mata' ? 'Mata-mata' : 'Fase de grupos'}</span>`);
+                const _ds = camp.dataCriacao && camp.dataCriacao.seconds ? new Date(camp.dataCriacao.seconds * 1000) : null;
+                const _dataTxt = _ds ? _ds.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '';
+                const _isS4 = _fmt.includes('Super 4');
+                const _inscTxt = _nSort > 0 ? `👥 ${_nSort} ${_isS4 ? 'jogadores' : 'duplas'}` : '';
+                const _meta = [_dataTxt ? `📅 ${_dataTxt}` : '', _inscTxt, camp.sets ? `🎾 ${esc(camp.sets)}` : ''].filter(Boolean).map(t => `<span>${t}</span>`).join('');
                 const _chips = `<div class="chips">${_chipStatus}<span class="chip chip-formato">${_fmtCurto}</span></div>`;
 
                 let extraInfo = '';
@@ -1251,7 +1367,7 @@
                 // Botão de ver pontuação (o event.stopPropagation evita abrir o torneio por baixo)
                 let linkPontos = `<div style="margin-top: 5px;"><button onclick="event.stopPropagation(); abrirModalPontuacao('${docSnap.id}')" style="background: none; border: none; color: var(--blue-link); text-decoration: underline; cursor: pointer; font-size: 0.85rem; font-weight: 600; padding: 0;">ℹ️ Ver Pontuação</button></div>`;
 
-                card.innerHTML = `${_chips}<h3>${camp.nome}</h3><p style="margin-bottom: 3px;">Ranking: ${camp.ranking}</p><p style="margin-bottom: 3px;">Formato: ${camp.formato}</p>${linkPontos}${extraInfo}`;
+                card.innerHTML = `${_chips}<h3>${camp.nome}</h3><p style="margin-bottom: 8px;">🏅 ${camp.ranking}</p><div class="card-meta">${_meta}</div>${linkPontos}${extraInfo}`;
                 tournamentsContainer.appendChild(card);
             });
         });
@@ -1577,7 +1693,7 @@ window.jogosSalvos = novosJogosSalvos;
                 alert("🚨 As chaves já foram geradas! Exclua o torneio ou crie um novo para alterar inscritos.");
                 return;
             }
-            if (confirm("Remover esta inscrição?")) {
+            if (await confirmar("Remover esta inscrição?")) {
                 try { await deleteDoc(doc(db, "campeonatos", torneioAbertoId, "inscritos", idInscrito)); } 
                 catch (error) { alert("Erro ao remover: " + error.message); }
             }
@@ -1953,7 +2069,7 @@ window.jogosSalvos = novosJogosSalvos;
             }
 
             if (torneioAbertoData.sorteados && torneioAbertoData.sorteados.length > 0) {
-                if (!confirm("O torneio já foi sorteado! Gerar novamente vai APAGAR o chaveamento. Continuar?")) return;
+                if (!await confirmar("O torneio já foi sorteado! Gerar novamente vai APAGAR o chaveamento. Continuar?", {perigo:true, ok:"Gerar novamente"})) return;
             }
 
             document.getElementById('btnGerarChaves').textContent = "A buscar Ranking...";
@@ -2462,7 +2578,7 @@ let tB_display = tB_data.includes('&')
             jogosFaseGrupos.forEach(box => { if (!box.classList.contains('resolvido')) { jogosFaltando++; } });
 
             if (jogosFaltando > 0) { alert(`Atenção! Faltam salvar ${jogosFaltando} jogo(s) na Fase de Grupos.`); return; }
-            if (torneioAbertoData.fasesMataMata && torneioAbertoData.fasesMataMata.length > 0) { if(!confirm("O Mata-Mata já foi gerado! Quer recriar?")) return; }
+            if (torneioAbertoData.fasesMataMata && torneioAbertoData.fasesMataMata.length > 0) { if(!await confirmar("O Mata-Mata já foi gerado! Quer recriar?", {ok:"Recriar"})) return; }
 
             travarGrupos(); 
             
@@ -2874,7 +2990,7 @@ let tB_display = tB_data.includes('&')
         });
 
         document.getElementById('btnEncerrarTorneio').addEventListener('click', async () => {
-            if (!confirm("🚨 ATENÇÃO! Encerrar torneio e somar pontos?")) return;
+            if (!await confirmar("Encerrar o torneio e somar os pontos no ranking?", {titulo:"Encerrar torneio", ok:"Encerrar"})) return;
             {
                 const snapAtual = await getDoc(doc(db, "campeonatos", torneioAbertoId));
                 const stAtual = snapAtual.exists() ? snapAtual.data().status : null;
@@ -3064,7 +3180,7 @@ let tB_display = tB_data.includes('&')
         });
 
         document.getElementById('btnExcluirTorneio').addEventListener('click', async () => {
-            if (confirm("🚨 CUIDADO! Deseja excluir este campeonato definitivamente?")) {
+            if (await confirmar("🚨 Deseja excluir este campeonato definitivamente?", {titulo:"Excluir campeonato", ok:"Excluir"})) {
                 try { await deleteDoc(doc(db, "campeonatos", torneioAbertoId)); btnAbaCampeonatos.click(); } 
                 catch (error) { alert("Erro ao excluir: " + error.message); }
             }
@@ -3134,8 +3250,7 @@ let tB_display = tB_data.includes('&')
 
                 html += `<tr class="${posicaoExibida <= 3 ? 'rk-top rk-' + posicaoExibida : ''}">
                     <td style="font-size: 1.1rem; font-weight:600;">${icone}</td>
-                    <td style="text-align:left; display:flex; align-items:center; gap:10px;">
-                        <div style="width:30px; height:30px; background:#e5e7eb; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.85rem;">👤</div>
+                    <td style="text-align:left;">
                         <a href="#" onclick="abrirPerfilRanking(${index})" style="color: var(--dark); text-decoration: none; font-weight: 600;">${esc(jog.nome)}</a>
                     </td>
                     <td style="color: ${corPts}; font-size: 1.1rem;"><strong>${ptsToShow}</strong></td>
@@ -3231,7 +3346,7 @@ tipoFiltroRanking.addEventListener('change', () => {
             const categoria = document.getElementById('editPlayerCategoria').value;
             const nome = document.getElementById('editNomeInput').value;
             
-            if (confirm(`🚨 AÇÃO DEFINITIVA!\n\nTem certeza que deseja EXCLUIR DEFINITIVAMENTE o jogador "${nome}" do ranking ${categoria}?\nTodos os pontos serão perdidos.`)) {
+            if (await confirmar(`🚨 Tem certeza que deseja EXCLUIR DEFINITIVAMENTE o jogador "${nome}" do ranking ${categoria}?\nTodos os pontos serão perdidos.`)) {
                 try {
                     await deleteDoc(doc(db, "rankings", categoria, "jogadores", id));
                     document.getElementById('modalEditPlayer').classList.add('hidden');
@@ -3259,7 +3374,7 @@ tipoFiltroRanking.addEventListener('change', () => {
             if (!rankingNome) return;
             
             let msg = tipo === 'tudo' ? 'Zerar TODOS os pontos' : (tipo === 'ouro' ? 'Zerar APENAS os pontos Ouro' : 'Zerar APENAS os pontos Prata');
-            if (!confirm(`Tem certeza que deseja ${msg} da categoria ${rankingNome}? Esta ação não tem volta!`)) return;
+            if (!await confirmar(`Tem certeza que deseja ${msg} da categoria ${rankingNome}? Esta ação não tem volta!`, {perigo:true})) return;
 
             fecharModalZerar();
             const btn = document.getElementById('btnZerarRanking'); 
@@ -3324,7 +3439,7 @@ tipoFiltroRanking.addEventListener('change', () => {
             document.getElementById('btnAdicionarCategoria').disabled = false;
         });
 
-        window.deletarCategoria = async function(id) { if (confirm("Apagar categoria?")) { await deleteDoc(doc(db, "categoriasRanking", id)); } };
+        window.deletarCategoria = async function(id) { if (await confirmar("Apagar categoria?", {perigo:true, ok:"Apagar"})) { await deleteDoc(doc(db, "categoriasRanking", id)); } };
 
         window.compartilharWhatsApp = function(campeao, vice, terceiro, chaveStr = "") {
             const nomeTorneio = document.getElementById('detalhe-nome-torneio').textContent;
@@ -3683,7 +3798,7 @@ if (window.rankingJogadoresCache) {
         document.getElementById('btnEfetuarTroca').addEventListener('click', async () => {
             let i1 = document.getElementById('trocaTime1').value; let i2 = document.getElementById('trocaTime2').value;
             if (i1 === i2) { alert("Escolha duas duplas diferentes!"); return; }
-            if (Object.keys(jogosSalvos).length > 0) { if(!confirm("Existem jogos com placar salvo! Trocar vai bagunçar. Continuar?")) return; }
+            if (Object.keys(jogosSalvos).length > 0) { if(!await confirmar("Existem jogos com placar salvo! Trocar vai bagunçar. Continuar?", {perigo:true, ok:"Trocar mesmo assim"})) return; }
             document.getElementById('btnEfetuarTroca').textContent = "A trocar...";
             let temp = torneioAbertoData.sorteados[i1]; torneioAbertoData.sorteados[i1] = torneioAbertoData.sorteados[i2]; torneioAbertoData.sorteados[i2] = temp;
             await updateDoc(doc(db, "campeonatos", torneioAbertoId), { sorteados: torneioAbertoData.sorteados });
@@ -3704,7 +3819,7 @@ if (window.rankingJogadoresCache) {
         window.cancelarRepescagem = function(botao) { const box = botao.closest('.bracket-match'); box.querySelector('.repescagem-area').classList.add('hidden'); box.querySelector('.btn-puxar').classList.remove('hidden'); };
         window.confirmarRepescagem = async function(botao, rodadaIndex, matchId) {
             const box = botao.closest('.bracket-match'); const select = box.querySelector('.select-repescagem'); const novoTime = select.value;
-            if (!novoTime) { alert("Selecione uma dupla!"); return; } if (!confirm(`Substituir o BYE por: ${novoTime.replace(/&/g,' e ')}?`)) return;
+            if (!novoTime) { alert("Selecione uma dupla!"); return; } if (!await confirmar(`Substituir o BYE por: ${novoTime.replace(/&/g,' e ')}?`, {ok:"Substituir"})) return;
             botao.textContent = "A processar..."; botao.disabled = true;
             try {
                 let chave = matchId.includes('MM_Prata') ? 'Prata' : 'Ouro'; let fases = chave === 'Prata' ? window.fasesPrata : window.fasesMataMata; let rodada = fases[rodadaIndex].jogos || fases[rodadaIndex];
@@ -3715,7 +3830,7 @@ if (window.rankingJogadoresCache) {
         };
 
        window.editarNomeDuplaMataMata = async function(elemento, timeAntigo, matchId, indexRodada, chave) {
-    let novoNome = prompt("Troca de Emergência!\nDigite o novo nome da dupla (Ex: Maria & Ana):", timeAntigo);
+    let novoNome = await perguntar("Digite o novo nome da dupla (Ex: Maria & Ana):", timeAntigo, {titulo:"Troca de emergência"});
     if (!novoNome || novoNome === timeAntigo) return;
 
     // Atualiza o visual na tela
@@ -3755,7 +3870,7 @@ if (window.rankingJogadoresCache) {
 
         // FUNÇÃO 2: BOTÃO RÁPIDO DE W.O.
         window.declararWO = async function(botao, matchId, timeA, timeB) {
-            let vencedor = prompt(`🛑 DECLARAR W.O.\nQuem FICOU na quadra e VENCEU a partida?\n\nDigite 1 para: ${timeA}\nDigite 2 para: ${timeB}`);
+            let vencedor = await dialogo({titulo:'🛑 Declarar W.O.', msg:'Quem FICOU na quadra e VENCEU a partida?', botoes:[{txt:timeA.replace(/\s*&\s*/g,' e '), val:'1'},{txt:timeB.replace(/\s*&\s*/g,' e '), val:'2'}]});
             if (vencedor !== "1" && vencedor !== "2") { alert("W.O. Cancelado."); return; }
             
             let nomeVencedor = vencedor === "1" ? timeA : timeB;
@@ -3839,7 +3954,7 @@ if (window.rankingJogadoresCache) {
         window.atribuirQuadra = async function(btn, matchId, timeA, timeB, isMataMata) {
             if (!isLogged) return;
             let quadraAtual = jogosSalvos[matchId] ? jogosSalvos[matchId].quadra : '';
-            let numQuadra = prompt("Qual o número ou nome da quadra para este jogo?\n(Para remover, deixe em branco)", quadraAtual);
+            let numQuadra = await perguntar("Qual o número ou nome da quadra para este jogo?\n(Para remover, deixe em branco)", quadraAtual, {titulo:"Quadra do jogo"});
             if (numQuadra === null) return; // Cancelou a janela
 
             btn.textContent = "⌛...";
@@ -4046,7 +4161,7 @@ if (window.rankingJogadoresCache) {
             if (!torneioAbertoId) return;
             const url = new URL('telao.html?id=' + encodeURIComponent(torneioAbertoId), location.href).href;
             try { await navigator.clipboard.writeText(url); alert('Link do telão copiado!\n\nAbra na TV (navegador da Smart TV) ou transmita a aba pelo Chromecast.\n\nDica: na TV, basta abrir ' + new URL('telao.html', location.href).href + ' que ele abre o campeonato em andamento sozinho.'); }
-            catch (e) { prompt('Copie o link do telão:', url); }
+            catch (e) { await perguntar('Copie o link do telão:', url, {titulo:'Link do telão', ok:'Fechar'}); }
         };
 
         window.exportarTorneioPDF = async function() {
@@ -4177,7 +4292,7 @@ if (window.rankingJogadoresCache) {
             if (matchIds.length === 0) return;
 
             let quadraAtual = jogosSalvos[matchIds[0]] ? jogosSalvos[matchIds[0]].quadra : '';
-            let numQuadra = prompt("Qual a quadra para TODOS os jogos deste grupo?\n(Para remover, deixe em branco)", quadraAtual || '');
+            let numQuadra = await perguntar("Qual a quadra para TODOS os jogos deste grupo?\n(Para remover, deixe em branco)", quadraAtual || '', {titulo:"Quadra do grupo"});
             if (numQuadra === null) return; // Cancelou a janela
 
             btn.textContent = "⌛...";
