@@ -660,6 +660,17 @@
                         <label>Títulos</label>
                         <input type="number" id="editTitulos" class="form-control" required>
                     </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div class="form-group" style="margin-bottom: 1rem;">
+                            <label style="color: #f59e0b;">Títulos Ouro</label>
+                            <input type="number" id="editTitulosOuro" class="form-control" min="0" placeholder="não definido">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 1rem;">
+                            <label style="color: #64748b;">Títulos Prata</label>
+                            <input type="number" id="editTitulosPrata" class="form-control" min="0" placeholder="não definido">
+                        </div>
+                    </div>
+                    <p style="font-size:0.75rem; color:var(--gray); margin:-6px 0 1rem;">As medalhas Rei da Ouro / Rei da Prata usam estes dois campos (3 ou mais).</p>
                     <div class="form-group" style="margin-bottom: 1.5rem;">
                         <label>Total Jogos</label>
                         <input type="number" id="editJogos" class="form-control" required>
@@ -1024,7 +1035,7 @@
     </div>
     <!-- Versão Clicável para Atualizar -->
 <div id="appVersionBadge" onclick="verificarAtualizacaoApp()" style="position: fixed; bottom: 12px; right: 12px; background: rgba(31, 41, 55, 0.85); backdrop-filter: blur(4px); color: #9ca3af; padding: 5px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; z-index: 1000; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1);" title="Toque para verificar atualizações">
-    v40 🔄
+    v41 🔄
 </div>
     </footer>
 
@@ -1394,7 +1405,7 @@
             } catch (e) { console.log("Não foi possível atualizar o resumo do histórico:", e); window.h2hJogosCache = null; }
         }
 
-        const APP_VERSION = "v40";
+        const APP_VERSION = "v41";
         let isLogged = false;
         let torneioAbertoId = null; 
         let torneioAbertoData = null; 
@@ -3534,7 +3545,7 @@ let tB_display = tB_data.includes('&')
                     <td style="color: ${corPts}; font-size: 1.1rem;"><strong>${ptsToShow}</strong></td>
                     <td style="color: var(--gray);">${jog.torneios || 0}</td>
                     <td class="col-acao-admin ${hideAdmin}">
-                        <button onclick="abrirModalEditarJogador('${jsArg(jog.id)}', '${jsArg(jog.nome)}', ${jog.pontos||0}, ${jog.pontosOuro||0}, ${jog.pontosPrata||0}, ${jog.torneios||0}, ${titulos}, ${vitorias}, ${jogos})" class="btn btn-outline" style="padding: 4px 10px; font-size: 0.8rem; border-color: var(--border);">Editar</button>
+                        <button onclick="abrirModalEditarJogador('${jsArg(jog.id)}', '${jsArg(jog.nome)}', ${jog.pontos||0}, ${jog.pontosOuro||0}, ${jog.pontosPrata||0}, ${jog.torneios||0}, ${titulos}, ${vitorias}, ${jogos}, ${jog.titulosOuro === undefined ? 'null' : (jog.titulosOuro||0)}, ${jog.titulosPrata === undefined ? 'null' : (jog.titulosPrata||0)})" class="btn btn-outline" style="padding: 4px 10px; font-size: 0.8rem; border-color: var(--border);">Editar</button>
                     </td>
                 </tr>`;
             });
@@ -3593,11 +3604,13 @@ tipoFiltroRanking.addEventListener('change', () => {
             });
         });
 
-        window.abrirModalEditarJogador = function(id, nome, ptsGeral, ptsOuro, ptsPrata, torneios, titulos, vitorias, jogos) {
+        window.abrirModalEditarJogador = function(id, nome, ptsGeral, ptsOuro, ptsPrata, torneios, titulos, vitorias, jogos, titulosOuro, titulosPrata) {
             document.getElementById('editPlayerId').value = id; document.getElementById('editPlayerCategoria').value = filtroRanking.options[filtroRanking.selectedIndex].text;
             document.getElementById('editNomeInput').value = nome; document.getElementById('editPtsGeral').value = ptsGeral; document.getElementById('editPtsOuro').value = ptsOuro;
             document.getElementById('editPtsPrata').value = ptsPrata; document.getElementById('editTorneios').value = torneios; document.getElementById('editTitulos').value = titulos;
             document.getElementById('editVitorias').value = vitorias; document.getElementById('editJogos').value = jogos;
+            document.getElementById('editTitulosOuro').value = (titulosOuro === null || titulosOuro === undefined) ? '' : titulosOuro;
+            document.getElementById('editTitulosPrata').value = (titulosPrata === null || titulosPrata === undefined) ? '' : titulosPrata;
             document.getElementById('modalEditPlayer').classList.remove('hidden');
         };
 
@@ -3605,7 +3618,11 @@ tipoFiltroRanking.addEventListener('change', () => {
             e.preventDefault(); const id = document.getElementById('editPlayerId').value; const categoria = document.getElementById('editPlayerCategoria').value; const btn = e.target.querySelector('button[type="submit"]');
             btn.textContent = "A gravar..."; btn.disabled = true;
             try {
-                await updateDoc(doc(db, "rankings", categoria, "jogadores", id), { 
+                const _tOuro = document.getElementById('editTitulosOuro').value, _tPrata = document.getElementById('editTitulosPrata').value;
+                const _extra = {};
+                if (_tOuro !== '') _extra.titulosOuro = Math.max(0, parseInt(_tOuro) || 0);
+                if (_tPrata !== '') _extra.titulosPrata = Math.max(0, parseInt(_tPrata) || 0);
+                await updateDoc(doc(db, "rankings", categoria, "jogadores", id), { ..._extra,
                     nome: document.getElementById('editNomeInput').value.trim(),
                     pontos: parseInt(document.getElementById('editPtsGeral').value)||0, 
                     pontosOuro: parseInt(document.getElementById('editPtsOuro').value)||0, 
