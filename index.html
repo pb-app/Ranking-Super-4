@@ -923,6 +923,13 @@
             <h2 class="section-title" id="detalhe-nome-torneio" style="margin-bottom: 0.2rem; font-size: 1.6rem;">Nome do Torneio</h2>
             <p style="color: var(--gray); font-size: 1rem; margin-bottom: 1.5rem;">Formato: <strong id="detalhe-formato-torneio" style="color: var(--dark);"></strong></p>
 
+            <nav id="abasTorneio" class="abas-torneio hidden" role="tablist" aria-label="Seções do torneio">
+                <button type="button" class="aba-btn" data-aba="inscritos" role="tab"><span class="aba-ico">👥</span><span class="aba-txt">Inscritos</span><span id="abaContInscritos" class="aba-badge">0</span></button>
+                <button type="button" class="aba-btn" data-aba="grupos" role="tab"><span class="aba-ico">🗂️</span><span class="aba-txt">Grupos</span></button>
+                <button type="button" class="aba-btn" data-aba="mata" role="tab"><span class="aba-ico">⚔️</span><span class="aba-txt">Mata-mata</span></button>
+                <button type="button" class="aba-btn" data-aba="resultados" role="tab"><span class="aba-ico">📋</span><span class="aba-txt">Resultados</span></button>
+            </nav>
+
             <div class="panel-grid" id="painel-grid">
                 
                 <div class="panel-card" id="painel-inscritos">
@@ -950,19 +957,18 @@
                         
                         <button id="btnAddInscrito" class="btn" style="width: 100%; background: var(--dark);">Adicionar Inscrição</button>
                     </div>
+                    <p id="avisoChaves" style="color: var(--gray); margin: 14px 0 10px; font-size: 0.9rem; background: #f9fafb; padding: 12px; border-radius: 8px; border: 1px solid var(--border);">
+                     Adicione os jogadores primeiro para depois gerar os confrontos.
+                    </p>
+                    <button id="btnGerarChaves" class="btn" style="width: 100%; background: var(--blue-link); margin-bottom: 14px;">
+                        ⚙ Gerar Confrontos
+                    </button>
                     <ul class="lista-inscritos" id="listaInscritosUI"></ul>
                 </div>
 
                 <div class="panel-card" id="painel-chaves">
                     <button id="btnMostrarInscritos" class="btn btn-outline hidden" style="margin-bottom: 20px; width: 100%; color: var(--blue-link) !important; border-color: var(--blue-link);">👀 Editar Lista de Inscritos</button>
 
-                    <h3 style="margin-bottom: 1rem; font-size: 1.2rem; color: var(--dark);">🏆 Chaves / Jogos</h3>
-                    <p id="avisoChaves" style="color: var(--gray); margin-bottom: 15px; font-size: 0.9rem; background: #f9fafb; padding: 12px; border-radius: 8px; border: 1px solid var(--border);">
-                     Adicione os jogadores primeiro para depois gerar os confrontos.
-                    </p>
-                    <button id="btnGerarChaves" class="btn" style="width: 100%; background: var(--blue-link); margin-bottom: 10px;">
-                        ⚙ Gerar Confrontos
-                    </button>
 
                     <div id="navegadorFases" class="hidden" style="display: flex; justify-content: space-between; align-items: center; margin: 15px 0 25px 0;">
                         <button id="btnFaseAnterior" class="btn btn-outline" style="padding: 6px 15px; font-size: 1.1rem; border-radius: 6px; border: none; color: var(--blue-link) !important;">⬅</button>
@@ -996,6 +1002,11 @@
                         🎯 Encerrar Torneio (Enviar Pontos)
                     </button>
                 </div>
+
+                <div class="panel-card" id="painel-resultados">
+                    <h3 style="margin-bottom: 1rem; font-size: 1.2rem; color: var(--dark);">📋 Resultados</h3>
+                    <div id="resultadosUI"></div>
+                </div>
             </div>
         </section>
     </main>
@@ -1013,7 +1024,7 @@
     </div>
     <!-- Versão Clicável para Atualizar -->
 <div id="appVersionBadge" onclick="verificarAtualizacaoApp()" style="position: fixed; bottom: 12px; right: 12px; background: rgba(31, 41, 55, 0.85); backdrop-filter: blur(4px); color: #9ca3af; padding: 5px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; z-index: 1000; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1);" title="Toque para verificar atualizações">
-    v36 🔄
+    v37 🔄
 </div>
     </footer>
 
@@ -1108,6 +1119,43 @@
         [data-tema="escuro"] .chip-inscricoes { background: #1e293b; color: #cbd5e1; border-color: #475569; }
         .card-meta { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: .85rem; color: var(--gray); margin-bottom: 4px; }
         .card-meta span { white-space: nowrap; }
+
+        /* v37: tela do torneio em abas */
+        #details-section .panel-grid { grid-template-columns: minmax(0, 1fr) !important; margin-top: 0; }
+        #details-section[data-aba="inscritos"] #painel-chaves, #details-section[data-aba="inscritos"] #painel-resultados,
+        #details-section[data-aba="grupos"] #painel-inscritos, #details-section[data-aba="grupos"] #painel-resultados,
+        #details-section[data-aba="mata"] #painel-inscritos, #details-section[data-aba="mata"] #painel-resultados,
+        #details-section[data-aba="resultados"] #painel-inscritos, #details-section[data-aba="resultados"] #painel-chaves { display: none !important; }
+        #details-section[data-aba="grupos"] #navegadorFases, #details-section[data-aba="grupos"] #mataMataUI,
+        #details-section[data-aba="grupos"] #podioUI, #details-section[data-aba="grupos"] #btnEncerrarTorneio,
+        #details-section[data-aba="mata"] #chavesGeradasUI, #details-section[data-aba="mata"] #painelTrocaGrupos,
+        #details-section[data-aba="mata"] #btnMontarMataMata { display: none !important; }
+        #btnMostrarInscritos, #btnVoltarChaves { display: none !important; }
+        #painel-inscritos { max-width: 760px; }
+        .abas-torneio { position: sticky; top: var(--hdr-h, 72px); z-index: 90; display: flex; gap: 6px; padding: 8px 0; margin: 0 0 14px; background: var(--light); border-bottom: 1px solid var(--border); }
+        .aba-btn { position: relative; flex: 1 1 0; min-width: 0; display: flex; align-items: center; justify-content: center; gap: 7px; padding: 10px 8px; border: 1px solid var(--border); background: var(--white); color: var(--gray); border-radius: 12px; font: inherit; font-weight: 700; font-size: .92rem; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+        .aba-btn.ativa { background: var(--primary); border-color: var(--primary); color: #fff; box-shadow: 0 4px 12px rgba(0,0,0,.12); }
+        .aba-btn.oculta { display: none; }
+        .aba-btn .aba-ico { font-size: 1.05rem; line-height: 1; }
+        .aba-badge { min-width: 20px; padding: 1px 6px; border-radius: 999px; background: var(--primary-glow); color: var(--primary); font-size: .72rem; font-weight: 800; line-height: 1.4; }
+        .aba-btn.ativa .aba-badge { background: rgba(255,255,255,.25); color: #fff; }
+        @media (max-width: 600px) {
+            .abas-torneio { gap: 4px; padding: 6px 0; }
+            .aba-btn { flex-direction: column; gap: 2px; padding: 7px 2px; font-size: .68rem; border-radius: 10px; }
+            .aba-btn .aba-ico { font-size: 1.15rem; }
+            .aba-badge { position: absolute; top: 2px; right: 4px; font-size: .62rem; padding: 0 5px; }
+        }
+        .res-podio { display: grid; gap: 8px; margin-bottom: 14px; padding: 14px; border: 1px solid var(--border); border-radius: 12px; background: var(--white); }
+        .res-podio div { font-weight: 700; color: var(--dark); }
+        .res-podio span { color: var(--gray); font-weight: 500; font-size: .85rem; margin-right: 6px; }
+        .res-item { padding: 10px 12px; border: 1px solid var(--border); border-radius: 12px; margin-bottom: 8px; background: var(--white); }
+        .res-fase { font-size: .72rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; color: var(--gray); margin-bottom: 6px; display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+        .res-linha { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 8px; }
+        .res-linha .t { font-size: .95rem; font-weight: 600; color: var(--gray); overflow-wrap: anywhere; }
+        .res-linha .t.b { text-align: right; }
+        .res-linha .t.venc { color: var(--dark); font-weight: 800; }
+        .res-linha .pl { font-weight: 800; color: var(--primary); text-align: center; white-space: nowrap; font-size: .98rem; }
+        .res-wo { background: #fef3c7; color: #92400e; border-radius: 6px; padding: 0 6px; font-size: .68rem; }
     </style>
 
     <script>
@@ -1306,7 +1354,7 @@
             } catch (e) { console.log("Não foi possível atualizar o resumo do histórico:", e); window.h2hJogosCache = null; }
         }
 
-        const APP_VERSION = "v36";
+        const APP_VERSION = "v37";
         let isLogged = false;
         let torneioAbertoId = null; 
         let torneioAbertoData = null; 
@@ -1503,12 +1551,9 @@
             document.getElementById('detalhe-formato-torneio').textContent = camp.formato;
             listSection.classList.add('hidden'); createSection.style.display = 'none'; detailsSection.classList.remove('hidden');
             
-            document.getElementById('painel-inscritos').classList.remove('hidden');
-            document.getElementById('painel-chaves').classList.remove('hidden'); // Garante que as chaves reaparecem
-            document.getElementById('painel-grid').classList.remove('grid-expandido');
-            document.getElementById('btnMostrarInscritos').classList.add('hidden');
-            if (document.getElementById('btnVoltarChaves')) document.getElementById('btnVoltarChaves').classList.add('hidden'); // Esconde o voltar
             document.getElementById('avisoChaves').classList.remove('hidden');
+            ultimaFaseMata = 1; faseAtualUI = 0;
+            window.definirAba('inscritos', true); // as abas controlam o que aparece (v37)
 
             document.getElementById('chavesGeradasUI').innerHTML = ''; 
             document.getElementById('mataMataUI').innerHTML = '';
@@ -1556,19 +1601,10 @@ if (camp.ranking) {
                 let temGrupos = camp.formato && (camp.formato.includes("Grupos") || camp.formato.includes("Super 4"));
                 
                 if (camp.sorteados && camp.sorteados.length > 0) {
-                    // Ocultar painel de inscritos
-                    document.getElementById('painel-inscritos').classList.add('hidden');
-                    document.getElementById('painel-grid').classList.add('grid-expandido');
+                    // Já sorteado: some o formulário de novas inscrições e o botão de gerar
                     document.getElementById('area-add-inscritos').classList.add('hidden');
-                    document.getElementById('btnMostrarInscritos').classList.remove('hidden');
                     document.getElementById('avisoChaves').classList.add('hidden');
                     document.getElementById('btnGerarChaves').classList.add('hidden');
-                    // Altera o texto do botão consoante quem está a ver
-                    if (isLogged) {
-                        document.getElementById('btnMostrarInscritos').textContent = "👀 Editar Lista de Inscritos";
-                    } else {
-                        document.getElementById('btnMostrarInscritos').textContent = "👥 Ver Lista de Inscritos";
-                    }
                     
                     // DESENHAR OS GRUPOS NA TELA
                     renderizarGrupos(camp.sorteados);
@@ -1590,25 +1626,12 @@ if (camp.ranking) {
 
                 faseAtualUI = 0;
                 atualizarUIFases(); // Força a tela a desenhar os grupos e as setas
+                window.atualizarAbas();
+                window.definirAba(escolherAbaInicial(camp), true);
             });
         }
 
                
-        document.getElementById('btnMostrarInscritos').addEventListener('click', () => {
-            // Mostra os inscritos em TELA CHEIA e esconde as chaves
-            document.getElementById('painel-inscritos').classList.remove('hidden');
-            document.getElementById('painel-chaves').classList.add('hidden');
-            document.getElementById('painel-grid').classList.add('grid-expandido');
-            document.getElementById('btnVoltarChaves').classList.remove('hidden');
-        });
-
-        document.getElementById('btnVoltarChaves').addEventListener('click', () => {
-            // Esconde os inscritos e volta a mostrar as chaves
-            document.getElementById('painel-inscritos').classList.add('hidden');
-            document.getElementById('painel-chaves').classList.remove('hidden');
-            document.getElementById('btnVoltarChaves').classList.add('hidden');
-        });
-
         document.getElementById('btnVoltar').addEventListener('click', () => {
             btnAbaCampeonatos.click(); // Simula o clique na aba para limpar tudo
             if (inscritosUnsubscribe) inscritosUnsubscribe();
@@ -2361,12 +2384,11 @@ window.jogosSalvos = novosJogosSalvos;
 
             document.getElementById('btnGerarChaves').innerHTML = "⚙ Gerar Confrontos";
             document.getElementById('btnGerarChaves').disabled = false;
-            document.getElementById('painel-inscritos').classList.add('hidden');
-            document.getElementById('painel-grid').classList.add('grid-expandido');
-            document.getElementById('btnMostrarInscritos').classList.remove('hidden');
-            document.getElementById('btnMostrarInscritos').textContent = isLogged ? "👀 Editar Lista de Inscritos" : "👥 Ver Lista de Inscritos";
+            document.getElementById('area-add-inscritos').classList.add('hidden');
             document.getElementById('avisoChaves').classList.add('hidden');
             document.getElementById('btnGerarChaves').classList.add('hidden');
+            window.atualizarAbas();
+            window.definirAba(torneioTemGrupos() && !temMataMata() ? 'grupos' : 'mata');
         });
 
         let faseAtualUI = 0; let nomesFases = []; 
@@ -2445,6 +2467,109 @@ window.jogosSalvos = novosJogosSalvos;
         }
         document.getElementById('btnFaseAnterior').addEventListener('click', () => { if (faseAtualUI > 0) { faseAtualUI--; atualizarUIFases(); rolarParaChave(); } });
         document.getElementById('btnFaseProxima').addEventListener('click', () => { if (faseAtualUI < nomesFases.length - 1) { faseAtualUI++; atualizarUIFases(); rolarParaChave(); } });
+
+
+        // =======================================================
+        // ===== v37: TELA DO TORNEIO EM ABAS ====================
+        // =======================================================
+        let abaAtual = 'inscritos', ultimaFaseMata = 1;
+        const torneioTemGrupos = () => !!formatoAberto && (formatoAberto.includes("Grupos") || formatoAberto.includes("Super 4"));
+        const temMataMata = () => (window.fasesMataMata && window.fasesMataMata.length > 0) || !!(torneioAbertoData && (torneioAbertoData.fasesMataMata || []).length > 0);
+        const torneioSorteado = () => temMataMata() || !!(torneioAbertoData && (torneioAbertoData.sorteados || []).length > 0);
+        function escolherAbaInicial(camp) {
+            if (camp.status === 'encerrado') return 'resultados';
+            if (temMataMata()) return 'mata';
+            if (torneioSorteado()) return torneioTemGrupos() ? 'grupos' : 'mata';
+            return 'inscritos';
+        }
+        function atualizarAlturaCabecalho() {
+            const h = document.querySelector('header');
+            if (h) document.documentElement.style.setProperty('--hdr-h', h.offsetHeight + 'px');
+        }
+        window.addEventListener('resize', atualizarAlturaCabecalho);
+        function pintarAba() {
+            const d = document.getElementById('details-section'); if (!d) return;
+            d.dataset.aba = abaAtual;
+            document.querySelectorAll('#abasTorneio .aba-btn').forEach(b => { const on = b.dataset.aba === abaAtual; b.classList.toggle('ativa', on); b.setAttribute('aria-selected', on ? 'true' : 'false'); });
+        }
+        window.atualizarAbas = function () {
+            const nav = document.getElementById('abasTorneio'); if (!nav) return;
+            const sorteado = torneioSorteado(), tg = torneioTemGrupos(), mm = temMataMata();
+            const vis = { inscritos: true, grupos: sorteado && tg, mata: mm, resultados: sorteado };
+            nav.querySelectorAll('.aba-btn').forEach(b => b.classList.toggle('oculta', !vis[b.dataset.aba]));
+            nav.classList.toggle('hidden', !sorteado);
+            document.getElementById('abaContInscritos').textContent = document.getElementById('contadorInscritos').textContent;
+            atualizarAlturaCabecalho();
+            if (!vis[abaAtual]) window.definirAba(sorteado ? (tg ? 'grupos' : 'mata') : 'inscritos', true);
+            else pintarAba();
+        };
+        window.definirAba = function (nome, semRolar) {
+            abaAtual = nome; pintarAba();
+            const tg = torneioTemGrupos();
+            if (nome === 'grupos') { faseAtualUI = 0; atualizarUIFases(); }
+            else if (nome === 'mata') { if (tg && faseAtualUI < 1) faseAtualUI = Math.max(1, ultimaFaseMata); atualizarUIFases(); }
+            else if (nome === 'resultados') { renderizarResultados(); }
+            if (!semRolar) rolarParaTopoDasAbas();
+        };
+        function rolarParaTopoDasAbas() {
+            const grid = document.getElementById('painel-grid'), nav = document.getElementById('abasTorneio'); if (!grid || !nav) return;
+            const hdr = (document.querySelector('header') || {}).offsetHeight || 0;
+            const alvo = grid.getBoundingClientRect().top + window.scrollY - hdr - nav.offsetHeight - 6;
+            if (window.scrollY > alvo + 4) window.scrollTo({ top: Math.max(0, alvo), behavior: 'smooth' });
+        }
+        // mantém a aba coerente quando as setas de fase mudam entre Grupos e Mata-mata
+        function sincronizarAbaComFase() {
+            if ((abaAtual !== 'grupos' && abaAtual !== 'mata') || !torneioSorteado()) return;
+            const tg = torneioTemGrupos();
+            const alvo = (tg && faseAtualUI === 0) ? 'grupos' : 'mata';
+            if (alvo === 'mata') ultimaFaseMata = faseAtualUI;
+            if (alvo !== abaAtual) { abaAtual = alvo; pintarAba(); }
+            if (alvo === 'mata' && tg && faseAtualUI <= 1) document.getElementById('btnFaseAnterior').style.visibility = 'hidden';
+        }
+        const _atualizarUIFasesBase = window.atualizarUIFases;
+        window.atualizarUIFases = function () { _atualizarUIFasesBase(); sincronizarAbaComFase(); };
+        document.querySelectorAll('#abasTorneio .aba-btn').forEach(b => b.addEventListener('click', () => window.definirAba(b.dataset.aba)));
+        new MutationObserver(() => { const c = document.getElementById('contadorInscritos'), bd = document.getElementById('abaContInscritos'); if (c && bd) bd.textContent = c.textContent; })
+            .observe(document.getElementById('contadorInscritos'), { childList: true, characterData: true, subtree: true });
+
+        function renderizarResultados() {
+            const box = document.getElementById('resultadosUI'); if (!box) return;
+            const t = torneioAbertoData || {};
+            let html = '';
+            if (t.campeaoOuro || t.campeaoPrata) {
+                html += '<div class="res-podio">' + (t.campeaoOuro ? `<div><span>🏆 Campeão${t.campeaoPrata ? ' (Ouro)' : ''}</span>${esc(t.campeaoOuro)}</div>` : '')
+                    + (t.campeaoPrata ? `<div><span>🥈 Campeão (Prata)</span>${esc(t.campeaoPrata)}</div>` : '') + '</div>';
+            }
+            const tg = torneioTemGrupos(), temPrata = (window.fasesPrata || []).length > 0;
+            const nomeRodada = (r) => { const n = nomesFases[tg ? r + 1 : r]; return n ? n.replace(/\s*🏆/, '').trim() : 'Rodada ' + (r + 1); };
+            const norm = (x) => String(x || '').replace(/\s+/g, '');
+            const itens = []; let ordem = 0;
+            Object.keys(jogosSalvos || {}).forEach(id => {
+                const j = jogosSalvos[id];
+                if (!j || !j.vencedor || /BYE/i.test((j.timeA || '') + (j.timeB || ''))) return;
+                let rotulo = 'Grupos', m;
+                if ((m = id.match(/^MM_Prata_(\d+)_/))) rotulo = 'Chave Prata · ' + nomeRodada(+m[1]);
+                else if ((m = id.match(/^MM_(\d+)_/))) rotulo = (temPrata ? 'Chave Ouro · ' : 'Mata-mata · ') + nomeRodada(+m[1]);
+                const ts = (j.dataRegistro && typeof j.dataRegistro.seconds === 'number') ? j.dataRegistro.seconds : Date.now() / 1000;
+                itens.push({ j, rotulo, ts, ordem: ordem++ });
+            });
+            itens.sort((a, b) => (b.ts - a.ts) || (b.ordem - a.ordem));
+            if (!itens.length) { html += '<p class="estado-vazio" style="padding:2rem 1rem;">Nenhum resultado lançado ainda.</p>'; }
+            else {
+                html += `<p style="color:var(--gray); font-size:.85rem; margin-bottom:10px;">${itens.length} jogo${itens.length > 1 ? 's' : ''} • mais recentes primeiro</p>`;
+                itens.forEach(({ j, rotulo }) => {
+                    const pa = Array.isArray(j.placarA) ? j.placarA : [], pb = Array.isArray(j.placarB) ? j.placarB : [], sets = [];
+                    for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+                        if (pa[i] === undefined || pb[i] === undefined || pa[i] === '' || pb[i] === '') continue;
+                        sets.push(pa[i] + '×' + pb[i]);
+                    }
+                    const vA = norm(j.vencedor) === norm(j.timeA), vB = norm(j.vencedor) === norm(j.timeB);
+                    html += `<div class="res-item"><div class="res-fase"><span>${esc(rotulo)}</span><span>${j.isWO ? '<span class="res-wo">W.O.</span> ' : ''}${j.quadra ? '📍 Quadra ' + esc(j.quadra) : ''}</span></div>
+                        <div class="res-linha"><div class="t${vA ? ' venc' : ''}">${esc(j.timeA)}</div><div class="pl">${sets.length ? esc(sets.join('  ')) : '—'}</div><div class="t b${vB ? ' venc' : ''}">${esc(j.timeB)}</div></div></div>`;
+                });
+            }
+            box.innerHTML = html;
+        }
 
         function renderizarMataMata(manterAba = false) {
             const mataMataUI = document.getElementById('mataMataUI');
