@@ -892,6 +892,7 @@
                 </div>
                 <div style="display: flex; gap: 10px;">
                     <button id="btnGerenciarRankings" class="btn btn-outline hidden" style="height: 48px; padding: 0 15px;">⚙ Gerenciar</button>
+                    <button id="btnUnificarRanking" class="btn btn-outline hidden" style="height: 48px; padding: 0 15px;" title="Juntar jogadores repetidos">🧹 Duplicados</button>
                     <button id="btnZerarRanking" class="btn hidden" style="height: 48px; padding: 0 15px; background: #fef2f2 !important; color: #ef4444 !important; border: 1px solid #fecaca !important; box-shadow: none;">⚠️ Zerar</button>
                 </div>
             </div>
@@ -1040,7 +1041,7 @@
     </div>
     <!-- Versão Clicável para Atualizar -->
 <div id="appVersionBadge" onclick="verificarAtualizacaoApp()" style="position: fixed; bottom: 12px; right: 12px; background: rgba(31, 41, 55, 0.85); backdrop-filter: blur(4px); color: #9ca3af; padding: 5px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; z-index: 1000; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1);" title="Toque para verificar atualizações">
-    v48 🔄
+    v49 🔄
 </div>
     </footer>
 
@@ -1395,6 +1396,47 @@
             return lista;
         }
 
+        // ===== v49: identificação de jogador por nome normalizado + unificação de duplicados =====
+        const chaveNomeJogador = (n) => String(n || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/['´`]/g, '').replace(/\s+/g, ' ').trim().toLowerCase();
+        const idJogadorRanking = (n) => chaveNomeJogador(n).replace(/\s+/g, '_');
+        window.chaveNomeJogador = chaveNomeJogador;
+        window.unificarDuplicadosRanking = async function () {
+            const sel = document.getElementById('filtroVisualRanking');
+            const rankingNome = (sel.options[sel.selectedIndex] || {}).text;
+            if (!rankingNome) { window.toast('Selecione uma categoria primeiro.'); return; }
+            const lista = await obterRankingCompleto(rankingNome, 0);
+            const grupos = new Map();
+            lista.forEach(j => { const k = chaveNomeJogador(j.nome || j.id); if (!grupos.has(k)) grupos.set(k, []); grupos.get(k).push(j); });
+            const dups = [...grupos.values()].filter(g => g.length > 1);
+            if (!dups.length) { window.toast('Nenhum jogador duplicado nesta categoria 👍', 'ok'); return; }
+            const num = (v) => Number(v) || 0, soma = (g, c) => g.reduce((t, x) => t + num(x[c]), 0);
+            const resumo = dups.map(g => `• ${g[0].nome || g[0].id}: ${g.map(x => num(x.pontos) + ' pts/' + num(x.torneios) + ' torn.').join(' + ')} → ${soma(g, 'pontos')} pts/${soma(g, 'torneios')} torn.`).join('\n');
+            const ok = await confirmar(`Encontrei ${dups.length} jogador(es) duplicado(s) em "${rankingNome}":\n\n${resumo}\n\nUnificar somando pontos, torneios, títulos, vitórias e jogos? Os cadastros repetidos serão apagados (um arquivo de backup será baixado).`, { titulo: 'Unificar duplicados', ok: 'Unificar' });
+            if (!ok) return;
+            try { // backup dos documentos afetados
+                const blob = new Blob([JSON.stringify(dups.flat(), null, 2)], { type: 'application/json' });
+                const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+                a.download = 'backup-duplicados-' + rankingNome.replace(/\s+/g, '_') + '-' + new Date().toISOString().slice(0, 10) + '.json';
+                document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+            } catch (e) { console.log('Backup não gerado', e); }
+            const campos = ['pontos', 'pontosOuro', 'pontosPrata', 'torneios', 'titulos', 'titulosOuro', 'titulosPrata', 'vices', 'vitorias', 'jogos'];
+            try {
+                for (const g of dups) {
+                    g.sort((a, b) => (num(b.torneios) - num(a.torneios)) || (num(b.pontos) - num(a.pontos)));
+                    const [prim, ...resto] = g;
+                    const upd = {}; campos.forEach(c => { upd[c] = soma(g, c); });
+                    const hp = [].concat(...g.map(x => x.historicoPontos || [])).slice(-3); if (hp.length) upd.historicoPontos = hp;
+                    const ht = [].concat(...g.map(x => x.historicoTorneios || [])).slice(-3); if (ht.length) upd.historicoTorneios = ht;
+                    await updateDoc(doc(db, "rankings", rankingNome, "jogadores", prim.id), upd);
+                    for (const r of resto) await deleteDoc(doc(db, "rankings", rankingNome, "jogadores", r.id));
+                }
+                window.toast(dups.length + ' jogador(es) unificado(s) ✅', 'ok');
+            } catch (e) { alert('Erro ao unificar: ' + e.message); }
+            carregarRanking(true);
+        };
+        document.getElementById('btnUnificarRanking').addEventListener('click', () => window.unificarDuplicadosRanking());
+
+
         // 3) Histórico compacto dos jogos (medalhas e H2H): 1 a 3 documentos em vez de ler todos os jogos
         const HIST_LOTE = 1500;
         const histDoc = (n) => doc(db, "sistema", "historicoJogos_" + n);
@@ -1445,7 +1487,7 @@
             } catch (e) { console.log("Não foi possível atualizar o resumo do histórico:", e); window.h2hJogosCache = null; }
         }
 
-        const APP_VERSION = "v48";
+        const APP_VERSION = "v49";
         let isLogged = false;
         let torneioAbertoId = null; 
         let torneioAbertoData = null; 
@@ -1533,6 +1575,7 @@
             const colsAcao = document.querySelectorAll('.col-acao-admin');
             const btnsZerar = document.getElementById('btnZerarRanking');
             const btnGerenciar = document.getElementById('btnGerenciarRankings');
+            const btnUnif = document.getElementById('btnUnificarRanking');
             const btnMostrar = document.getElementById('btnMostrarInscritos');
 
             if (isLogged) {
@@ -1545,15 +1588,18 @@
                 if(!document.getElementById('ranking-section').classList.contains('hidden')){
                     btnsZerar.classList.remove('hidden');
                     btnGerenciar.classList.remove('hidden');
+                    btnUnif.classList.remove('hidden');
                 } else {
                     btnsZerar.classList.add('hidden');
                     btnGerenciar.classList.add('hidden');
+                    btnUnif.classList.add('hidden');
                 }
             } else {
                 btnLogin.classList.remove('hidden'); userMenu.classList.add('hidden'); createSection.style.display = 'none';
                 colsAcao.forEach(col => col.classList.add('hidden'));
                 btnsZerar.classList.add('hidden');
                 btnGerenciar.classList.add('hidden');
+                btnUnif.classList.add('hidden');
                 
                 // Atualiza o botão de visualização dos inscritos (se ele existir na tela)
                 if (btnMostrar) { btnMostrar.textContent = "👥 Ver Lista de Inscritos"; }
@@ -3498,9 +3544,15 @@ let tB_display = tB_data.includes('&')
             try {
                 const _dtTorneio = (torneioAbertoData.dataCriacao && torneioAbertoData.dataCriacao.seconds) ? torneioAbertoData.dataCriacao.seconds * 1000 : Date.now();
                 const entradaHistoricoTorneio = (st) => ({ n: String(torneioAbertoData.nome || 'Torneio'), d: _dtTorneio, p: st.pontos, c: st.titulosOuro ? 'ouro' : (st.titulosPrata ? 'prata' : (st.vices ? 'vice' : '')) });
+                // v49: encontra o jogador pelo nome (sem acento/maiúscula/espaço extra), para não criar um cadastro duplicado quando o id antigo é diferente
+                const _snapRank = await getDocs(collection(db, "rankings", rankingNome, "jogadores"));
+                const _porChave = new Map();
+                _snapRank.forEach(d => { const x = d.data(); const k = chaveNomeJogador(x.nome || d.id); const at = _porChave.get(k); if (!at || (Number(x.torneios) || 0) > (Number(at.dados.torneios) || 0)) _porChave.set(k, { id: d.id, dados: x }); });
                 for (let jogador in statsIndividuais) {
-                    let stats = statsIndividuais[jogador]; let safeId = jogador.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/['´`]/g, '').replace(/\s+/g, '_').toLowerCase(); let ref = doc(db, "rankings", rankingNome, "jogadores", safeId);
-                    let snap = await getDoc(ref);
+                    let stats = statsIndividuais[jogador];
+                    const _ex = _porChave.get(chaveNomeJogador(jogador));
+                    let ref = doc(db, "rankings", rankingNome, "jogadores", _ex ? _ex.id : idJogadorRanking(jogador));
+                    let snap = _ex ? { exists: () => true, data: () => _ex.dados } : { exists: () => false };
                     if (snap.exists()) {
                         let dados = snap.data();
                         
