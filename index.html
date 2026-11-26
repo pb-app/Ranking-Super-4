@@ -1024,7 +1024,7 @@
     </div>
     <!-- Versão Clicável para Atualizar -->
 <div id="appVersionBadge" onclick="verificarAtualizacaoApp()" style="position: fixed; bottom: 12px; right: 12px; background: rgba(31, 41, 55, 0.85); backdrop-filter: blur(4px); color: #9ca3af; padding: 5px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; z-index: 1000; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1);" title="Toque para verificar atualizações">
-    v37 🔄
+    v38 🔄
 </div>
     </footer>
 
@@ -1156,7 +1156,28 @@
         .res-linha .t.venc { color: var(--dark); font-weight: 800; }
         .res-linha .pl { font-weight: 800; color: var(--primary); text-align: center; white-space: nowrap; font-size: .98rem; }
         .res-wo { background: #fef3c7; color: #92400e; border-radius: 6px; padding: 0 6px; font-size: .68rem; }
-    </style>
+    
+        /* ===== v38: cards de placar dos grupos compactos (placar único) ===== */
+        #chavesGeradasUI .jogos-do-grupo { padding: 6px 10px !important; }
+        html[data-tema="escuro"] #chavesGeradasUI .jogos-do-grupo { background: transparent !important; }
+        #chavesGeradasUI .match-box:has(> .match-score) {
+            display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 10px; row-gap: 0; align-items: center;
+            grid-template-areas: "a sa" "b sb" "btn btn"; text-align: left; padding: 8px 10px; margin: 8px 0; border-radius: 10px;
+        }
+        #chavesGeradasUI .match-box:has(> .match-score) > br { display: none; }
+        #chavesGeradasUI .match-box:has(> .match-score) > .t-a { grid-area: a; }
+        #chavesGeradasUI .match-box:has(> .match-score) > .t-b { grid-area: b; border-top: 1px solid var(--border); margin-top: 5px; padding-top: 5px !important; }
+        #chavesGeradasUI .match-box:has(> .match-score) > .t-a,
+        #chavesGeradasUI .match-box:has(> .match-score) > .t-b { font-size: 0.88rem; line-height: 1.2; padding: 0; }
+        #chavesGeradasUI .match-box:has(> .match-score) > .t-a > span:not([style*="margin-left"]),
+        #chavesGeradasUI .match-box:has(> .match-score) > .t-b > span:not([style*="margin-left"]) { font-size: 0.82rem !important; }
+        #chavesGeradasUI .match-box:has(> .match-score) > .match-score { display: contents; }
+        #chavesGeradasUI .match-box:has(> .match-score) .match-score > span { display: none; }
+        #chavesGeradasUI .match-box:has(> .match-score) .match-score > .p-timeA { grid-area: sa; }
+        #chavesGeradasUI .match-box:has(> .match-score) .match-score > .p-timeB { grid-area: sb; margin-top: 5px; padding-top: 0; }
+        #chavesGeradasUI .match-box:has(> .match-score) .score-input { width: 44px; height: 34px; font-size: 1.1rem; border-radius: 7px; }
+        #chavesGeradasUI .match-box:has(> .match-score) > button { grid-area: btn; margin-top: 8px !important; width: 100% !important; max-width: none !important; padding: 3px 8px !important; font-size: 0.8rem !important; min-height: 0; line-height: 1.3; }
+</style>
 
     <script>
     /* v32: avisos (toast) no lugar do alert() e diálogos próprios no lugar de confirm()/prompt() */
@@ -1354,7 +1375,7 @@
             } catch (e) { console.log("Não foi possível atualizar o resumo do histórico:", e); window.h2hJogosCache = null; }
         }
 
-        const APP_VERSION = "v37";
+        const APP_VERSION = "v38";
         let isLogged = false;
         let torneioAbertoId = null; 
         let torneioAbertoData = null; 
