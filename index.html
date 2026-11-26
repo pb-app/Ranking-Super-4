@@ -1035,7 +1035,7 @@
     </div>
     <!-- Versão Clicável para Atualizar -->
 <div id="appVersionBadge" onclick="verificarAtualizacaoApp()" style="position: fixed; bottom: 12px; right: 12px; background: rgba(31, 41, 55, 0.85); backdrop-filter: blur(4px); color: #9ca3af; padding: 5px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; z-index: 1000; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1);" title="Toque para verificar atualizações">
-    v43 🔄
+    v44 🔄
 </div>
     </footer>
 
@@ -1056,7 +1056,7 @@
         .menu-acoes-btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px !important; }
         .menu-acoes-btn .seta { display: inline-block; transition: transform .2s ease; font-size: 0.9em; }
         .menu-acoes.aberto .seta { transform: rotate(180deg); }
-        .menu-acoes-lista { display: none; position: absolute; right: 0; top: calc(100% + 8px); z-index: 60; min-width: 270px; padding: 8px; background: #fff; border: 1px solid var(--border); border-radius: 16px; box-shadow: 0 14px 40px rgba(15, 23, 42, .18); }
+        .menu-acoes-lista { display: none; position: absolute; right: 0; top: calc(100% + 8px); z-index: 95; min-width: 270px; padding: 8px; background: #fff; border: 1px solid var(--border); border-radius: 16px; box-shadow: 0 14px 40px rgba(15, 23, 42, .18); }
         .menu-acoes.aberto .menu-acoes-lista { display: block; animation: menuAbre .16s ease both; }
         @keyframes menuAbre { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
         .acao-item { display: flex; align-items: center; gap: 12px; width: 100%; padding: 13px 14px; border: 0; background: transparent; border-radius: 10px; font: inherit; font-weight: 600; font-size: 0.95rem; color: var(--dark); text-align: left; cursor: pointer; }
@@ -1405,7 +1405,7 @@
             } catch (e) { console.log("Não foi possível atualizar o resumo do histórico:", e); window.h2hJogosCache = null; }
         }
 
-        const APP_VERSION = "v43";
+        const APP_VERSION = "v44";
         let isLogged = false;
         let torneioAbertoId = null; 
         let torneioAbertoData = null; 
