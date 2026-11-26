@@ -594,12 +594,12 @@
 
     <!-- 1º POP-UP: Histórico Recente -->
     <div id="modalHistorico" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1050; display: flex; justify-content: center; align-items: center; background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(3px);">
-        <div style="background: var(--white); padding: 2rem; border-radius: 16px; width: 90%; max-width: 350px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.15); position: relative;">
+        <div style="background: var(--white); padding: 2rem; border-radius: 16px; width: 90%; max-width: 420px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.15); position: relative;">
             <button type="button" onclick="document.getElementById('modalHistorico').classList.add('hidden')" style="position: absolute; top: 15px; right: 20px; background: transparent; border: none; font-size: 1.8rem; cursor: pointer; color: var(--gray);">&times;</button>
             <h3 style="margin-bottom: 5px; color: var(--dark); font-size: 1.3rem;">📊 Forma Recente</h3>
-            <p style="color: var(--gray); font-size: 0.85rem; margin-bottom: 20px;">Pontos ganhos nos últimos torneios</p>
+            <p style="color: var(--gray); font-size: 0.85rem; margin-bottom: 16px;">Pontos ganhos nos últimos torneios, do mais recente para o mais antigo</p>
             
-            <div id="perfilUltimosTorneios" style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px;"></div>
+            <div id="perfilUltimosTorneios" class="forma-lista"></div>
             
             <button onclick="document.getElementById('modalHistorico').classList.add('hidden')" class="btn btn-outline" style="width: 100%;">Voltar</button>
         </div>
@@ -1040,7 +1040,7 @@
     </div>
     <!-- Versão Clicável para Atualizar -->
 <div id="appVersionBadge" onclick="verificarAtualizacaoApp()" style="position: fixed; bottom: 12px; right: 12px; background: rgba(31, 41, 55, 0.85); backdrop-filter: blur(4px); color: #9ca3af; padding: 5px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; z-index: 1000; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1);" title="Toque para verificar atualizações">
-    v47 🔄
+    v48 🔄
 </div>
     </footer>
 
@@ -1228,6 +1228,25 @@
         .tournament-card.compacto .card-campeoes { margin-top: 8px !important; padding-top: 8px !important; }
         .tournament-card.compacto .card-campeoes > div { font-size: .88rem !important; margin-bottom: 2px !important; }
         @media (max-width: 600px) { .filtros-home { width: 100%; } .filtro-mes { width: 100%; } .tournaments-grid { grid-template-columns: 1fr; gap: 1rem; } }
+
+        /* ===== v48: Forma Recente identificada ===== */
+        .forma-lista { display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px; text-align: left; }
+        .forma-linha { padding: 10px 12px; border: 1px solid var(--border); border-radius: 12px; background: var(--light); }
+        .forma-topo { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+        .forma-nome { font-weight: 700; font-size: .92rem; color: var(--dark); line-height: 1.25; min-width: 0; overflow-wrap: anywhere; }
+        .forma-pts { flex: none; font-weight: 800; font-size: .95rem; padding: 3px 10px; border-radius: 999px; }
+        .forma-pts.alto { background: #dcfce7; color: #166534; }
+        .forma-pts.medio { background: #fef9c3; color: #854d0e; }
+        .forma-pts.baixo { background: #f3f4f6; color: #4b5563; }
+        .forma-sub { min-height: 1em; margin-top: 2px; font-size: .78rem; color: var(--gray); }
+        .forma-barra { height: 6px; margin-top: 7px; border-radius: 999px; background: var(--border); overflow: hidden; }
+        .forma-barra i { display: block; height: 100%; border-radius: 999px; background: var(--primary); }
+        .forma-media { text-align: center; font-size: .85rem; color: var(--gray); margin-top: 2px; }
+        .forma-media b { color: var(--dark); }
+        .forma-vazia { text-align: center; padding: 14px; color: var(--gray); font-size: .9rem; background: var(--light); border-radius: 12px; }
+        [data-tema="escuro"] .forma-pts.alto { background: #064e3b; color: #a7f3d0; }
+        [data-tema="escuro"] .forma-pts.medio { background: #422006; color: #fde68a; }
+        [data-tema="escuro"] .forma-pts.baixo { background: #334155; color: #cbd5e1; }
 </style>
 
     <script>
@@ -1426,7 +1445,7 @@
             } catch (e) { console.log("Não foi possível atualizar o resumo do histórico:", e); window.h2hJogosCache = null; }
         }
 
-        const APP_VERSION = "v47";
+        const APP_VERSION = "v48";
         let isLogged = false;
         let torneioAbertoId = null; 
         let torneioAbertoData = null; 
@@ -3477,6 +3496,8 @@ let tB_display = tB_data.includes('&')
             }
 
             try {
+                const _dtTorneio = (torneioAbertoData.dataCriacao && torneioAbertoData.dataCriacao.seconds) ? torneioAbertoData.dataCriacao.seconds * 1000 : Date.now();
+                const entradaHistoricoTorneio = (st) => ({ n: String(torneioAbertoData.nome || 'Torneio'), d: _dtTorneio, p: st.pontos, c: st.titulosOuro ? 'ouro' : (st.titulosPrata ? 'prata' : (st.vices ? 'vice' : '')) });
                 for (let jogador in statsIndividuais) {
                     let stats = statsIndividuais[jogador]; let safeId = jogador.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/['´`]/g, '').replace(/\s+/g, '_').toLowerCase(); let ref = doc(db, "rankings", rankingNome, "jogadores", safeId);
                     let snap = await getDoc(ref);
@@ -3487,17 +3508,20 @@ let tB_display = tB_data.includes('&')
                         let hist = dados.historicoPontos || [];
                         hist.push(stats.pontos);
                         if (hist.length > 3) hist = hist.slice(hist.length - 3);
+                        let histT = Array.isArray(dados.historicoTorneios) ? dados.historicoTorneios.slice() : [];
+                        histT.push(entradaHistoricoTorneio(stats));
+                        if (histT.length > 3) histT = histT.slice(histT.length - 3);
 
                         await setDoc(ref, { 
                             nome: jogador, pontos: (dados.pontos || 0) + stats.pontos, pontosOuro: (dados.pontosOuro || 0) + stats.pontosOuro, pontosPrata: (dados.pontosPrata || 0) + stats.pontosPrata, 
                             torneios: (dados.torneios || 0) + 1, titulos: (dados.titulos || 0) + stats.titulos, titulosOuro: (dados.titulosOuro || 0) + stats.titulosOuro, titulosPrata: (dados.titulosPrata || 0) + stats.titulosPrata, vices: (dados.vices || 0) + stats.vices, vitorias: (dados.vitorias || 0) + stats.vitorias, jogos: (dados.jogos || 0) + stats.jogos,
-                            historicoPontos: hist
+                            historicoPontos: hist, historicoTorneios: histT
                         }, { merge: true });
                     } else { 
                         await setDoc(ref, { 
                             nome: jogador, pontos: stats.pontos, pontosOuro: stats.pontosOuro, pontosPrata: stats.pontosPrata, 
                             torneios: 1, titulos: stats.titulos, titulosOuro: stats.titulosOuro, titulosPrata: stats.titulosPrata, vices: stats.vices, vitorias: stats.vitorias, jogos: stats.jogos,
-                            historicoPontos: [stats.pontos]
+                            historicoPontos: [stats.pontos], historicoTorneios: [entradaHistoricoTorneio(stats)]
                         }); 
                     }
                 }
@@ -3940,7 +3964,31 @@ tipoFiltroRanking.addEventListener('change', () => {
         window.abrirModalHistorico = function() { document.getElementById('modalHistorico').classList.remove('hidden'); };
         window.abrirModalH2H = function() { document.getElementById('inputH2H').value = ''; document.getElementById('resultadoH2H').classList.add('hidden'); document.getElementById('modalH2H').classList.remove('hidden'); };
         // ✅ Adicionado "async" antes de function
-        window.abrirPerfilJogador = async function(nome, pontos, torneios, titulos = 0, vitorias = 0, jogos = 0, historicoExterno = null) {
+        // v48: "Forma Recente" com identificação de cada torneio (nome/data quando gravados; senão "Último", "Penúltimo"...)
+        function renderizarFormaRecente(box, historico, detalhes) {
+            const e = window.esc;
+            if (!historico || historico.length === 0) { box.innerHTML = '<div class="forma-vazia">Ainda sem torneios no histórico.</div>'; return; }
+            const det = Array.isArray(detalhes) ? detalhes : [];
+            const n = historico.length, max = Math.max.apply(null, historico.concat([1]));
+            const ordinais = ['Último torneio', 'Penúltimo torneio', 'Antepenúltimo torneio'];
+            let alinhado = true, html = '';
+            for (let j = 0; j < n; j++) { // j = 0 é o mais recente
+                const pts = historico[n - 1 - j], d = alinhado ? det[det.length - 1 - j] : null;
+                const ok = d && Number(d.p) === Number(pts);
+                if (!ok) alinhado = false;
+                const titulo = ok ? e(d.n) : ordinais[j] || ('Há ' + j + ' torneios');
+                const data = ok && d.d ? new Date(d.d).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '';
+                const sel = ok ? ({ ouro: '🏆 Campeão Ouro', prata: '🥈 Campeão Prata', vice: '🥈 Vice' }[d.c] || '') : '';
+                const nivel = pts > 50 ? 'alto' : (pts > 20 ? 'medio' : 'baixo');
+                html += `<div class="forma-linha"><div class="forma-topo"><div class="forma-nome">${titulo}</div><span class="forma-pts ${nivel}">+${pts} pts</span></div>`
+                    + `<div class="forma-sub">${[ok ? data : (j === 0 ? 'mais recente' : ''), sel].filter(Boolean).join(' · ')}</div>`
+                    + `<div class="forma-barra"><i style="width:${Math.max(4, Math.round(pts / max * 100))}%"></i></div></div>`;
+            }
+            const media = Math.round(historico.reduce((a, b) => a + b, 0) / n);
+            html += `<div class="forma-media">Média dos últimos ${n} torneio${n > 1 ? 's' : ''}: <b>${media} pts</b></div>`;
+            box.innerHTML = html;
+        }
+        window.abrirPerfilJogador = async function(nome, pontos, torneios, titulos = 0, vitorias = 0, jogos = 0, historicoExterno = null, historicoTorneiosExterno = null) {
             const tokPerfil = window._perfilTok = (window._perfilTok || 0) + 1;
             window.atualizarSetasPerfil();
             let derrotas = jogos - vitorias; let aproveitamento = jogos > 0 ? Math.round((vitorias / jogos) * 100) : 0;
@@ -3981,16 +4029,7 @@ tipoFiltroRanking.addEventListener('change', () => {
             let historico = Array.isArray(historicoExterno) ? historicoExterno : (playerDados ? (playerDados.historicoPontos || []) : []);
             
             let containerHist = document.getElementById('perfilUltimosTorneios');
-            containerHist.innerHTML = '';
-            if (historico.length === 0) {
-            containerHist.innerHTML = '<span style="background: #e5e7eb; color: #6b7280; font-size: 0.9rem; padding: 6px 12px; border-radius: 6px; font-weight: 700;">Sem dados recentes</span>';
-        } else {
-            historico.forEach(pts => {
-                let corBg = pts > 50 ? '#dcfce7' : (pts > 20 ? '#fef9c3' : '#f3f4f6');
-                let corTxt = pts > 50 ? '#166534' : (pts > 20 ? '#854d0e' : '#4b5563');
-                containerHist.innerHTML += `<span style="background: ${corBg}; color: ${corTxt}; font-size: 1.1rem; padding: 6px 15px; border-radius: 8px; font-weight: 700; box-shadow: 0 1px 4px rgba(0,0,0,0.1);">+${pts} pts</span>`;
-            });
-        }
+            renderizarFormaRecente(containerHist, historico, historicoTorneiosExterno || (playerDados ? playerDados.historicoTorneios : null));
 
         // Limpa a busca anterior do H2H
             document.getElementById('inputH2H').value = '';
@@ -4037,7 +4076,8 @@ if (window.rankingJogadoresCache) {
         jogador.titulos || 0,
         jogador.vitorias || 0,
         jogador.jogos || 0,
-        jogador.historicoPontos || []
+        jogador.historicoPontos || [],
+        jogador.historicoTorneios || null
     );
 };
 
