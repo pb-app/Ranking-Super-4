@@ -62,35 +62,47 @@ async function fsLista(caminho) {
 }
 async function iniciarFirebase() {
   if (!ID) return escolherCampeonato();
-  let ultCamp = null, ultInsc = null, antJogos = null, rankingCarregado = null;
+  // Poucas leituras: consulta só o documento do campeonato (1 leitura) a cada 10 s e baixa
+  // inscritos/jogos apenas quando o campeonato muda (o app do organizador carimba atualizadoEm a cada gravação).
+  let ultCamp = null, ultInsc = null, antJogos = null, rankingCarregado = null, espera = 0, ultListas = 0, ultMarca = undefined;
   const erro = e => {
     console.error(e);
     if (e && e.status === 404) { splashMsg('Campeonato não encontrado', 'Use Esc para escolher outro.'); return; }
     setConexao(false);
-    if (!S.iniciou) splashMsg('Não foi possível ler os dados', e && e.status === 403 ? 'Sem permissão de leitura no banco.' : 'Verifique a internet da TV. (' + (e && e.message) + ')');
+    espera = Math.min(espera ? espera * 2 : 30000, 300000); // recua em caso de erro (inclui limite de cota 429)
+    if (!S.iniciou) splashMsg('Não foi possível ler os dados', (e && e.status === 429 ? 'Limite de leituras do banco atingido hoje. Tentando de novo em ' + Math.round(espera / 1000) + ' s.' : e && e.status === 403 ? 'Sem permissão de leitura no banco.' : 'Verifique a internet da TV. (' + (e && e.message) + ')'));
   };
-  async function ciclo() {
-    try {
-      const res = await Promise.all([
-        http(FS + '/campeonatos/' + encodeURIComponent(ID)),
-        fsLista('campeonatos/' + ID + '/inscritos'),
-        fsLista('campeonatos/' + ID + '/jogos')
-      ]);
-      const c = fsObj(res[0].fields), jc = JSON.stringify(c);
-      setConexao(true);
-      if (jc !== ultCamp) { ultCamp = jc; onCamp(c); }
-      if (c.ranking && c.ranking !== rankingCarregado) {
-        rankingCarregado = c.ranking;
-        fsLista('rankings/' + c.ranking + '/jogadores').then(l => { const r = {}; l.forEach(d => { r[d.data.nome] = d.data.pontos || 0; }); S.rank = r; }).catch(() => {});
-      }
-      const ins = res[1].map(d => d.data).sort((a, b) => ((a.dataCriacao && a.dataCriacao.seconds) || 0) - ((b.dataCriacao && b.dataCriacao.seconds) || 0));
+  async function baixarListas(c) {
+    const sorteado = ((c.sorteados || []).length > 0) || ((c.fasesMataMata || []).length > 0);
+    if (!sorteado) {
+      const ins = (await fsLista('campeonatos/' + ID + '/inscritos')).map(d => d.data).sort((a, b) => ((a.dataCriacao && a.dataCriacao.seconds) || 0) - ((b.dataCriacao && b.dataCriacao.seconds) || 0));
       const ji = JSON.stringify(ins);
       if (ji !== ultInsc) { ultInsc = ji; onInscritos(ins); }
-      const mapa = {}, jm = {}; res[2].forEach(d => { mapa[d.id] = d.data; jm[d.id] = JSON.stringify(d.data); });
-      const alt = antJogos ? Object.keys(jm).filter(id => antJogos[id] !== jm[id]) : [];
-      if (antJogos === null || alt.length || Object.keys(jm).length !== Object.keys(antJogos).length) { antJogos = jm; onJogos(mapa, alt); }
+      if (antJogos === null) { antJogos = {}; onJogos({}, []); }
+      return;
+    }
+    if (ultInsc === null) { ultInsc = '[]'; onInscritos([]); }
+    const lj = await fsLista('campeonatos/' + ID + '/jogos');
+    const mapa = {}, jm = {}; lj.forEach(d => { mapa[d.id] = d.data; jm[d.id] = JSON.stringify(d.data); });
+    const alt = antJogos ? Object.keys(jm).filter(id => antJogos[id] !== jm[id]) : [];
+    if (antJogos === null || alt.length || Object.keys(jm).length !== Object.keys(antJogos).length) { antJogos = jm; onJogos(mapa, alt); }
+  }
+  async function ciclo() {
+    try {
+      const d = await http(FS + '/campeonatos/' + encodeURIComponent(ID));
+      const c = fsObj(d.fields), jc = JSON.stringify(c);
+      setConexao(true);
+      const mudou = jc !== ultCamp;
+      if (mudou) { ultCamp = jc; onCamp(c); }
+      if (c.ranking && c.ranking !== rankingCarregado) {
+        rankingCarregado = c.ranking;
+        fsLista('rankings/' + c.ranking + '/jogadores').then(l => { const r = {}; l.forEach(x => { r[x.data.nome] = x.data.pontos || 0; }); S.rank = r; }).catch(() => {});
+      }
+      const seguranca = c.atualizadoEm ? 600000 : 90000; // sem carimbo (app antigo): confere a cada 90 s
+      if (mudou || ultListas === 0 || Date.now() - ultListas > seguranca) { await baixarListas(c); ultListas = Date.now(); }
+      espera = 0;
     } catch (e) { erro(e); }
-    setTimeout(ciclo, 4000);
+    setTimeout(ciclo, espera || 10000);
   }
   ciclo();
 }

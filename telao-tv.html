@@ -1416,60 +1416,94 @@ function fsLista(caminho) {
 }
 function iniciarFirebase() {
     return __awaiter(this, void 0, void 0, function () {
-        function ciclo() {
+        function baixarListas(c) {
             return __awaiter(this, void 0, void 0, function () {
-                var res, c, jc, ins, ji, mapa_1, jm_1, alt, e_6;
+                var sorteado, ins, ji, lj, mapa, jm, alt;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
-                            _a.trys.push([0, 2, , 3]);
-                            return [4 /*yield*/, Promise.all([
-                                    http(FS + '/campeonatos/' + encodeURIComponent(ID)),
-                                    fsLista('campeonatos/' + ID + '/inscritos'),
-                                    fsLista('campeonatos/' + ID + '/jogos')
-                                ])];
+                            sorteado = ((c.sorteados || []).length > 0) || ((c.fasesMataMata || []).length > 0);
+                            if (!!sorteado) return [3 /*break*/, 2];
+                            return [4 /*yield*/, fsLista('campeonatos/' + ID + '/inscritos')];
                         case 1:
-                            res = _a.sent();
-                            c = fsObj(res[0].fields), jc = JSON.stringify(c);
-                            setConexao(true);
-                            if (jc !== ultCamp) {
-                                ultCamp = jc;
-                                onCamp(c);
-                            }
-                            if (c.ranking && c.ranking !== rankingCarregado) {
-                                rankingCarregado = c.ranking;
-                                fsLista('rankings/' + c.ranking + '/jogadores').then(function (l) { var r = {}; l.forEach(function (d) { r[d.data.nome] = d.data.pontos || 0; }); S.rank = r; }).catch(function () { });
-                            }
-                            ins = res[1].map(function (d) { return d.data; }).sort(function (a, b) { return ((a.dataCriacao && a.dataCriacao.seconds) || 0) - ((b.dataCriacao && b.dataCriacao.seconds) || 0); });
+                            ins = (_a.sent()).map(function (d) { return d.data; }).sort(function (a, b) { return ((a.dataCriacao && a.dataCriacao.seconds) || 0) - ((b.dataCriacao && b.dataCriacao.seconds) || 0); });
                             ji = JSON.stringify(ins);
                             if (ji !== ultInsc) {
                                 ultInsc = ji;
                                 onInscritos(ins);
                             }
-                            mapa_1 = {}, jm_1 = {};
-                            res[2].forEach(function (d) { mapa_1[d.id] = d.data; jm_1[d.id] = JSON.stringify(d.data); });
-                            alt = antJogos ? Object.keys(jm_1).filter(function (id) { return antJogos[id] !== jm_1[id]; }) : [];
-                            if (antJogos === null || alt.length || Object.keys(jm_1).length !== Object.keys(antJogos).length) {
-                                antJogos = jm_1;
-                                onJogos(mapa_1, alt);
+                            if (antJogos === null) {
+                                antJogos = {};
+                                onJogos({}, []);
                             }
-                            return [3 /*break*/, 3];
+                            return [2 /*return*/];
                         case 2:
-                            e_6 = _a.sent();
-                            erro(e_6);
-                            return [3 /*break*/, 3];
+                            if (ultInsc === null) {
+                                ultInsc = '[]';
+                                onInscritos([]);
+                            }
+                            return [4 /*yield*/, fsLista('campeonatos/' + ID + '/jogos')];
                         case 3:
-                            setTimeout(ciclo, 4000);
+                            lj = _a.sent();
+                            mapa = {}, jm = {};
+                            lj.forEach(function (d) { mapa[d.id] = d.data; jm[d.id] = JSON.stringify(d.data); });
+                            alt = antJogos ? Object.keys(jm).filter(function (id) { return antJogos[id] !== jm[id]; }) : [];
+                            if (antJogos === null || alt.length || Object.keys(jm).length !== Object.keys(antJogos).length) {
+                                antJogos = jm;
+                                onJogos(mapa, alt);
+                            }
                             return [2 /*return*/];
                     }
                 });
             });
         }
-        var ultCamp, ultInsc, antJogos, rankingCarregado, erro;
+        function ciclo() {
+            return __awaiter(this, void 0, void 0, function () {
+                var d, c, jc, mudou, seguranca, e_6;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            _a.trys.push([0, 4, , 5]);
+                            return [4 /*yield*/, http(FS + '/campeonatos/' + encodeURIComponent(ID))];
+                        case 1:
+                            d = _a.sent();
+                            c = fsObj(d.fields), jc = JSON.stringify(c);
+                            setConexao(true);
+                            mudou = jc !== ultCamp;
+                            if (mudou) {
+                                ultCamp = jc;
+                                onCamp(c);
+                            }
+                            if (c.ranking && c.ranking !== rankingCarregado) {
+                                rankingCarregado = c.ranking;
+                                fsLista('rankings/' + c.ranking + '/jogadores').then(function (l) { var r = {}; l.forEach(function (x) { r[x.data.nome] = x.data.pontos || 0; }); S.rank = r; }).catch(function () { });
+                            }
+                            seguranca = c.atualizadoEm ? 600000 : 90000;
+                            if (!(mudou || ultListas === 0 || Date.now() - ultListas > seguranca)) return [3 /*break*/, 3];
+                            return [4 /*yield*/, baixarListas(c)];
+                        case 2:
+                            _a.sent();
+                            ultListas = Date.now();
+                            _a.label = 3;
+                        case 3:
+                            espera = 0;
+                            return [3 /*break*/, 5];
+                        case 4:
+                            e_6 = _a.sent();
+                            erro(e_6);
+                            return [3 /*break*/, 5];
+                        case 5:
+                            setTimeout(ciclo, espera || 10000);
+                            return [2 /*return*/];
+                    }
+                });
+            });
+        }
+        var ultCamp, ultInsc, antJogos, rankingCarregado, espera, ultListas, ultMarca, erro;
         return __generator(this, function (_a) {
             if (!ID)
                 return [2 /*return*/, escolherCampeonato()];
-            ultCamp = null, ultInsc = null, antJogos = null, rankingCarregado = null;
+            ultCamp = null, ultInsc = null, antJogos = null, rankingCarregado = null, espera = 0, ultListas = 0, ultMarca = undefined;
             erro = function (e) {
                 console.error(e);
                 if (e && e.status === 404) {
@@ -1477,8 +1511,9 @@ function iniciarFirebase() {
                     return;
                 }
                 setConexao(false);
+                espera = Math.min(espera ? espera * 2 : 30000, 300000); // recua em caso de erro (inclui limite de cota 429)
                 if (!S.iniciou)
-                    splashMsg('Não foi possível ler os dados', e && e.status === 403 ? 'Sem permissão de leitura no banco.' : 'Verifique a internet da TV. (' + (e && e.message) + ')');
+                    splashMsg('Não foi possível ler os dados', (e && e.status === 429 ? 'Limite de leituras do banco atingido hoje. Tentando de novo em ' + Math.round(espera / 1000) + ' s.' : e && e.status === 403 ? 'Sem permissão de leitura no banco.' : 'Verifique a internet da TV. (' + (e && e.message) + ')'));
             };
             ciclo();
             return [2 /*return*/];
