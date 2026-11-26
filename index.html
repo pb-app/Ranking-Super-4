@@ -1024,7 +1024,7 @@
     </div>
     <!-- Versão Clicável para Atualizar -->
 <div id="appVersionBadge" onclick="verificarAtualizacaoApp()" style="position: fixed; bottom: 12px; right: 12px; background: rgba(31, 41, 55, 0.85); backdrop-filter: blur(4px); color: #9ca3af; padding: 5px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; z-index: 1000; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1);" title="Toque para verificar atualizações">
-    v38 🔄
+    v39 🔄
 </div>
     </footer>
 
@@ -1177,6 +1177,25 @@
         #chavesGeradasUI .match-box:has(> .match-score) .match-score > .p-timeB { grid-area: sb; margin-top: 5px; padding-top: 0; }
         #chavesGeradasUI .match-box:has(> .match-score) .score-input { width: 44px; height: 34px; font-size: 1.1rem; border-radius: 7px; }
         #chavesGeradasUI .match-box:has(> .match-score) > button { grid-area: btn; margin-top: 8px !important; width: 100% !important; max-width: none !important; padding: 3px 8px !important; font-size: 0.8rem !important; min-height: 0; line-height: 1.3; }
+
+        /* ===== v39: cards de placar do mata-mata no celular/tablet, iguais aos dos grupos ===== */
+        @media (max-width: 991px) {
+            #mataMataUI .bracket-match:has(> .match-score) { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 10px; row-gap: 0; align-items: center;
+                grid-template-areas: "q q" "a sa" "b sb" "btn btn"; text-align: left; padding: 8px 10px; margin: 8px 0; border-radius: 10px; }
+            #mataMataUI .bracket-match:has(> .match-score) > br { display: none; }
+            #mataMataUI .bracket-match:has(> .match-score) > div:first-child:not(.match-score):not(:last-child) { grid-area: q; justify-self: start; margin: 0 0 6px !important; white-space: nowrap; }
+            #mataMataUI .bracket-match:has(> .match-score) > .t-a { grid-area: a; }
+            #mataMataUI .bracket-match:has(> .match-score) > .t-b { grid-area: b; border-top: 1px solid var(--border); margin-top: 5px; padding-top: 5px !important; }
+            #mataMataUI .bracket-match:has(> .match-score) > .t-a, #mataMataUI .bracket-match:has(> .match-score) > .t-b { font-size: 0.88rem; line-height: 1.2; padding: 0; }
+            #mataMataUI .bracket-match:has(> .match-score) > .t-a > span:not([style*="margin-left"]), #mataMataUI .bracket-match:has(> .match-score) > .t-b > span:not([style*="margin-left"]) { font-size: 0.82rem !important; }
+            #mataMataUI .bracket-match:has(> .match-score) > .match-score { display: contents; }
+            #mataMataUI .bracket-match:has(> .match-score) .match-score > span { display: none; }
+            #mataMataUI .bracket-match:has(> .match-score) .match-score > .p-timeA { grid-area: sa; }
+            #mataMataUI .bracket-match:has(> .match-score) .match-score > .p-time#mataMataUI .bracket-match:has(> .match-score) { grid-area: sb; margin-top: 5px; }
+            #mataMataUI .bracket-match:has(> .match-score) .score-input { width: 44px; height: 34px; font-size: 1.1rem; border-radius: 7px; }
+            #mataMataUI .bracket-match:has(> .match-score) > div:last-child { grid-area: btn; display: flex; flex-direction: row !important; gap: 6px; margin-top: 8px; }
+            #mataMataUI .bracket-match:has(> .match-score) > div:last-child button { flex: 1; width: auto !important; max-width: none !important; margin-top: 0 !important; padding: 3px 8px !important; font-size: 0.8rem !important; min-height: 0; line-height: 1.3; white-space: nowrap; min-width: 0; }
+        }
 </style>
 
     <script>
@@ -1375,7 +1394,7 @@
             } catch (e) { console.log("Não foi possível atualizar o resumo do histórico:", e); window.h2hJogosCache = null; }
         }
 
-        const APP_VERSION = "v38";
+        const APP_VERSION = "v39";
         let isLogged = false;
         let torneioAbertoId = null; 
         let torneioAbertoData = null; 
