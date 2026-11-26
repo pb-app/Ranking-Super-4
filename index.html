@@ -1013,7 +1013,7 @@
     </div>
     <!-- Versão Clicável para Atualizar -->
 <div id="appVersionBadge" onclick="verificarAtualizacaoApp()" style="position: fixed; bottom: 12px; right: 12px; background: rgba(31, 41, 55, 0.85); backdrop-filter: blur(4px); color: #9ca3af; padding: 5px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; z-index: 1000; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1);" title="Toque para verificar atualizações">
-    v33 🔄
+    v36 🔄
 </div>
     </footer>
 
@@ -1188,9 +1188,29 @@
         };
     })();
     </script>
+    <script>
+    /* Diagnóstico para navegadores de TV: mostra erros na tela em vez de ficar parado em "Carregando..." */
+    (function () {
+        function banner(txt) {
+            try {
+                var b = document.getElementById('diagErro');
+                if (!b) {
+                    b = document.createElement('div'); b.id = 'diagErro';
+                    b.style.cssText = 'position:fixed;left:0;right:0;bottom:0;z-index:2147483647;background:#7f1d1d;color:#fff;font:14px/1.4 sans-serif;padding:10px 14px;white-space:pre-wrap;word-break:break-word';
+                    (document.body || document.documentElement).appendChild(b);
+                }
+                b.textContent = txt;
+            } catch (e) {}
+        }
+        window.addEventListener('error', function (e) { banner('⚠️ Erro no navegador: ' + (e.message || 'desconhecido') + (e.lineno ? ' (linha ' + e.lineno + ')' : '') + '\nNavegador: ' + navigator.userAgent); });
+        window.addEventListener('unhandledrejection', function (e) { var r = e.reason; banner('⚠️ Falha ao carregar: ' + ((r && r.message) || r) + '\nNavegador: ' + navigator.userAgent); });
+        window.__diagBanner = banner;
+    })();
+    </script>
+    <script nomodule>document.addEventListener('DOMContentLoaded', function(){ var d=document.createElement('div'); d.style.cssText='position:fixed;left:0;right:0;top:0;background:#7f1d1d;color:#fff;font:16px sans-serif;padding:14px;z-index:99999'; d.innerHTML='⚠️ Este navegador é antigo demais para o aplicativo completo. Para usar na TV, abra o Telão: <a href="telao-tv.html" style="color:#fde68a;font-weight:bold">telao-tv.html</a><br><small>'+navigator.userAgent+'</small>'; document.body.appendChild(d); });</script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, doc, updateDoc, getDocs, setDoc, getDoc, deleteDoc, collectionGroup, increment } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc as _addDoc, onSnapshot, query, orderBy, limit, serverTimestamp, doc, updateDoc as _updateDoc, getDocs, setDoc as _setDoc, getDoc, deleteDoc as _deleteDoc, collectionGroup, increment } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
         import { getDatabase, ref, onValue, onDisconnect, set } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
@@ -1207,7 +1227,86 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        const APP_VERSION = "v33";
+        // ===== v36: menos leituras no Firestore =====
+        // 1) Aviso de mudança: cada gravação em inscritos/jogos "carimba" o campeonato (atualizadoEm).
+        //    O telão da TV consulta só esse carimbo e baixa os dados apenas quando ele muda.
+        function _idCampDe(refx) {
+            const p = String((refx && refx.path) || '').split('/');
+            return (p[0] === 'campeonatos' && p.length >= 3 && (p[2] === 'jogos' || p[2] === 'inscritos')) ? p[1] : null;
+        }
+        const _timersTocar = {};
+        function tocarCampeonato(id) {
+            clearTimeout(_timersTocar[id]);
+            _timersTocar[id] = setTimeout(() => { _updateDoc(doc(db, "campeonatos", id), { atualizadoEm: Date.now() }).catch(() => {}); }, 1500);
+        }
+        async function setDoc(refx, ...resto) { const r = await _setDoc(refx, ...resto); const id = _idCampDe(refx); if (id) tocarCampeonato(id); return r; }
+        async function updateDoc(refx, ...resto) { const r = await _updateDoc(refx, ...resto); const id = _idCampDe(refx); if (id) tocarCampeonato(id); return r; }
+        async function deleteDoc(refx) { const r = await _deleteDoc(refx); const id = _idCampDe(refx); if (id) tocarCampeonato(id); return r; }
+        async function addDoc(refx, dados) { const r = await _addDoc(refx, dados); const id = _idCampDe(refx); if (id) tocarCampeonato(id); return r; }
+
+        // 2) Ranking da categoria: uma leitura e reaproveita (em vez de ler de novo a cada tela)
+        window.rankingDadosCache = window.rankingDadosCache || {};
+        window.rankingTs = window.rankingTs || {};
+        async function obterRankingCompleto(nome, maxIdadeMs) {
+            const idade = Date.now() - (window.rankingTs[nome] || 0);
+            if (window.rankingDadosCache[nome] && idade <= maxIdadeMs) return window.rankingDadosCache[nome];
+            const snap = await getDocs(collection(db, "rankings", nome, "jogadores"));
+            const lista = []; snap.forEach(d => { const x = d.data(); x.id = d.id; lista.push(x); });
+            window.rankingDadosCache[nome] = lista; window.rankingTs[nome] = Date.now();
+            return lista;
+        }
+
+        // 3) Histórico compacto dos jogos (medalhas e H2H): 1 a 3 documentos em vez de ler todos os jogos
+        const HIST_LOTE = 1500;
+        const histDoc = (n) => doc(db, "sistema", "historicoJogos_" + n);
+        const compactarJogo = (j, t) => ({ t: t, a: j.timeA || '', b: j.timeB || '', v: j.vencedor || '', pa: Array.isArray(j.placarA) ? j.placarA : [], pb: Array.isArray(j.placarB) ? j.placarB : [], f: j.fase || '' });
+        const expandirJogo = (c) => ({ timeA: c.a, timeB: c.b, vencedor: c.v, placarA: c.pa, placarB: c.pb, fase: c.f });
+        async function lerHistoricoCompacto() {
+            try {
+                const s0 = await getDoc(histDoc(0));
+                if (!s0.exists()) return null;
+                let lista = (s0.data().jogos || []).slice();
+                const n = s0.data().lotes || 1;
+                for (let i = 1; i < n; i++) { const si = await getDoc(histDoc(i)); if (si.exists()) lista = lista.concat(si.data().jogos || []); }
+                return lista;
+            } catch (e) { console.log("Histórico compacto indisponível:", e); return null; }
+        }
+        async function gravarHistoricoCompacto(lista) {
+            const lotes = Math.max(1, Math.ceil(lista.length / HIST_LOTE));
+            for (let i = lotes - 1; i >= 0; i--) await _setDoc(histDoc(i), { lotes: lotes, jogos: lista.slice(i * HIST_LOTE, (i + 1) * HIST_LOTE), atualizadoEm: Date.now() });
+        }
+        let _avisouHistFalha = false;
+        window.carregarHistoricoJogos = async function () {
+            if (window.h2hJogosCache) return window.h2hJogosCache;
+            if (window._histPromise) return window._histPromise;
+            window._histPromise = (async () => {
+                const compacto = await lerHistoricoCompacto();
+                if (compacto) { window.h2hJogosCache = compacto.map(expandirJogo); return window.h2hJogosCache; }
+                // Resumo ainda não existe: lê tudo uma única vez (modo antigo) e, se for organizador, grava o resumo
+                const snap = await getDocs(collectionGroup(db, "jogos"));
+                const completos = [], compactos = [];
+                snap.forEach(d => { const j = d.data(); completos.push(j); if (j.vencedor) { const pai = d.ref.parent.parent; compactos.push(compactarJogo(j, pai ? pai.id : '')); } });
+                window.h2hJogosCache = completos;
+                if (isLogged) {
+                    gravarHistoricoCompacto(compactos).then(() => toast('Histórico de jogos otimizado: medalhas e H2H agora leem bem menos do banco.', 'ok'))
+                        .catch(e => { console.log(e); if (!_avisouHistFalha) { _avisouHistFalha = true; toast('Não consegui salvar o resumo do histórico (regras do Firestore). Medalhas continuam funcionando, só sem a economia de leituras.', 'aviso'); } });
+                }
+                return completos;
+            })();
+            try { return await window._histPromise; } finally { window._histPromise = null; }
+        };
+        async function atualizarHistoricoAoEncerrar(torneioId) {
+            try {
+                let lista = await lerHistoricoCompacto();
+                if (!lista) return; // ainda sem resumo: será criado pela primeira consulta de um organizador
+                lista = lista.filter(x => x.t !== torneioId);
+                const snap = await getDocs(collection(db, "campeonatos", torneioId, "jogos"));
+                snap.forEach(d => { const j = d.data(); if (j.vencedor) lista.push(compactarJogo(j, torneioId)); });
+                await gravarHistoricoCompacto(lista);
+            } catch (e) { console.log("Não foi possível atualizar o resumo do histórico:", e); window.h2hJogosCache = null; }
+        }
+
+        const APP_VERSION = "v36";
         let isLogged = false;
         let torneioAbertoId = null; 
         let torneioAbertoData = null; 
@@ -1216,8 +1315,8 @@
         let inscritosUnsubscribe = null; 
         let inscritosAtuais = []; 
 
-        window.esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-        window.jsArg = (s) => String(s ?? '').replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        window.esc = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        window.jsArg = (s) => String(s == null ? '' : s).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         window.nomeClicavel = function(nome) {
             if (!nome) return '';
             return `<span style="cursor:pointer; text-decoration:underline; text-underline-offset:2px;" onclick="abrirPerfilDoTorneio('${jsArg(nome.trim())}')">${esc(nome.trim())}</span>`;
@@ -1322,8 +1421,12 @@
             }
         }
 
-        const q = query(collection(db, "campeonatos"), orderBy("dataCriacao", "desc"));
-        onSnapshot(q, (snapshot) => {
+        setTimeout(() => { if (/Carregando campeonatos/.test(tournamentsContainer.textContent || '') && window.__diagBanner) window.__diagBanner('⚠️ Os campeonatos não carregaram. Verifique a internet da TV. Se continuar, abra direto: ' + new URL('telao.html', location.href).href + '\nNavegador: ' + navigator.userAgent); }, 15000);
+        let limiteLista = 20, unsubLista = null;
+        function ouvirCampeonatos() {
+        if (unsubLista) unsubLista();
+        const q = query(collection(db, "campeonatos"), orderBy("dataCriacao", "desc"), limit(limiteLista));
+        unsubLista = onSnapshot(q, (snapshot) => {
             tournamentsContainer.innerHTML = ''; 
             if (snapshot.empty) { tournamentsContainer.innerHTML = '<p class="estado-vazio">🎾 Nenhum campeonato aberto no momento.</p>'; return; }
             snapshot.forEach((docSnap) => {
@@ -1370,7 +1473,18 @@
                 card.innerHTML = `${_chips}<h3>${camp.nome}</h3><p style="margin-bottom: 8px;">🏅 ${camp.ranking}</p><div class="card-meta">${_meta}</div>${linkPontos}${extraInfo}`;
                 tournamentsContainer.appendChild(card);
             });
+            if (snapshot.size >= limiteLista) {
+                const mais = document.createElement('button');
+                mais.className = 'btn btn-outline'; mais.style.cssText = 'grid-column:1/-1; margin:8px auto;';
+                mais.textContent = 'Ver campeonatos anteriores';
+                mais.onclick = () => { limiteLista += 20; ouvirCampeonatos(); };
+                tournamentsContainer.appendChild(mais);
+            }
+        }, (err) => {
+            tournamentsContainer.innerHTML = '<p class="estado-vazio">⚠️ Não foi possível carregar os campeonatos. Verifique a internet.<br><small>' + esc(err && err.message) + '</small></p>';
         });
+        }
+        ouvirCampeonatos();
 
         function abrirPainelTorneio(id, camp) {
             document.body.classList.remove('modo-chave');
@@ -1412,9 +1526,8 @@
 window.rankingJogadoresCache = {}; // cache completo
 
 if (camp.ranking) {
-    getDocs(collection(db, "rankings", camp.ranking, "jogadores")).then(snapRank => {
-        snapRank.forEach(docR => {
-            const d = docR.data();
+    obterRankingCompleto(camp.ranking, 600000).then(listaRank => {
+        listaRank.forEach(d => {
             window.pontosRankingCache[d.nome] = d.pontos || 0;
             window.rankingJogadoresCache[d.nome] = d;
         });
@@ -1728,8 +1841,8 @@ window.jogosSalvos = novosJogosSalvos;
             datalist.innerHTML = '';
             if (!rankingNome) return;
             try {
-                const snap = await getDocs(collection(db, "rankings", rankingNome, "jogadores"));
-                snap.forEach(doc => { let option = document.createElement('option'); option.value = doc.data().nome; datalist.appendChild(option); });
+                const listaSug = await obterRankingCompleto(rankingNome, 600000);
+                listaSug.forEach(d => { let option = document.createElement('option'); option.value = d.nome; datalist.appendChild(option); });
             } catch(e) { console.log("Erro nas sugestões:", e); }
         }
 
@@ -2078,8 +2191,8 @@ window.jogosSalvos = novosJogosSalvos;
             let rankingMap = {};
             if (torneioAbertoData.ranking) {
                 try {
-                    const snapRank = await getDocs(collection(db, "rankings", torneioAbertoData.ranking, "jogadores"));
-                    snapRank.forEach(doc => { rankingMap[doc.data().nome] = doc.data().pontos || 0; });
+                    const listaRk = await obterRankingCompleto(torneioAbertoData.ranking, 0); // sorteio usa dados frescos
+                    listaRk.forEach(d => { rankingMap[d.nome] = d.pontos || 0; });
                 } catch(e) { console.log("Erro ao carregar ranking para sorteio:", e); }
             }
 
@@ -2120,7 +2233,7 @@ window.jogosSalvos = novosJogosSalvos;
             let ultimos5 = Object.keys(window.torneiosDataCache || {})
                 .filter(id => id !== torneioAbertoId && window.torneiosDataCache[id].status === 'encerrado')
                 .map(id => window.torneiosDataCache[id])
-                .sort((a, b) => (b.dataCriacao?.seconds || 0) - (a.dataCriacao?.seconds || 0))
+                .sort((a, b) => ((b.dataCriacao && b.dataCriacao.seconds) || 0) - ((a.dataCriacao && a.dataCriacao.seconds) || 0))
                 .slice(0, 5);
 
             ultimos5.forEach(t => {
@@ -2419,7 +2532,7 @@ window.jogosSalvos = novosJogosSalvos;
         function ajustarAlturaChave() {
             const cont = document.querySelector('#mataMataUI .bracket-container');
             if (!cont) return;
-            const n1 = parseInt(cont.querySelector('.bloco-chave-ouro')?.style.getPropertyValue('--n1')) || 4;
+            const n1 = parseInt((cont.querySelector('.bloco-chave-ouro') || {style:{getPropertyValue:()=>''}}).style.getPropertyValue('--n1')) || 4;
             const h = Math.max(48, Math.min(120, Math.floor((window.innerHeight - 330) / n1)));
             cont.style.setProperty('--slot-h', h + 'px');
         }
@@ -2603,9 +2716,9 @@ let tB_display = tB_data.includes('&')
                     let tdElement = tr.cells[0];
                     if (tdElement) {
                         let nomeT = tdElement.getAttribute('data-name') || tdElement.innerText.replace(/👤/g, '').replace(/[🥇🥈🥉]/g, '').trim();
-                        let v = parseInt(tr.cells[2]?.innerText) || 0; 
-                        let ss = parseInt(tr.cells[3]?.innerText) || 0; 
-                        let sg = parseInt(tr.cells[4]?.innerText) || 0;
+                        let v = parseInt(tr.cells[2] && tr.cells[2].innerText) || 0; 
+                        let ss = parseInt(tr.cells[3] && tr.cells[3].innerText) || 0; 
+                        let sg = parseInt(tr.cells[4] && tr.cells[4].innerText) || 0;
                         playerStatsMap[nomeT] = { v, ss, sg };
                         jogadoresGrupo.push({ nome: nomeT, v, ss, sg });
                     }
@@ -2624,8 +2737,8 @@ let tB_display = tB_data.includes('&')
                         let prataJogadores = jogadoresGrupo.slice(metade);
 
                         for (let i = 0; i < ouroJogadores.length; i += 2) {
-                            let p1 = ouroJogadores[i]?.nome;
-                            let p2 = ouroJogadores[i+1]?.nome || ouroJogadores[0]?.nome;
+                            let p1 = ouroJogadores[i] && ouroJogadores[i].nome;
+                            let p2 = (ouroJogadores[i+1] && ouroJogadores[i+1].nome) || (ouroJogadores[0] && ouroJogadores[0].nome);
                             if (p1 && p2 && p1 !== p2) {
                                 let s1 = playerStatsMap[p1] || {v:0, ss:0, sg:0}; 
                                 let s2 = playerStatsMap[p2] || {v:0, ss:0, sg:0};
@@ -2636,8 +2749,8 @@ let tB_display = tB_data.includes('&')
                         }
 
                         for (let i = 0; i < prataJogadores.length; i += 2) {
-                            let p1 = prataJogadores[i]?.nome;
-                            let p2 = prataJogadores[i+1]?.nome || prataJogadores[0]?.nome;
+                            let p1 = prataJogadores[i] && prataJogadores[i].nome;
+                            let p2 = (prataJogadores[i+1] && prataJogadores[i+1].nome) || (prataJogadores[0] && prataJogadores[0].nome);
                             if (p1 && p2 && p1 !== p2) {
                                 let s1 = playerStatsMap[p1] || {v:0, ss:0, sg:0}; 
                                 let s2 = playerStatsMap[p2] || {v:0, ss:0, sg:0};
@@ -2718,7 +2831,7 @@ let tB_display = tB_data.includes('&')
             let listaTorneios = Object.keys(window.torneiosDataCache)
                 .filter(id => id !== torneioAbertoId && window.torneiosDataCache[id].status === 'encerrado')
                 .map(id => window.torneiosDataCache[id])
-                .sort((a, b) => (b.dataCriacao?.seconds || 0) - (a.dataCriacao?.seconds || 0))
+                .sort((a, b) => ((b.dataCriacao && b.dataCriacao.seconds) || 0) - ((a.dataCriacao && a.dataCriacao.seconds) || 0))
                 .slice(0, 5); 
                 
             listaTorneios.forEach(t => {
@@ -2888,7 +3001,7 @@ let tB_display = tB_data.includes('&')
             e.preventDefault(); const b = form.querySelector('button[type="submit"]'); b.disabled = true;
             try {
                 let formatoSelecionado = document.querySelector('input[name="formato"]:checked').parentElement.textContent.trim();
-                let super4ModoVal = document.querySelector('input[name="super4Modo"]:checked')?.value || 'normal';
+                let super4ModoVal = (document.querySelector('input[name="super4Modo"]:checked') || {}).value || 'normal';
 
                 // Função auxiliar para aceitar 0 como valor válido
                 const getVal = (id, def) => { let v = parseInt(document.getElementById(id).value); return isNaN(v) ? def : v; };
@@ -2923,7 +3036,7 @@ let tB_display = tB_data.includes('&')
         });
 
         btnLogout.addEventListener('click', () => { signOut(auth).then(() => { btnAbaCampeonatos.click(); updateAuthUI(); }); });
-        onAuthStateChanged(auth, (user) => { if (user) { isLogged = true; updateAuthUI(); } else { isLogged = false; updateAuthUI(); } });
+        onAuthStateChanged(auth, (user) => { if (user) { isLogged = true; updateAuthUI(); setTimeout(async () => { try { const s0 = await getDoc(histDoc(0)); if (!s0.exists()) await window.carregarHistoricoJogos(); } catch (e) { console.log('Resumo do histórico:', e); } }, 5000); } else { isLogged = false; updateAuthUI(); } });
         btnNewTournament.addEventListener('click', () => { btnAbaCampeonatos.click(); createSection.style.display = 'block'; });
         document.getElementById('btnCancelCreate').addEventListener('click', () => { createSection.style.display = 'none'; form.reset(); });
 
@@ -2991,9 +3104,8 @@ let tB_display = tB_data.includes('&')
             listSection.classList.add('hidden'); detailsSection.classList.add('hidden'); createSection.style.display = 'none'; rankingSection.classList.remove('hidden');
             updateAuthUI();
             
-            // LIMPA O CACHE E FORÇA O RECARREGAMENTO DO FIREBASE AO CLICAR NA ABA
-            window.rankingDadosCache = {}; 
-            carregarRanking(true);
+            // Reaproveita o ranking já carregado (até 5 min) para não reler o banco a cada clique na aba
+            carregarRanking(false, 300000);
         });
 
         document.getElementById('btnEncerrarTorneio').addEventListener('click', async () => {
@@ -3180,6 +3292,7 @@ let tB_display = tB_data.includes('&')
                     
                     window.rankingDadosCache = {}; // Limpa o cache do ranking para mostrar os novos pontos
                     window.h2hJogosCache = null; // Limpa o histórico H2H para incluir as novas vitórias
+                    await atualizarHistoricoAoEncerrar(torneioAbertoId);
 
                     btn.textContent = "✅ Torneio Encerrado e Salvo!"; btn.style.background = "#10b981";
             } catch(e) { alert("Erro ao salvar pontos.");
@@ -3195,23 +3308,16 @@ let tB_display = tB_data.includes('&')
 
         const filtroRanking = document.getElementById('filtroVisualRanking'); const tipoFiltroRanking = document.getElementById('tipoFiltroRanking'); const tbodyRanking = document.getElementById('rankingTabelaBody');
 
-        window.rankingDadosCache = window.rankingDadosCache || {}; // CACHE DO RANKING GLOBAL
 
-        async function carregarRanking(forcarAtualizacao = false) {
-    let rankingNome = filtroRanking.options[filtroRanking.selectedIndex]?.text; 
+        async function carregarRanking(forcarAtualizacao = false, maxIdadeMs = Infinity) {
+    let rankingNome = (filtroRanking.options[filtroRanking.selectedIndex] || {}).text; 
     let tipoRanking = tipoFiltroRanking.value;
     if(!rankingNome) { tbodyRanking.innerHTML = '<tr><td colspan="5" style="padding: 30px;">Selecione uma categoria...</td></tr>'; return; }
     tbodyRanking.innerHTML = '<tr><td colspan="5" style="padding: 30px;">A carregar ranking...</td></tr>';
     
     let listaBase = [];
     // Força atualização se for a primeira vez ou se o usuário mudou de categoria
-    if (!forcarAtualizacao && window.rankingDadosCache[rankingNome]) {
-        listaBase = window.rankingDadosCache[rankingNome];
-    } else {
-        const snap = await getDocs(collection(db, "rankings", rankingNome, "jogadores"));
-        snap.forEach(doc => { let d = doc.data(); d.id = doc.id; listaBase.push(d); });
-        window.rankingDadosCache[rankingNome] = listaBase;
-    }
+    listaBase = await obterRankingCompleto(rankingNome, forcarAtualizacao ? 0 : maxIdadeMs);
 
             let lista = [];
             listaBase.forEach(d => { 
@@ -3289,8 +3395,8 @@ tipoFiltroRanking.addEventListener('change', () => {
             const cabecalho = document.getElementById('cabecalhoExportacao');
             const titulo = document.getElementById('tituloExportacao');
             
-            let cat = document.getElementById('filtroVisualRanking').options[document.getElementById('filtroVisualRanking').selectedIndex]?.text;
-            let tipo = document.getElementById('tipoFiltroRanking').options[document.getElementById('tipoFiltroRanking').selectedIndex]?.text;
+            let cat = (document.getElementById('filtroVisualRanking').options[document.getElementById('filtroVisualRanking').selectedIndex] || {}).text;
+            let tipo = (document.getElementById('tipoFiltroRanking').options[document.getElementById('tipoFiltroRanking').selectedIndex] || {}).text;
             if (!cat) { alert("Selecione um ranking primeiro."); btn.textContent = "📄 Baixar PDF"; return; }
             
             titulo.textContent = `🏆 ${cat} - ${tipo}`;
@@ -3366,7 +3472,7 @@ tipoFiltroRanking.addEventListener('change', () => {
         };
 
         document.getElementById('btnZerarRanking').addEventListener('click', () => {
-            let rankingNome = filtroRanking.options[filtroRanking.selectedIndex]?.text;
+            let rankingNome = (filtroRanking.options[filtroRanking.selectedIndex] || {}).text;
             if (!rankingNome) { alert("Selecione uma categoria primeiro."); return; }
             document.getElementById('zerarCategoriaNome').textContent = rankingNome;
             document.getElementById('modalZerarRanking').classList.remove('hidden');
@@ -3377,7 +3483,7 @@ tipoFiltroRanking.addEventListener('change', () => {
         };
 
         window.executarZerarRanking = async function(tipo) {
-            let rankingNome = filtroRanking.options[filtroRanking.selectedIndex]?.text;
+            let rankingNome = (filtroRanking.options[filtroRanking.selectedIndex] || {}).text;
             if (!rankingNome) return;
             
             let msg = tipo === 'tudo' ? 'Zerar TODOS os pontos' : (tipo === 'ouro' ? 'Zerar APENAS os pontos Ouro' : 'Zerar APENAS os pontos Prata');
@@ -3468,7 +3574,7 @@ tipoFiltroRanking.addEventListener('change', () => {
             if (torneios >= 10) {
                 badges += `<span onclick="mostrarExplicacaoMedalha('🛡️ Veterano', 'Conquistado por atletas leais que já participaram em 10 ou mais torneios oficiais na plataforma.')" style="background: #eff6ff; color: #2563eb; font-size: 0.75rem; font-weight: 700; padding: 6px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); cursor: pointer;" title="Clique para ver a explicação">🛡️ Veterano</span>`;
             }
-            let rankingNome = document.getElementById('filtroVisualRanking').options[document.getElementById('filtroVisualRanking').selectedIndex]?.text;
+            let rankingNome = (document.getElementById('filtroVisualRanking').options[document.getElementById('filtroVisualRanking').selectedIndex] || {}).text;
             let listaJogadores = window.rankingDadosCache[rankingNome] || [];
             let dadosAtleta = listaJogadores.find(j => j.nome === nome);
             // 3. 👑 Rei do Ouro (3+ títulos na Ouro; sem o detalhe Ouro/Prata nos dados antigos, usa o total)
@@ -3609,10 +3715,7 @@ tipoFiltroRanking.addEventListener('change', () => {
             // 2. Baixa os placares do Firebase SE a memória estiver vazia
             if (!window.h2hJogosCache) {
                 try {
-                    let snapDocs = [];
-                    const snap = await getDocs(collectionGroup(db, "jogos"));
-                    snap.forEach(docSnap => snapDocs.push(docSnap.data()));
-                    window.h2hJogosCache = snapDocs;
+                    await window.carregarHistoricoJogos();
                 } catch (e) {
                     console.log("Erro ao carregar jogos para as medalhas:", e);
                 }
@@ -3624,7 +3727,7 @@ tipoFiltroRanking.addEventListener('change', () => {
             containerBadges.innerHTML = calcularBadgesJogador(nome, vitorias, jogos, torneios, titulos);
             
             // Lógica do Histórico de Pontos
-            let rankingNome = document.getElementById('filtroVisualRanking').options[document.getElementById('filtroVisualRanking').selectedIndex]?.text;
+            let rankingNome = (document.getElementById('filtroVisualRanking').options[document.getElementById('filtroVisualRanking').selectedIndex] || {}).text;
             let lista = window.rankingDadosCache[rankingNome] || [];
             let playerDados = lista.find(j => j.nome === nome);
             // Aberto de dentro do campeonato: o histórico vem do ranking do próprio torneio (a lista da aba Ranking pode nem ter sido carregada)
@@ -3675,7 +3778,7 @@ if (window.rankingJogadoresCache) {
 
         window.abrirPerfilDoTorneio = function(nome) {
     window.perfilNav = null; // aberto fora do ranking: sem setas
-    const jogador = window.rankingJogadoresCache?.[nome];
+    const jogador = (window.rankingJogadoresCache || {})[nome];
     if (!jogador) {
         alert(`Jogador "${nome}" ainda não tem estatísticas no ranking.`);
         return;
@@ -4000,14 +4103,7 @@ if (window.rankingJogadoresCache) {
 
             try {
                 // Traz todos os jogos (com CACHE para poupar leituras!)
-                let snapDocs = [];
-                if (window.h2hJogosCache) {
-                    snapDocs = window.h2hJogosCache; // Puxa da memória se já baixou hoje
-                } else {
-                    const snap = await getDocs(collectionGroup(db, "jogos"));
-                    snap.forEach(docSnap => snapDocs.push(docSnap.data()));
-                    window.h2hJogosCache = snapDocs; // Guarda no cache para a próxima pesquisa
-                }
+                const snapDocs = await window.carregarHistoricoJogos(); // resumo compacto (1 a 3 leituras) ou memória
 
                 let vitoriasP1 = 0; let vitoriasP2 = 0; let totalJogos = 0;
 
@@ -4354,11 +4450,12 @@ if (window.rankingJogadoresCache) {
                     sessionStorage.setItem('visitaContabilizada', 'true');
                 }
 
-                onSnapshot(docVisitas, (docSnap) => {
+                // Leitura única (a escuta contínua fazia cada visita nova custar uma leitura em todos os aparelhos abertos)
+                getDoc(docVisitas).then((docSnap) => {
                     if (docSnap.exists()) {
                         document.getElementById('txtTotalVisitas').innerText = docSnap.data().total.toLocaleString('pt-BR');
                     }
-                });
+                }).catch(() => {});
 
                 // 2. Contador de Online Anti-Fantasmas (Usando Realtime Database)
                 onValue(connectedRef, (snap) => {
