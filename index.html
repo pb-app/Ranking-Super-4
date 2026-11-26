@@ -1040,7 +1040,7 @@
     </div>
     <!-- Versão Clicável para Atualizar -->
 <div id="appVersionBadge" onclick="verificarAtualizacaoApp()" style="position: fixed; bottom: 12px; right: 12px; background: rgba(31, 41, 55, 0.85); backdrop-filter: blur(4px); color: #9ca3af; padding: 5px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; z-index: 1000; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1);" title="Toque para verificar atualizações">
-    v46 🔄
+    v47 🔄
 </div>
     </footer>
 
@@ -1426,7 +1426,7 @@
             } catch (e) { console.log("Não foi possível atualizar o resumo do histórico:", e); window.h2hJogosCache = null; }
         }
 
-        const APP_VERSION = "v46";
+        const APP_VERSION = "v47";
         let isLogged = false;
         let torneioAbertoId = null; 
         let torneioAbertoData = null; 
@@ -1544,7 +1544,7 @@
         setTimeout(() => { if (/Carregando campeonatos/.test(tournamentsContainer.textContent || '') && window.__diagBanner) window.__diagBanner('⚠️ Os campeonatos não carregaram. Verifique a internet da TV. Se continuar, abra direto: ' + new URL('telao.html', location.href).href + '\nNavegador: ' + navigator.userAgent); }, 15000);
         let limiteLista = 20, unsubLista = null;
         // ===== v45: lista de campeonatos com filtros (status e mês) e cards compactos =====
-        let campeonatosLista = [], temMaisCampeonatos = false, filtroHome = { mes: '' };
+        let campeonatosLista = [], temMaisCampeonatos = false, filtroHome = { mes: '', iniciado: false };
         function criarCardCampeonato(id, camp, compacto) {
                 const card = document.createElement('div');
                 card.className = 'tournament-card';
@@ -1598,6 +1598,7 @@
             barra.classList.remove('hidden');
             const sel = document.getElementById('filtroMesCampeonatos');
             const meses = [...new Set(campeonatosLista.map(x => mesDoCamp(x.camp)).filter(Boolean))];
+            if (!filtroHome.iniciado && meses.length) { filtroHome.mes = meses[0]; filtroHome.iniciado = true; } // abre no mês mais recente (a lista vem do mais novo para o mais antigo)
             if (filtroHome.mes && !meses.includes(filtroHome.mes)) filtroHome.mes = '';
             sel.innerHTML = '<option value="">Todos os meses</option>' + meses.map(m => {
                 const t = new Date(+m.slice(0, 4), +m.slice(5) - 1, 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
@@ -1606,8 +1607,9 @@
             sel.value = filtroHome.mes;
             const andamento = [], encerrados = [];
             campeonatosLista.forEach(x => {
+                if (x.camp.status !== 'encerrado') { andamento.push(x); return; } // em andamento aparece sempre, em qualquer mês
                 if (filtroHome.mes && mesDoCamp(x.camp) !== filtroHome.mes) return;
-                (x.camp.status === 'encerrado' ? encerrados : andamento).push(x);
+                encerrados.push(x);
             });
             const verAnd = andamento.length > 0, verEnc = encerrados.length > 0;
             const titulo = (txt, n) => { const h = document.createElement('h3'); h.className = 'home-secao'; h.innerHTML = `${txt} <span>${n}</span>`; cont.appendChild(h); };
@@ -1617,13 +1619,13 @@
                 const vazio = document.createElement('div'); vazio.className = 'estado-vazio';
                 vazio.innerHTML = 'Nenhum campeonato nesse mês.<br><button type="button" class="btn btn-outline" style="margin-top:12px;" id="btnLimparFiltrosHome">Mostrar todos</button>';
                 cont.appendChild(vazio);
-                document.getElementById('btnLimparFiltrosHome').onclick = () => { filtroHome = { mes: '' }; renderizarListaCampeonatos(); };
+                document.getElementById('btnLimparFiltrosHome').onclick = () => { filtroHome.mes = ''; renderizarListaCampeonatos(); };
             }
             if (temMaisCampeonatos) {
                 const mais = document.createElement('button');
                 mais.className = 'btn btn-outline'; mais.style.cssText = 'grid-column:1/-1; margin:8px auto;';
                 mais.textContent = 'Ver campeonatos anteriores';
-                mais.onclick = () => { limiteLista += 20; ouvirCampeonatos(); };
+                mais.onclick = () => { filtroHome.mes = ''; limiteLista += 20; ouvirCampeonatos(); }; // mostra todos os meses para os anteriores aparecerem
                 cont.appendChild(mais);
             }
         }
