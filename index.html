@@ -1024,7 +1024,7 @@
     </div>
     <!-- Versão Clicável para Atualizar -->
 <div id="appVersionBadge" onclick="verificarAtualizacaoApp()" style="position: fixed; bottom: 12px; right: 12px; background: rgba(31, 41, 55, 0.85); backdrop-filter: blur(4px); color: #9ca3af; padding: 5px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; z-index: 1000; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1);" title="Toque para verificar atualizações">
-    v39 🔄
+    v40 🔄
 </div>
     </footer>
 
@@ -1394,7 +1394,7 @@
             } catch (e) { console.log("Não foi possível atualizar o resumo do histórico:", e); window.h2hJogosCache = null; }
         }
 
-        const APP_VERSION = "v39";
+        const APP_VERSION = "v40";
         let isLogged = false;
         let torneioAbertoId = null; 
         let torneioAbertoData = null; 
@@ -3615,7 +3615,7 @@ tipoFiltroRanking.addEventListener('change', () => {
                     vitorias: parseInt(document.getElementById('editVitorias').value)||0, 
                     jogos: parseInt(document.getElementById('editJogos').value)||0 
                 });
-                document.getElementById('modalEditPlayer').classList.add('hidden'); carregarRanking();
+                document.getElementById('modalEditPlayer').classList.add('hidden'); carregarRanking(true);
             } catch (err) { alert("Erro ao editar."); } finally { btn.textContent = "Salvar Alterações"; btn.disabled = false; }
         });
         
@@ -3629,7 +3629,7 @@ tipoFiltroRanking.addEventListener('change', () => {
                     await deleteDoc(doc(db, "rankings", categoria, "jogadores", id));
                     document.getElementById('modalEditPlayer').classList.add('hidden');
                     alert("Jogador excluído com sucesso!");
-                    carregarRanking();
+                    carregarRanking(true);
                 } catch (error) {
                     alert("Erro ao excluir jogador: " + error.message);
                 }
@@ -3674,7 +3674,7 @@ tipoFiltroRanking.addEventListener('change', () => {
                 });
                 await Promise.all(promessas); 
                 alert("Ranking atualizado com sucesso!"); 
-                carregarRanking();
+                carregarRanking(true);
             } catch (err) { 
                 alert("Erro ao zerar: " + err.message); 
             } finally { 
