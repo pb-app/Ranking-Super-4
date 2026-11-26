@@ -1035,7 +1035,7 @@
     </div>
     <!-- Versão Clicável para Atualizar -->
 <div id="appVersionBadge" onclick="verificarAtualizacaoApp()" style="position: fixed; bottom: 12px; right: 12px; background: rgba(31, 41, 55, 0.85); backdrop-filter: blur(4px); color: #9ca3af; padding: 5px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; z-index: 1000; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1);" title="Toque para verificar atualizações">
-    v41 🔄
+    v42 🔄
 </div>
     </footer>
 
@@ -1405,7 +1405,7 @@
             } catch (e) { console.log("Não foi possível atualizar o resumo do histórico:", e); window.h2hJogosCache = null; }
         }
 
-        const APP_VERSION = "v41";
+        const APP_VERSION = "v42";
         let isLogged = false;
         let torneioAbertoId = null; 
         let torneioAbertoData = null; 
@@ -2543,12 +2543,18 @@ window.jogosSalvos = novosJogosSalvos;
             d.dataset.aba = abaAtual;
             document.querySelectorAll('#abasTorneio .aba-btn').forEach(b => { const on = b.dataset.aba === abaAtual; b.classList.toggle('ativa', on); b.setAttribute('aria-selected', on ? 'true' : 'false'); });
         }
-        window.atualizarAbas = function () {
-            const nav = document.getElementById('abasTorneio'); if (!nav) return;
+        // mostra/esconde os botões das abas conforme o estado do torneio (sem trocar de aba)
+        function aplicarVisibilidadeAbas() {
+            const nav = document.getElementById('abasTorneio'); if (!nav) return null;
             const sorteado = torneioSorteado(), tg = torneioTemGrupos(), mm = temMataMata();
             const vis = { inscritos: true, grupos: sorteado && tg, mata: mm, resultados: sorteado };
             nav.querySelectorAll('.aba-btn').forEach(b => b.classList.toggle('oculta', !vis[b.dataset.aba]));
             nav.classList.toggle('hidden', !sorteado);
+            return { vis, sorteado, tg };
+        }
+        window.atualizarAbas = function () {
+            const nav = document.getElementById('abasTorneio'); if (!nav) return;
+            const { vis, sorteado, tg } = aplicarVisibilidadeAbas();
             document.getElementById('abaContInscritos').textContent = document.getElementById('contadorInscritos').textContent;
             atualizarAlturaCabecalho();
             if (!vis[abaAtual]) window.definirAba(sorteado ? (tg ? 'grupos' : 'mata') : 'inscritos', true);
@@ -2578,7 +2584,7 @@ window.jogosSalvos = novosJogosSalvos;
             if (alvo === 'mata' && tg && faseAtualUI <= 1) document.getElementById('btnFaseAnterior').style.visibility = 'hidden';
         }
         const _atualizarUIFasesBase = window.atualizarUIFases;
-        window.atualizarUIFases = function () { _atualizarUIFasesBase(); sincronizarAbaComFase(); };
+        window.atualizarUIFases = function () { _atualizarUIFasesBase(); aplicarVisibilidadeAbas(); sincronizarAbaComFase(); };
         document.querySelectorAll('#abasTorneio .aba-btn').forEach(b => b.addEventListener('click', () => window.definirAba(b.dataset.aba)));
         new MutationObserver(() => { const c = document.getElementById('contadorInscritos'), bd = document.getElementById('abaContInscritos'); if (c && bd) bd.textContent = c.textContent; })
             .observe(document.getElementById('contadorInscritos'), { childList: true, characterData: true, subtree: true });
