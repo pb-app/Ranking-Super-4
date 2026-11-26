@@ -860,7 +860,15 @@
         </section>
 
         <section id="list-section">
-            <h2 class="section-title">Campeonatos Abertos</h2>
+            <h2 class="section-title">Campeonatos</h2>
+            <div id="filtrosCampeonatos" class="filtros-home hidden">
+                <div class="filtro-chips" role="group" aria-label="Filtrar por situação">
+                    <button type="button" class="filtro-chip ativo" data-status="todos">Todos</button>
+                    <button type="button" class="filtro-chip" data-status="andamento">🔥 Em andamento</button>
+                    <button type="button" class="filtro-chip" data-status="encerrado">✅ Encerrados</button>
+                </div>
+                <select id="filtroMesCampeonatos" class="form-control filtro-mes" aria-label="Filtrar por mês"><option value="">Todos os meses</option></select>
+            </div>
             <div class="tournaments-grid" id="tournaments-container"><p class="estado-vazio">⏳ Carregando campeonatos…</p></div>
         </section>
 
@@ -1035,7 +1043,7 @@
     </div>
     <!-- Versão Clicável para Atualizar -->
 <div id="appVersionBadge" onclick="verificarAtualizacaoApp()" style="position: fixed; bottom: 12px; right: 12px; background: rgba(31, 41, 55, 0.85); backdrop-filter: blur(4px); color: #9ca3af; padding: 5px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; z-index: 1000; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1);" title="Toque para verificar atualizações">
-    v44 🔄
+    v45 🔄
 </div>
     </footer>
 
@@ -1207,6 +1215,24 @@
             #mataMataUI .bracket-match:has(> .match-score) > div:last-child { grid-area: btn; display: flex; flex-direction: row !important; gap: 6px; margin-top: 8px; }
             #mataMataUI .bracket-match:has(> .match-score) > div:last-child button { flex: 1; width: auto !important; max-width: none !important; margin-top: 0 !important; padding: 3px 8px !important; font-size: 0.8rem !important; min-height: 0; line-height: 1.3; white-space: nowrap; min-width: 0; }
         }
+
+        /* ===== v45: filtros e cards da tela inicial ===== */
+        .filtros-home { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin: -6px 0 1.4rem; }
+        .filtro-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+        .filtro-chip { padding: 8px 14px; border-radius: 999px; border: 1px solid var(--border); background: var(--white); color: var(--dark); font: inherit; font-size: .88rem; font-weight: 600; cursor: pointer; }
+        .filtro-chip.ativo { background: var(--primary); border-color: var(--primary); color: #fff; }
+        .filtro-mes { width: auto; min-width: 180px; padding: 8px 12px !important; font-size: .88rem; margin-left: auto; }
+        .home-secao { grid-column: 1 / -1; margin: .4rem 0 -.4rem; font-size: 1.05rem; color: var(--dark); display: flex; align-items: center; gap: 8px; }
+        .home-secao span { font-size: .75rem; font-weight: 700; padding: 1px 8px; border-radius: 999px; background: var(--primary-glow); color: var(--primary); }
+        .tournament-card.em-andamento { border-color: var(--primary); box-shadow: 0 6px 22px var(--primary-glow); }
+        .card-abrir { margin-top: 12px; padding: 8px 12px; border-radius: 8px; background: var(--primary); color: #fff; font-weight: 700; text-align: center; }
+        .tournament-card.compacto { padding: 1rem 1.2rem; }
+        .tournament-card.compacto .chips { margin-bottom: 4px; }
+        .tournament-card.compacto h3 { font-size: 1.02rem; margin: 4px 0 6px; line-height: 1.25; }
+        .tournament-card.compacto .card-meta { font-size: .82rem; margin-bottom: 2px; }
+        .tournament-card.compacto .card-campeoes { margin-top: 8px !important; padding-top: 8px !important; }
+        .tournament-card.compacto .card-campeoes > div { font-size: .88rem !important; margin-bottom: 2px !important; }
+        @media (max-width: 600px) { .filtro-mes { margin-left: 0; width: 100%; } .tournaments-grid { grid-template-columns: 1fr; gap: 1rem; } }
 </style>
 
     <script>
@@ -1405,7 +1431,7 @@
             } catch (e) { console.log("Não foi possível atualizar o resumo do histórico:", e); window.h2hJogosCache = null; }
         }
 
-        const APP_VERSION = "v44";
+        const APP_VERSION = "v45";
         let isLogged = false;
         let torneioAbertoId = null; 
         let torneioAbertoData = null; 
@@ -1522,17 +1548,12 @@
 
         setTimeout(() => { if (/Carregando campeonatos/.test(tournamentsContainer.textContent || '') && window.__diagBanner) window.__diagBanner('⚠️ Os campeonatos não carregaram. Verifique a internet da TV. Se continuar, abra direto: ' + new URL('telao.html', location.href).href + '\nNavegador: ' + navigator.userAgent); }, 15000);
         let limiteLista = 20, unsubLista = null;
-        function ouvirCampeonatos() {
-        if (unsubLista) unsubLista();
-        const q = query(collection(db, "campeonatos"), orderBy("dataCriacao", "desc"), limit(limiteLista));
-        unsubLista = onSnapshot(q, (snapshot) => {
-            tournamentsContainer.innerHTML = ''; 
-            if (snapshot.empty) { tournamentsContainer.innerHTML = '<p class="estado-vazio">🎾 Nenhum campeonato aberto no momento.</p>'; return; }
-            snapshot.forEach((docSnap) => {
-                const camp = docSnap.data();
+        // ===== v45: lista de campeonatos com filtros (status e mês) e cards compactos =====
+        let campeonatosLista = [], temMaisCampeonatos = false, filtroHome = { status: 'todos', mes: '' };
+        function criarCardCampeonato(id, camp, compacto) {
                 const card = document.createElement('div');
                 card.className = 'tournament-card';
-                card.onclick = () => abrirPainelTorneio(docSnap.id, camp);
+                card.onclick = () => abrirPainelTorneio(id, camp);
                 
                 const _fmt = String(camp.formato || '');
                 const _fmtCurto = _fmt.includes('Super 4') ? 'Super 4' : (_fmt.includes('Grupos') ? 'Grupos + Eliminatórias' : 'Mata-mata');
@@ -1551,7 +1572,7 @@
 
                 let extraInfo = '';
                 if (camp.status === 'encerrado') {
-                    extraInfo = `<div style="margin-top: 15px; padding-top: 12px; border-top: 1px dashed var(--border);">`;
+                    extraInfo = `<div class="card-campeoes" style="margin-top: 15px; padding-top: 12px; border-top: 1px dashed var(--border);">`;
                     if (camp.campeaoOuro) {
                         extraInfo += `<div style="font-size: 0.95rem; color: var(--dark); margin-bottom: 5px;">🏆 <b style="color: #d97706;">Ouro:</b> ${camp.campeaoOuro.replace(/\s*&\s*/g, ' e ')}</div>`;
                     }
@@ -1564,21 +1585,64 @@
                 }
 
                 // Armazena no cache global para o Pop-up conseguir aceder
-                window.torneiosDataCache[docSnap.id] = camp;
+                window.torneiosDataCache[id] = camp;
                 
                 // Botão de ver pontuação (o event.stopPropagation evita abrir o torneio por baixo)
-                let linkPontos = `<div style="margin-top: 5px;"><button onclick="event.stopPropagation(); abrirModalPontuacao('${docSnap.id}')" style="background: none; border: none; color: var(--blue-link); text-decoration: underline; cursor: pointer; font-size: 0.85rem; font-weight: 600; padding: 0;">ℹ️ Ver Pontuação</button></div>`;
+                let linkPontos = `<div style="margin-top: 5px;"><button onclick="event.stopPropagation(); abrirModalPontuacao('${id}')" style="background: none; border: none; color: var(--blue-link); text-decoration: underline; cursor: pointer; font-size: 0.85rem; font-weight: 600; padding: 0;">ℹ️ Ver Pontuação</button></div>`;
 
-                card.innerHTML = `${_chips}<h3>${camp.nome}</h3><p style="margin-bottom: 8px;">🏅 ${camp.ranking}</p><div class="card-meta">${_meta}</div>${linkPontos}${extraInfo}`;
-                tournamentsContainer.appendChild(card);
+                const _abrir = (!compacto && camp.status !== 'encerrado') ? '<div class="card-abrir">▶ Abrir torneio</div>' : '';
+                if (compacto) { card.classList.add('compacto'); card.innerHTML = `${_chips}<h3>${camp.nome}</h3><div class="card-meta"><span>🏅 ${camp.ranking}</span>${_meta}</div>${extraInfo}${linkPontos}`; }
+                else { card.classList.toggle('em-andamento', camp.status !== 'encerrado'); card.innerHTML = `${_chips}<h3>${camp.nome}</h3><p style="margin-bottom: 8px;">🏅 ${camp.ranking}</p><div class="card-meta">${_meta}</div>${linkPontos}${extraInfo}${_abrir}`; }
+                return card;
+        }
+        const mesDoCamp = (c) => { const sec = c.dataCriacao && c.dataCriacao.seconds; if (!sec) return ''; const d = new Date(sec * 1000); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); };
+        function renderizarListaCampeonatos() {
+            const cont = tournamentsContainer, barra = document.getElementById('filtrosCampeonatos');
+            cont.innerHTML = '';
+            if (!campeonatosLista.length) { barra.classList.add('hidden'); cont.innerHTML = '<p class="estado-vazio">🎾 Nenhum campeonato aberto no momento.</p>'; return; }
+            barra.classList.remove('hidden');
+            const sel = document.getElementById('filtroMesCampeonatos');
+            const meses = [...new Set(campeonatosLista.map(x => mesDoCamp(x.camp)).filter(Boolean))];
+            if (filtroHome.mes && !meses.includes(filtroHome.mes)) filtroHome.mes = '';
+            sel.innerHTML = '<option value="">Todos os meses</option>' + meses.map(m => {
+                const t = new Date(+m.slice(0, 4), +m.slice(5) - 1, 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+                return `<option value="${m}">${t.charAt(0).toUpperCase() + t.slice(1)}</option>`;
+            }).join('');
+            sel.value = filtroHome.mes;
+            barra.querySelectorAll('.filtro-chip').forEach(b => b.classList.toggle('ativo', b.dataset.status === filtroHome.status));
+            const andamento = [], encerrados = [];
+            campeonatosLista.forEach(x => {
+                if (filtroHome.mes && mesDoCamp(x.camp) !== filtroHome.mes) return;
+                (x.camp.status === 'encerrado' ? encerrados : andamento).push(x);
             });
-            if (snapshot.size >= limiteLista) {
+            const verAnd = filtroHome.status !== 'encerrado' && andamento.length > 0, verEnc = filtroHome.status !== 'andamento' && encerrados.length > 0;
+            const titulo = (txt, n) => { const h = document.createElement('h3'); h.className = 'home-secao'; h.innerHTML = `${txt} <span>${n}</span>`; cont.appendChild(h); };
+            if (verAnd) { titulo('🔥 Acontecendo agora', andamento.length); andamento.forEach(x => cont.appendChild(criarCardCampeonato(x.id, x.camp, false))); }
+            if (verEnc) { titulo('✅ Encerrados', encerrados.length); encerrados.forEach(x => cont.appendChild(criarCardCampeonato(x.id, x.camp, true))); }
+            if (!verAnd && !verEnc) {
+                const vazio = document.createElement('div'); vazio.className = 'estado-vazio';
+                vazio.innerHTML = 'Nenhum campeonato nesse filtro.<br><button type="button" class="btn btn-outline" style="margin-top:12px;" id="btnLimparFiltrosHome">Limpar filtros</button>';
+                cont.appendChild(vazio);
+                document.getElementById('btnLimparFiltrosHome').onclick = () => { filtroHome = { status: 'todos', mes: '' }; renderizarListaCampeonatos(); };
+            }
+            if (temMaisCampeonatos) {
                 const mais = document.createElement('button');
                 mais.className = 'btn btn-outline'; mais.style.cssText = 'grid-column:1/-1; margin:8px auto;';
                 mais.textContent = 'Ver campeonatos anteriores';
                 mais.onclick = () => { limiteLista += 20; ouvirCampeonatos(); };
-                tournamentsContainer.appendChild(mais);
+                cont.appendChild(mais);
             }
+        }
+        document.querySelectorAll('#filtrosCampeonatos .filtro-chip').forEach(b => b.addEventListener('click', () => { filtroHome.status = b.dataset.status; renderizarListaCampeonatos(); }));
+        document.getElementById('filtroMesCampeonatos').addEventListener('change', (e) => { filtroHome.mes = e.target.value; renderizarListaCampeonatos(); });
+
+        function ouvirCampeonatos() {
+        if (unsubLista) unsubLista();
+        const q = query(collection(db, "campeonatos"), orderBy("dataCriacao", "desc"), limit(limiteLista));
+        unsubLista = onSnapshot(q, (snapshot) => {
+            campeonatosLista = []; snapshot.forEach((docSnap) => { const camp = docSnap.data(); window.torneiosDataCache[docSnap.id] = camp; campeonatosLista.push({ id: docSnap.id, camp }); });
+            temMaisCampeonatos = snapshot.size >= limiteLista;
+            renderizarListaCampeonatos();
         }, (err) => {
             tournamentsContainer.innerHTML = '<p class="estado-vazio">⚠️ Não foi possível carregar os campeonatos. Verifique a internet.<br><small>' + esc(err && err.message) + '</small></p>';
         });
