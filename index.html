@@ -1035,7 +1035,7 @@
     </div>
     <!-- Versão Clicável para Atualizar -->
 <div id="appVersionBadge" onclick="verificarAtualizacaoApp()" style="position: fixed; bottom: 12px; right: 12px; background: rgba(31, 41, 55, 0.85); backdrop-filter: blur(4px); color: #9ca3af; padding: 5px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; z-index: 1000; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1);" title="Toque para verificar atualizações">
-    v42 🔄
+    v43 🔄
 </div>
     </footer>
 
@@ -1405,7 +1405,7 @@
             } catch (e) { console.log("Não foi possível atualizar o resumo do histórico:", e); window.h2hJogosCache = null; }
         }
 
-        const APP_VERSION = "v42";
+        const APP_VERSION = "v43";
         let isLogged = false;
         let torneioAbertoId = null; 
         let torneioAbertoData = null; 
@@ -2528,7 +2528,7 @@ window.jogosSalvos = novosJogosSalvos;
         const temMataMata = () => (window.fasesMataMata && window.fasesMataMata.length > 0) || !!(torneioAbertoData && (torneioAbertoData.fasesMataMata || []).length > 0);
         const torneioSorteado = () => temMataMata() || !!(torneioAbertoData && (torneioAbertoData.sorteados || []).length > 0);
         function escolherAbaInicial(camp) {
-            if (camp.status === 'encerrado') return 'resultados';
+            if (camp.status === 'encerrado') return torneioTemGrupos() ? 'grupos' : 'mata'; // v43: abre em Grupos (ou Mata-mata se não houver grupos)
             if (temMataMata()) return 'mata';
             if (torneioSorteado()) return torneioTemGrupos() ? 'grupos' : 'mata';
             return 'inscritos';
