@@ -1041,7 +1041,7 @@
     </div>
     <!-- Versão Clicável para Atualizar -->
 <div id="appVersionBadge" onclick="verificarAtualizacaoApp()" style="position: fixed; bottom: 12px; right: 12px; background: rgba(31, 41, 55, 0.85); backdrop-filter: blur(4px); color: #9ca3af; padding: 5px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; z-index: 1000; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1);" title="Toque para verificar atualizações">
-    v51 🔄
+    v52 🔄
 </div>
     </footer>
 
@@ -1490,7 +1490,7 @@
             } catch (e) { console.log("Não foi possível atualizar o resumo do histórico:", e); window.h2hJogosCache = null; }
         }
 
-        const APP_VERSION = "v51";
+        const APP_VERSION = "v52";
         let isLogged = false;
         let torneioAbertoId = null; 
         let torneioAbertoData = null; 
@@ -2035,6 +2035,48 @@ window.jogosSalvos = novosJogosSalvos;
                 document.getElementById('tipoJogador').value = '0'; document.getElementById('nomeJogador1').focus(); 
             } catch (error) { alert("Erro ao inscrever."); } 
             finally { document.getElementById('btnAddInscrito').disabled = false; }
+        });
+
+        // ===== v52: atalhos de teclado para PC =====
+        // Inscrição: Enter no nome/seleção adiciona (em duplas, Enter no Jogador 1 vai para o Jogador 2).
+        (function () {
+            const j1 = document.getElementById('nomeJogador1'), j2 = document.getElementById('nomeJogador2'), tipo = document.getElementById('tipoJogador');
+            const enviar = () => setTimeout(() => { const b = document.getElementById('btnAddInscrito'); if (b && !b.disabled) b.click(); }, 60); // pequena espera: deixa a sugestão da lista ser aplicada
+            [j1, j2, tipo].forEach(el => el.addEventListener('keydown', (e) => {
+                if (e.key !== 'Enter' || e.isComposing) return;
+                e.preventDefault();
+                if (el === j1 && !j2.classList.contains('hidden')) { j2.focus(); return; }
+                enviar();
+            }));
+        })();
+
+        // Placar: Enter vai de um campo ao próximo e, no último, salva o placar e pula para o próximo jogo.
+        document.addEventListener('keydown', async (e) => {
+            if (e.key !== 'Enter' || e.isComposing) return;
+            const inp = e.target;
+            if (!inp || !inp.classList || !inp.classList.contains('score-input')) return;
+            const box = inp.closest('.match-box') || inp.closest('.bracket-match');
+            if (!box) return;
+            e.preventDefault();
+            const A = [...box.querySelectorAll('.p-timeA')], B = [...box.querySelectorAll('.p-timeB')];
+            const ehA = inp.classList.contains('p-timeA');
+            const i = (ehA ? A : B).indexOf(inp);
+            if (ehA) { if (B[i]) { B[i].focus(); B[i].select(); } return; }
+            // terminou um set: se for Melhor de 3 e a partida ainda não foi decidida, segue para o próximo set
+            if (i < A.length - 1) {
+                let wa = 0, wb = 0;
+                for (let k = 0; k <= i; k++) { const x = parseInt(A[k].value), y = parseInt(B[k].value); if (!isNaN(x) && !isNaN(y)) { if (x > y) wa++; else if (y > x) wb++; } }
+                if (wa < 2 && wb < 2) { A[i + 1].focus(); A[i + 1].select(); return; }
+            }
+            const btn = box.querySelector('button[onclick^="salvarPlacar"]');
+            if (!btn || btn.disabled || btn.classList.contains('hidden') || btn.textContent.includes('Salvo')) return;
+            await window.salvarPlacar(btn);
+            // vai para o próximo jogo ainda não salvo (mesmo grupo/rodada), se a tela não foi redesenhada
+            if (!box.isConnected || !box.classList.contains('resolvido')) return;
+            let prox = box.nextElementSibling;
+            while (prox && (!(prox.matches('.match-box, .bracket-match')) || prox.classList.contains('resolvido'))) prox = prox.nextElementSibling;
+            const alvo = prox && prox.querySelector('.p-timeA:not([disabled])');
+            if (alvo && alvo.offsetParent !== null) { alvo.focus(); alvo.select(); }
         });
 
         async function carregarSugestoesJogadores(rankingNome) {
