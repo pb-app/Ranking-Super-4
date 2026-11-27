@@ -130,6 +130,8 @@
 
         .match-box, .bracket-match { background-color: var(--white); padding: 18px; margin: 12px 0; border-radius: 12px; text-align: center; border: 1px solid var(--border); transition: all 0.2s; box-shadow: 0 1px 4px rgba(0,0,0,0.03); }
         .match-box:hover, .bracket-match:hover { border-color: #d1d5db; box-shadow: 0 4px 8px rgba(0,0,0,0.05); }
+        @keyframes flashSalvo { 0% { box-shadow: 0 0 0 0 rgba(16,185,129,.75), inset 0 0 0 2px #10b981; } 100% { box-shadow: 0 0 0 16px rgba(16,185,129,0), inset 0 0 0 2px rgba(16,185,129,0); } }
+        .flash-salvo { animation: flashSalvo .9s ease-out; }
         .match-box.resolvido, .bracket-match.resolvido { border-left: 4px solid #10b981; background: #f0fdf4; }
         
         .match-score { display: flex; align-items: center; justify-content: center; gap: 12px; margin: 15px 0; }
@@ -931,6 +933,7 @@
                     <div class="menu-acoes-lista" role="menu">
                         <button id="btnTelao" type="button" role="menuitem" onclick="abrirTelao()" class="acao-item" title="Abre a tela para TV/Chromecast"><span class="ai">📺</span><span>Modo Telão</span></button>
                         <button id="btnLinkTelao" type="button" role="menuitem" onclick="copiarLinkTelao()" class="acao-item" title="Copia o link para abrir na TV"><span class="ai">🔗</span><span>Link do Telão</span></button>
+                        <button id="btnDistribuirQuadras" type="button" role="menuitem" onclick="distribuirQuadras()" class="acao-item hidden" title="Atribui quadras em sequência aos jogos que ainda não têm"><span class="ai">📍</span><span>Distribuir quadras</span></button>
                         <button id="btnExportarExcel" type="button" role="menuitem" onclick="exportarTorneioPDF()" class="acao-item hidden"><span class="ai">📄</span><span>Baixar PDF do Torneio</span></button>
                         <button id="btnExcluirTorneio" type="button" role="menuitem" class="acao-item perigo hidden"><span class="ai">🗑</span><span>Excluir Torneio</span></button>
                     </div>
@@ -1041,7 +1044,7 @@
     </div>
     <!-- Versão Clicável para Atualizar -->
 <div id="appVersionBadge" onclick="verificarAtualizacaoApp()" style="position: fixed; bottom: 12px; right: 12px; background: rgba(31, 41, 55, 0.85); backdrop-filter: blur(4px); color: #9ca3af; padding: 5px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; z-index: 1000; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1);" title="Toque para verificar atualizações">
-    v52 🔄
+    v53 🔄
 </div>
     </footer>
 
@@ -1490,7 +1493,7 @@
             } catch (e) { console.log("Não foi possível atualizar o resumo do histórico:", e); window.h2hJogosCache = null; }
         }
 
-        const APP_VERSION = "v52";
+        const APP_VERSION = "v53";
         let isLogged = false;
         let torneioAbertoId = null; 
         let torneioAbertoData = null; 
@@ -1768,11 +1771,13 @@ if (camp.ranking) {
                 document.getElementById('btnGerarChaves').classList.remove('hidden');
                 document.getElementById('btnExcluirTorneio').classList.remove('hidden');
                 document.getElementById('btnExportarExcel').classList.remove('hidden');
+                document.getElementById('btnDistribuirQuadras').classList.remove('hidden');
             } else {
                 document.getElementById('area-add-inscritos').classList.add('hidden');
                 document.getElementById('btnGerarChaves').classList.add('hidden');
                 document.getElementById('btnExcluirTorneio').classList.add('hidden');
                 document.getElementById('btnExportarExcel').classList.add('hidden');
+                document.getElementById('btnDistribuirQuadras').classList.add('hidden');
             }
 
             carregarJogosSalvos(id).then(() => {
@@ -2052,12 +2057,22 @@ window.jogosSalvos = novosJogosSalvos;
 
         // Placar: Enter vai de um campo ao próximo e, no último, salva o placar e pula para o próximo jogo.
         document.addEventListener('keydown', async (e) => {
-            if (e.key !== 'Enter' || e.isComposing) return;
+            if ((e.key !== 'Enter' && e.key !== 'ArrowDown' && e.key !== 'ArrowUp') || e.isComposing) return;
             const inp = e.target;
             if (!inp || !inp.classList || !inp.classList.contains('score-input')) return;
             const box = inp.closest('.match-box') || inp.closest('.bracket-match');
             if (!box) return;
             e.preventDefault();
+            if (e.key !== 'Enter') { // setas ↑/↓: pula para o mesmo campo do jogo anterior/seguinte
+                const raiz = box.closest('#chavesGeradasUI') || box.closest('#mataMataUI') || document;
+                const caixas = [...raiz.querySelectorAll('.match-box, .bracket-match')].filter(b => { const f = b.querySelector('.score-input:not([disabled])'); return f && f.offsetParent !== null; });
+                const k = caixas.indexOf(box) + (e.key === 'ArrowDown' ? 1 : -1);
+                if (k < 0 || k >= caixas.length) return;
+                const classe = inp.classList.contains('p-timeA') ? '.p-timeA' : '.p-timeB';
+                const alvo = caixas[k].querySelectorAll(classe + ':not([disabled])')[0];
+                if (alvo) { alvo.focus(); alvo.select(); alvo.scrollIntoView({ block: 'center', behavior: 'smooth' }); }
+                return;
+            }
             const A = [...box.querySelectorAll('.p-timeA')], B = [...box.querySelectorAll('.p-timeB')];
             const ehA = inp.classList.contains('p-timeA');
             const i = (ehA ? A : B).indexOf(inp);
@@ -2078,6 +2093,85 @@ window.jogosSalvos = novosJogosSalvos;
             const alvo = prox && prox.querySelector('.p-timeA:not([disabled])');
             if (alvo && alvo.offsetParent !== null) { alvo.focus(); alvo.select(); }
         });
+
+        // ===== v53: mais atalhos para PC =====
+        const _ptrFino = () => window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+        const _focarPrimeiroPlacar = (raiz) => {
+            if (!isLogged || !_ptrFino() || !raiz) return;
+            const alvo = [...raiz.querySelectorAll('.match-box:not(.resolvido), .bracket-match:not(.resolvido)')]
+                .map(b => b.querySelector('.p-timeA:not([disabled])')).find(f => f && f.offsetParent !== null);
+            if (alvo) { alvo.focus(); alvo.select(); }
+        };
+        // 7) abrir um grupo (Ver jogos) leva o cursor ao primeiro jogo sem placar
+        document.getElementById('chavesGeradasUI').addEventListener('click', (ev) => {
+            const bt = ev.target.closest('.grupo-container > button'); if (!bt) return;
+            const jogos = bt.previousElementSibling;
+            if (jogos && jogos.classList.contains('jogos-do-grupo')) setTimeout(() => { if (jogos.style.display === 'block') _focarPrimeiroPlacar(jogos); }, 0);
+        });
+        // 7) abrir as abas Mata-mata / Inscritos leva o cursor ao primeiro campo útil
+        const _definirAbaBase = window.definirAba;
+        window.definirAba = function (nome, semRolar) {
+            _definirAbaBase(nome, semRolar);
+            if (semRolar || !_ptrFino()) return; // só quando o usuário troca de aba (não na abertura automática)
+            setTimeout(() => {
+                if (nome === 'mata') _focarPrimeiroPlacar(document.getElementById('mataMataUI'));
+                else if (nome === 'inscritos' && isLogged && !document.getElementById('area-add-inscritos').classList.contains('hidden')) document.getElementById('nomeJogador1').focus();
+            }, 60);
+        };
+        // 2) teclas 1-4 trocam de aba; "/" vai direto para adicionar inscrição
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey || e.metaKey || e.altKey || e.isComposing) return;
+            const t = document.activeElement; if (t && (['INPUT', 'TEXTAREA', 'SELECT'].includes(t.tagName) || t.isContentEditable)) return;
+            if (document.querySelector('.dlg-fundo') || !document.getElementById('modalPerfilJogador').classList.contains('hidden')) return;
+            if (document.getElementById('details-section').classList.contains('hidden')) return;
+            const abas = { '1': 'inscritos', '2': 'grupos', '3': 'mata', '4': 'resultados' };
+            if (abas[e.key]) {
+                const b = document.querySelector('#abasTorneio .aba-btn[data-aba="' + abas[e.key] + '"]');
+                if (b && !b.classList.contains('hidden') && b.offsetParent !== null) { e.preventDefault(); b.click(); }
+            } else if (e.key === '/' && isLogged) {
+                const aba = document.querySelector('#abasTorneio .aba-btn[data-aba="inscritos"]');
+                const campo = document.getElementById('nomeJogador1');
+                const area = document.getElementById('area-add-inscritos');
+                if (area.classList.contains('hidden') && !(aba && aba.offsetParent !== null)) return;
+                e.preventDefault();
+                if (aba && aba.offsetParent !== null) aba.click();
+                setTimeout(() => { if (campo.offsetParent !== null) campo.focus(); }, 80);
+            }
+        });
+
+        // 5) distribui quadras em sequência (1, 2, 3, ...) aos grupos / jogos liberados que ainda não têm quadra
+        window.distribuirQuadras = async function () {
+            if (!isLogged) return;
+            const resp = await perguntar("Quantas quadras estão disponíveis?\nGrupos e jogos liberados do mata-mata que ainda estão sem quadra serão distribuídos em sequência (1, 2, 3...).", "", { titulo: "Distribuir quadras" });
+            if (resp === null) return;
+            const total = parseInt(resp, 10);
+            if (!(total >= 1 && total <= 99)) { window.toast("Informe um número de quadras entre 1 e 99.", 'aviso'); return; }
+            const pintar = (el, q) => { el.style.background = '#e0e7ff'; el.style.border = 'none'; el.style.color = '#4338ca'; el.textContent = '📍 Quadra ' + q; };
+            const gravar = [];
+            let nG = 0, nJ = 0;
+            document.querySelectorAll('#chavesGeradasUI .grupo-container').forEach(gc => {
+                const el = gc.querySelector('[onclick*="atribuirQuadraGrupo"]'); if (!el || el.textContent.includes('📍')) return;
+                if (!gc.querySelector('.match-box:not(.resolvido)')) return;
+                const m = (el.getAttribute('onclick') || '').match(/atribuirQuadraGrupo\(this,\s*'([^']*)'/); if (!m) return;
+                const q = String((nG % total) + 1); nG++;
+                m[1].split(',').forEach(id => {
+                    gravar.push(setDoc(doc(db, "campeonatos", torneioAbertoId, "jogos", id), { quadra: q, fase: "Grupos" }, { merge: true }));
+                    if (!jogosSalvos[id]) jogosSalvos[id] = {}; jogosSalvos[id].quadra = q;
+                });
+                pintar(el, q);
+            });
+            document.querySelectorAll('#mataMataUI .bracket-match.mata-mata-match:not(.resolvido)').forEach(bm => {
+                const el = bm.querySelector('[onclick*="atribuirQuadra("]'); if (!el || el.textContent.includes('📍')) return;
+                const m = (el.getAttribute('onclick') || '').match(/atribuirQuadra\(this,\s*'([^']*)',\s*'([^']*)',\s*'([^']*)'/); if (!m) return;
+                const q = String((nJ % total) + 1); nJ++;
+                gravar.push(setDoc(doc(db, "campeonatos", torneioAbertoId, "jogos", m[1]), { quadra: q, timeA: m[2], timeB: m[3], fase: "Eliminatória" }, { merge: true }));
+                if (!jogosSalvos[m[1]]) jogosSalvos[m[1]] = {}; jogosSalvos[m[1]].quadra = q;
+                pintar(el, q);
+            });
+            if (!gravar.length) { window.toast("Nenhum grupo ou jogo sem quadra para distribuir.", 'aviso'); return; }
+            try { await Promise.all(gravar); window.toast(`Quadras distribuídas: ${nG} grupo(s) e ${nJ} jogo(s) do mata-mata ✅`, 'ok'); }
+            catch (e) { window.toast("Erro ao gravar as quadras. Verifique a conexão.", 'erro'); }
+        };
 
         async function carregarSugestoesJogadores(rankingNome) {
             const datalist = document.getElementById('sugestoesJogadores');
@@ -2169,6 +2263,7 @@ window.jogosSalvos = novosJogosSalvos;
                 botao.style.color = '#10b981'; 
                 botao.style.border = '1px solid #10b981';
                 matchBox.classList.add('resolvido');
+                matchBox.classList.remove('flash-salvo'); void matchBox.offsetWidth; matchBox.classList.add('flash-salvo'); setTimeout(() => matchBox.classList.remove('flash-salvo'), 1000);
 
                 if (isMataMata && vencedor !== "") { avancarVencedorMataMata(); } 
                 else if (!isMataMata) { atualizarTabelaDoGrupo(matchBox.closest('.grupo-container')); }
