@@ -444,6 +444,16 @@ function distribuir(c) {
     so.forEach(function (s, i) { return gr[i % ng].push(s); });
     return gr;
 }
+// jogos do Super 4: grupo de 4 = 3 jogos; grupo de 5 = 5 jogos (cada par é parceiro 1x)
+function paresSuper4(n) {
+    if (n >= 5) {
+        var r = [];
+        for (var k = 0; k < 5; k++)
+            r.push([(k + 1) % 5, (k + 4) % 5, (k + 2) % 5, (k + 3) % 5]);
+        return r;
+    }
+    return [[0, 1, 2, 3], [0, 2, 1, 3], [0, 3, 1, 2]];
+}
 function golsDe(jg) {
     var a = Array.isArray(jg && jg.placarA) ? jg.placarA : [], b = Array.isArray(jg && jg.placarB) ? jg.placarB : [];
     var gA = 0, gB = 0, sA = 0, sB = 0, jogou = false;
@@ -497,7 +507,7 @@ function calcGrupos(c, jogos) {
             while (p_1.length < 4)
                 p_1.push('Vaga ' + (p_1.length + 1));
             p_1.forEach(add);
-            [[0, 1, 2, 3], [0, 2, 1, 3], [0, 3, 1, 2]].forEach(function (_a) {
+            paresSuper4(p_1.length).forEach(function (_a) {
                 var _b = __read(_a, 4), a = _b[0], b = _b[1], x = _b[2], y = _b[3];
                 var tA = "".concat(p_1[a], " & ").concat(p_1[b]), tB = "".concat(p_1[x], " & ").concat(p_1[y]);
                 aplicar("".concat(semEsp(tA), "_vs_").concat(semEsp(tB)), tA, tB);
@@ -1741,7 +1751,7 @@ function iniciarDemo(tipo) {
                     ids_1 = [];
                     gr.forEach(function (g, gi) { if (sup) {
                         var p_2 = g.map(function (x) { return x.jogador1; });
-                        [[0, 1, 2, 3], [0, 2, 1, 3], [0, 3, 1, 2]].forEach(function (_a) {
+                        paresSuper4(p_2.length).forEach(function (_a) {
                             var _b = __read(_a, 4), a = _b[0], b = _b[1], x = _b[2], y = _b[3];
                             var tA = "".concat(p_2[a], " & ").concat(p_2[b]), tB = "".concat(p_2[x], " & ").concat(p_2[y]);
                             ids_1.push(["".concat(semEsp(tA), "_vs_").concat(semEsp(tB)), tA, tB, gi]);
