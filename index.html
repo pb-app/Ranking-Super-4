@@ -1041,7 +1041,7 @@
     </div>
     <!-- Versão Clicável para Atualizar -->
 <div id="appVersionBadge" onclick="verificarAtualizacaoApp()" style="position: fixed; bottom: 12px; right: 12px; background: rgba(31, 41, 55, 0.85); backdrop-filter: blur(4px); color: #9ca3af; padding: 5px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; z-index: 1000; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1);" title="Toque para verificar atualizações">
-    v49 🔄
+    v50 🔄
 </div>
     </footer>
 
@@ -1248,6 +1248,9 @@
         [data-tema="escuro"] .forma-pts.alto { background: #064e3b; color: #a7f3d0; }
         [data-tema="escuro"] .forma-pts.medio { background: #422006; color: #fde68a; }
         [data-tema="escuro"] .forma-pts.baixo { background: #334155; color: #cbd5e1; }
+
+        /* ===== v50: faixas "Chave Ouro/Prata" e conectores só existem na chave do PC; no celular ficavam soltas embaixo ===== */
+        @media (max-width: 991px) { .chave-banner, .bracket-conn { display: none !important; } }
 </style>
 
     <script>
@@ -1487,7 +1490,7 @@
             } catch (e) { console.log("Não foi possível atualizar o resumo do histórico:", e); window.h2hJogosCache = null; }
         }
 
-        const APP_VERSION = "v49";
+        const APP_VERSION = "v50";
         let isLogged = false;
         let torneioAbertoId = null; 
         let torneioAbertoData = null; 
