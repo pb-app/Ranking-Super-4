@@ -283,6 +283,11 @@ function distribuir(c) {
   so.forEach((s, i) => gr[i % ng].push(s));
   return gr;
 }
+// jogos do Super 4: grupo de 4 = 3 jogos; grupo de 5 = 5 jogos (cada par é parceiro 1x)
+function paresSuper4(n) {
+  if (n >= 5) { const r = []; for (let k = 0; k < 5; k++) r.push([(k + 1) % 5, (k + 4) % 5, (k + 2) % 5, (k + 3) % 5]); return r; }
+  return [[0, 1, 2, 3], [0, 2, 1, 3], [0, 3, 1, 2]];
+}
 function golsDe(jg) {
   const a = Array.isArray(jg && jg.placarA) ? jg.placarA : [], b = Array.isArray(jg && jg.placarB) ? jg.placarB : [];
   let gA = 0, gB = 0, sA = 0, sB = 0, jogou = false;
@@ -304,7 +309,7 @@ function calcGrupos(c, jogos) {
     if (sup) {
       const p = g.map(x => x.jogador1); while (p.length < 4) p.push('Vaga ' + (p.length + 1));
       p.forEach(add);
-      [[0, 1, 2, 3], [0, 2, 1, 3], [0, 3, 1, 2]].forEach(([a, b, x, y]) => {
+      paresSuper4(p.length).forEach(([a, b, x, y]) => {
         const tA = `${p[a]} & ${p[b]}`, tB = `${p[x]} & ${p[y]}`; aplicar(`${semEsp(tA)}_vs_${semEsp(tB)}`, tA, tB);
       });
     } else {
@@ -781,7 +786,7 @@ async function iniciarDemo(tipo) {
     camp.sorteados = emb; onCamp(JSON.parse(JSON.stringify(camp))); await esperaAnim();
     const gr = distribuir(camp);
     const ids = [];
-    gr.forEach((g, gi) => { if (sup) { const p = g.map(x => x.jogador1); [[0, 1, 2, 3], [0, 2, 1, 3], [0, 3, 1, 2]].forEach(([a, b, x, y]) => { const tA = `${p[a]} & ${p[b]}`, tB = `${p[x]} & ${p[y]}`; ids.push([`${semEsp(tA)}_vs_${semEsp(tB)}`, tA, tB, gi]); }); } else { const e = g.map(s => `${s.jogador1} & ${s.jogador2}`); for (let i = 0; i < e.length; i++) for (let j = i + 1; j < e.length; j++) ids.push([`${semEsp(e[i])}_vs_${semEsp(e[j])}`, e[i], e[j], gi]); } });
+    gr.forEach((g, gi) => { if (sup) { const p = g.map(x => x.jogador1); paresSuper4(p.length).forEach(([a, b, x, y]) => { const tA = `${p[a]} & ${p[b]}`, tB = `${p[x]} & ${p[y]}`; ids.push([`${semEsp(tA)}_vs_${semEsp(tB)}`, tA, tB, gi]); }); } else { const e = g.map(s => `${s.jogador1} & ${s.jogador2}`); for (let i = 0; i < e.length; i++) for (let j = i + 1; j < e.length; j++) ids.push([`${semEsp(e[i])}_vs_${semEsp(e[j])}`, e[i], e[j], gi]); } });
     ids.forEach(([id, a, b, gi]) => { jogos = { ...jogos, [id]: { timeA: a, timeB: b, quadra: String(gi % 3 + 1) } }; }); onJogos(jogos, []); await pausa(2500);
     for (const [id, a, b] of embaralha(ids)) await salvar(id, a, b);
     await pausa(3000);

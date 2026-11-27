@@ -1041,7 +1041,7 @@
     </div>
     <!-- Versão Clicável para Atualizar -->
 <div id="appVersionBadge" onclick="verificarAtualizacaoApp()" style="position: fixed; bottom: 12px; right: 12px; background: rgba(31, 41, 55, 0.85); backdrop-filter: blur(4px); color: #9ca3af; padding: 5px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; z-index: 1000; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1);" title="Toque para verificar atualizações">
-    v50 🔄
+    v51 🔄
 </div>
     </footer>
 
@@ -1490,7 +1490,7 @@
             } catch (e) { console.log("Não foi possível atualizar o resumo do histórico:", e); window.h2hJogosCache = null; }
         }
 
-        const APP_VERSION = "v50";
+        const APP_VERSION = "v51";
         let isLogged = false;
         let torneioAbertoId = null; 
         let torneioAbertoData = null; 
@@ -2283,11 +2283,20 @@ window.jogosSalvos = novosJogosSalvos;
                     if (formatoAberto.includes("Super 4")) {
                         let p = grupo.map(g => g.jogador1);
                         while (p.length < 4) p.push("Vaga " + (p.length + 1));
-                        let combinacoes = [ 
-                            { tA_data: `${p[0]} & ${p[1]}`, tB_data: `${p[2]} & ${p[3]}`, tA_display: `<span>${p[0]}${window.getBadgeSeed(p[0])}</span><br><span style="color:var(--gray); font-size:0.85rem; font-weight:400;">${p[1]}${window.getBadgeSeed(p[1])}</span>`, tB_display: `<span>${p[2]}${window.getBadgeSeed(p[2])}</span><br><span style="color:var(--gray); font-size:0.85rem; font-weight:400;">${p[3]}${window.getBadgeSeed(p[3])}</span>` },
-                            { tA_data: `${p[0]} & ${p[2]}`, tB_data: `${p[1]} & ${p[3]}`, tA_display: `<span>${p[0]}${window.getBadgeSeed(p[0])}</span><br><span style="color:var(--gray); font-size:0.85rem; font-weight:400;">${p[2]}${window.getBadgeSeed(p[2])}</span>`, tB_display: `<span>${p[1]}${window.getBadgeSeed(p[1])}</span><br><span style="color:var(--gray); font-size:0.85rem; font-weight:400;">${p[3]}${window.getBadgeSeed(p[3])}</span>` },
-                            { tA_data: `${p[0]} & ${p[3]}`, tB_data: `${p[1]} & ${p[2]}`, tA_display: `<span>${p[0]}${window.getBadgeSeed(p[0])}</span><br><span style="color:var(--gray); font-size:0.85rem; font-weight:400;">${p[3]}${window.getBadgeSeed(p[3])}</span>`, tB_display: `<span>${p[1]}${window.getBadgeSeed(p[1])}</span><br><span style="color:var(--gray); font-size:0.85rem; font-weight:400;">${p[2]}${window.getBadgeSeed(p[2])}</span>` } 
-                        ];
+                        // Duplas de cada jogo: grupo de 4 = 3 jogos; grupo de 5 = 5 jogos (4 jogam, 1 descansa; cada par é parceiro 1x)
+                        let paresJogos = [];
+                        if (p.length >= 5) {
+                            for (let k = 0; k < 5; k++) {
+                                paresJogos.push([ [(k+1)%5, (k+4)%5], [(k+2)%5, (k+3)%5] ]);
+                            }
+                        } else {
+                            paresJogos = [ [[0,1],[2,3]], [[0,2],[1,3]], [[0,3],[1,2]] ];
+                        }
+                        const dispDupla = (a, b) => `<span>${p[a]}${window.getBadgeSeed(p[a])}</span><br><span style="color:var(--gray); font-size:0.85rem; font-weight:400;">${p[b]}${window.getBadgeSeed(p[b])}</span>`;
+                        let combinacoes = paresJogos.map(([A, B]) => ({
+                            tA_data: `${p[A[0]]} & ${p[A[1]]}`, tB_data: `${p[B[0]]} & ${p[B[1]]}`,
+                            tA_display: dispDupla(A[0], A[1]), tB_display: dispDupla(B[0], B[1])
+                        }));
                         
                         combinacoes.forEach(comb => {
                             let matchId = comb.tA_data.replace(/\s+/g, '') + "_vs_" + comb.tB_data.replace(/\s+/g, '');
@@ -2375,10 +2384,21 @@ window.jogosSalvos = novosJogosSalvos;
             let isGrupos = formatoAberto.includes("Grupos") || formatoAberto.includes("Super 4");
 
             if (isGrupos) {
-                if (formatoAberto.includes("Super 4") && inscritosAtuais.length % 4 !== 0) {
-                    let faltam = 4 - (inscritosAtuais.length % 4);
-                    alert(`🚨 AÇÃO BLOQUEADA!\n\nPara formar os grupos corretamente, o número de inscritos deve ser múltiplo de 4.\n\nAtualmente há ${inscritosAtuais.length} inscritos. Faltam ${faltam} jogador(es) para poder gerar as chaves.`);
-                    return;
+                if (formatoAberto.includes("Super 4")) {
+                    const nIns = inscritosAtuais.length;
+                    const okMult4 = nIns % 4 === 0 && nIns >= 4;
+                    const okPar = nIns % 4 === 2 && nIns >= 10; // sobram 2 jogadores -> 2 grupos de 5
+                    if (!okMult4 && !okPar) {
+                        let dica = '';
+                        if (nIns % 2 === 1) dica = `Há ${nIns} inscritos (número ímpar). Adicione ou remova 1 jogador para ficar com número par.`;
+                        else dica = `Há ${nIns} inscritos. Use um número par de jogadores (a partir de 8).`;
+                        alert(`🚨 AÇÃO BLOQUEADA!\n\nNo Super 4 o número de inscritos precisa ser par (grupos de 4; quando sobram 2 jogadores, dois grupos ficam com 5).\n\n${dica}`);
+                        return;
+                    }
+                    if (okPar) {
+                        const g4 = Math.floor(nIns / 4) - 2;
+                        if (!await confirmar(`Com ${nIns} inscritos os grupos serão: ${g4} grupo(s) de 4 + 2 grupos de 5.\n\nNos grupos de 5 cada jogador faz 4 jogos (5 rodadas, um descansa em cada). Continuar?`, {ok:"Sortear"})) return;
+                    }
                 }
             }
 
@@ -3015,8 +3035,8 @@ let tB_display = tB_data.includes('&')
             let isSuper4 = formatoAberto.includes("Super 4"); let super4Modo = torneioAbertoData.super4Modo || 'normal';
             let playerStatsMap = {};
 
-            let todosPrimeiros = []; let todosSegundos = [];
-            let todosTerceiros = []; let todosQuartos = [];
+            let todosPrimeiros = []; let todosSegundos = []; let quintosPadrao = [];
+            let todosTerceiros = []; let todosQuartos = []; let todosQuintos = [];
 
             document.querySelectorAll('#chavesGeradasUI .standings-table tbody').forEach((tb, indexGrupo) => {
                 let trs = tb.querySelectorAll('tr');
@@ -3040,10 +3060,13 @@ let tB_display = tB_data.includes('&')
                         if (jogadoresGrupo[1]) todosSegundos.push({nome: jogadoresGrupo[1].nome, gId: indexGrupo});
                         if (jogadoresGrupo[2]) todosTerceiros.push({nome: jogadoresGrupo[2].nome, gId: indexGrupo});
                         if (jogadoresGrupo[3]) todosQuartos.push({nome: jogadoresGrupo[3].nome, gId: indexGrupo});
+                        if (jogadoresGrupo[4]) todosQuintos.push({nome: jogadoresGrupo[4].nome, gId: indexGrupo});
                     } else {
-                        let metade = Math.ceil(jogadoresGrupo.length / 2);
+                        // Grupo de 5: Ouro = 1º e 2º; Prata = 3º e 4º (o 5º vai para a dupla dos quintos)
+                        let metade = jogadoresGrupo.length >= 5 ? 2 : Math.ceil(jogadoresGrupo.length / 2);
                         let ouroJogadores = jogadoresGrupo.slice(0, metade);
-                        let prataJogadores = jogadoresGrupo.slice(metade);
+                        let prataJogadores = jogadoresGrupo.slice(metade, metade + 2);
+                        if (jogadoresGrupo.length >= 5) jogadoresGrupo.slice(4).forEach(j => quintosPadrao.push(j));
 
                         for (let i = 0; i < ouroJogadores.length; i += 2) {
                             let p1 = ouroJogadores[i] && ouroJogadores[i].nome;
@@ -3079,6 +3102,20 @@ let tB_display = tB_data.includes('&')
                 }
             });
 
+            if (isSuper4 && super4Modo !== 'sortudo' && quintosPadrao.length > 0) {
+                // Os 5ºs colocados (um de cada grupo de 5) formam dupla entre si na Prata
+                for (let i = 0; i < quintosPadrao.length; i += 2) {
+                    let p1 = quintosPadrao[i].nome; let q2 = quintosPadrao[i+1];
+                    if (q2) {
+                        let s1 = playerStatsMap[p1] || {v:0, ss:0, sg:0}; let s2 = playerStatsMap[q2.nome] || {v:0, ss:0, sg:0};
+                        timesPrata.push({ nome: `${p1} & ${q2.nome}`, v: s1.v+s2.v, ss: s1.ss+s2.ss, sg: s1.sg+s2.sg });
+                    } else {
+                        let s1 = playerStatsMap[p1] || {v:0, ss:0, sg:0};
+                        timesPrata.push({ nome: p1, v: s1.v, ss: 0, sg: 0 });
+                    }
+                }
+            }
+
             if (isSuper4 && super4Modo === 'sortudo') {
                 let segEmb = [...todosSegundos];
                 // TRAVA OURO: Mistura até ninguém cair com o parceiro do mesmo grupo
@@ -3105,30 +3142,36 @@ let tB_display = tB_data.includes('&')
                     }
                 }
 
-                let quaEmb = [...todosQuartos];
-                // TRAVA PRATA: Mistura até ninguém cair com o parceiro do mesmo grupo
-                if (todosTerceiros.length > 1) {
-                    let valido = false; let tent = 0;
-                    while (!valido && tent < 50) {
-                        quaEmb.sort(() => Math.random() - 0.5);
-                        valido = true;
-                        for (let i = 0; i < todosTerceiros.length; i++) {
-                            if (quaEmb[i] && todosTerceiros[i].gId === quaEmb[i].gId) { valido = false; break; }
-                        }
-                        tent++;
+                // PRATA: cada 3º recebe um parceiro sorteado entre os 4ºs e 5ºs (evita parceiro do mesmo grupo).
+                // Se sobrarem jogadores (grupos de 5), eles formam dupla entre si.
+                let poolPrata = [...todosQuartos, ...todosQuintos];
+                let melhorPrata = null; let menorRepetidos = Infinity;
+                for (let tent = 0; tent < 200; tent++) {
+                    let emb = [...poolPrata].sort(() => Math.random() - 0.5);
+                    let pares = []; let repetidos = 0;
+                    for (let i = 0; i < todosTerceiros.length; i++) {
+                        let c = emb[i] || null;
+                        pares.push([todosTerceiros[i], c]);
+                        if (c && c.gId === todosTerceiros[i].gId) repetidos++;
                     }
-                } else { quaEmb.sort(() => Math.random() - 0.5); }
-
-                for (let i = 0; i < todosTerceiros.length; i++) {
-                    let p1 = todosTerceiros[i].nome;
-                    let p2 = quaEmb[i] ? quaEmb[i].nome : (todosTerceiros[0] ? todosTerceiros[0].nome : null); 
-                    
-                    if (p1 && p2) {
-                        let s1 = playerStatsMap[p1] || {v:0, ss:0, sg:0}; 
+                    for (let i = todosTerceiros.length; i < emb.length; i += 2) {
+                        let c1 = emb[i], c2 = emb[i+1] || null;
+                        pares.push([c1, c2]);
+                        if (c2 && c1.gId === c2.gId) repetidos++;
+                    }
+                    if (repetidos < menorRepetidos) { menorRepetidos = repetidos; melhorPrata = pares; }
+                    if (repetidos === 0) break;
+                }
+                (melhorPrata || []).forEach(([j1, j2]) => {
+                    let p1 = j1.nome; let p2 = j2 ? j2.nome : null;
+                    let s1 = playerStatsMap[p1] || {v:0, ss:0, sg:0};
+                    if (p2) {
                         let s2 = playerStatsMap[p2] || {v:0, ss:0, sg:0};
                         timesPrata.push({ nome: `${p1} & ${p2}`, v: s1.v+s2.v, ss: s1.ss+s2.ss, sg: s1.sg+s2.sg });
+                    } else {
+                        timesPrata.push({ nome: p1, v: s1.v, ss: 0, sg: 0 });
                     }
-                }
+                });
             }
 
             if (timesOuro.length < 2) { alert("Sem dados suficientes das tabelas!"); return; }
