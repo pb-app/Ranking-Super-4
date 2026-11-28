@@ -1073,7 +1073,7 @@
     </div>
     <!-- Versão Clicável para Atualizar -->
 <div id="appVersionBadge" onclick="verificarAtualizacaoApp()" style="position: fixed; bottom: 12px; right: 12px; background: rgba(31, 41, 55, 0.85); backdrop-filter: blur(4px); color: #9ca3af; padding: 5px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; z-index: 1000; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1);" title="Toque para verificar atualizações">
-    v56 🔄
+    v57 🔄
 </div>
     </footer>
 
@@ -1521,7 +1521,7 @@
             } catch (e) { console.log("Não foi possível atualizar o resumo do histórico:", e); window.h2hJogosCache = null; }
         }
 
-        const APP_VERSION = "v56";
+        const APP_VERSION = "v57";
         let isLogged = false;
         let torneioAbertoId = null; 
         let torneioAbertoData = null; 
@@ -2206,16 +2206,17 @@ window.jogosSalvos = novosJogosSalvos;
             const $ = (id) => document.getElementById(id);
             const modal = $('modalImportar');
             let linhas = [];
+            let rankAtual = [];
             const lev = (a, b) => { const m = a.length, n = b.length; if (!m) return n; if (!n) return m; let prev = Array.from({ length: n + 1 }, (_, j) => j); for (let i = 1; i <= m; i++) { const cur = [i]; for (let j = 1; j <= n; j++) cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)); prev = cur; } return prev[n]; };
             const esc = (t) => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
             function lerLinha(bruta, individual) {
-                let t = bruta.replace(/‎|‏/g, '').trim();
+                let t = bruta.replace(/[\u00ad\u200b-\u200f\u202a-\u202e\u2060-\u206f\ufeff\ufe0e\ufe0f]/g, '').replace(/\u00a0/g, ' ').trim();
                 if (!t) return null;
                 t = t.replace(/^\s*(?:\d+\s*[\.\)\-–:]\s*|[-–—•*·▪️✅☑️]+\s*)/, '').replace(/^\*+|\*+$/g, '').trim(); // numeração, marcadores e negrito do WhatsApp
                 let seed = 0;
                 if (/[⭐]/.test(t)) seed = 1; else if (/🌟/.test(t)) seed = 2;
-                t = t.replace(/[⭐🌟]/g, '');
+                t = t.replace(/[⭐🌟]/gu, '').replace(/[\p{Extended_Pictographic}]/gu, ''); // remove emojis soltos (🎾 🏆 ...)
                 const ms = t.match(/(?:\s+|\s*[\(\[]\s*)(?:CS|C|cabe[cç]a(?:\s*de\s*chave)?)\s*([12])\s*[\)\]]?\s*$/i);
                 if (ms) { seed = parseInt(ms[1], 10); t = t.slice(0, ms.index); }
                 t = t.replace(/\s+/g, ' ').trim();
@@ -2248,6 +2249,7 @@ window.jogosSalvos = novosJogosSalvos;
                 const individual = $('nomeJogador2').classList.contains('hidden');
                 let rank = [];
                 try { rank = (await obterRankingCompleto(torneioAbertoData.ranking, 600000)).map(d => ({ nome: d.nome, k: chaveNomeJogador(d.nome), pontos: Number(d.pontos) || 0 })); } catch (e) { console.log(e); }
+                rankAtual = rank.slice().sort((x, y) => x.nome.localeCompare(y.nome, 'pt-BR'));
                 const jaNoTorneio = new Set();
                 inscritosAtuais.forEach(i => { jaNoTorneio.add(chaveNomeJogador(i.jogador1)); if (i.jogador2) jaNoTorneio.add(chaveNomeJogador(i.jogador2)); });
                 const vistos = new Set();
@@ -2307,6 +2309,18 @@ window.jogosSalvos = novosJogosSalvos;
                         sel.innerHTML = j.opcoes.map((o, i) => `<option value="${i}">É "${esc(o)}" (ranking)</option>`).join('') + `<option value="-1">Outra pessoa: "${esc(j.digitado)}" (novo)</option>`;
                         sel.value = String(j.escolha);
                         sel.addEventListener('change', () => { j.escolha = parseInt(sel.value, 10); j.nomeFinal = j.escolha >= 0 ? j.opcoes[j.escolha] : j.digitado; recalcularSkips(); desenhar(); });
+                        meio.appendChild(sel);
+                    });
+                    // nomes "novos": permite apontar manualmente quem é no ranking (caso a busca automática não ache)
+                    l.jogadores.forEach((j) => {
+                        if (j.estado !== 'novo' || !rankAtual.length) return;
+                        const sel = document.createElement('select'); sel.title = 'Este nome já existe no ranking?';
+                        sel.innerHTML = '<option value="">🆕 Novo (como digitado)</option>' + rankAtual.map((r, i) => `<option value="${i}">🔎 É "${esc(r.nome)}"</option>`).join('');
+                        sel.addEventListener('change', () => {
+                            if (sel.value === '') return;
+                            const r = rankAtual[parseInt(sel.value, 10)]; j.nomeFinal = r.nome; j.estado = 'ok'; j.manual = true; j.escolha = 0; j.opcoes = [r.nome];
+                            recalcularSkips(); desenhar();
+                        });
                         meio.appendChild(sel);
                     });
                     const dir = document.createElement('select'); dir.title = 'Cabeça de chave';
