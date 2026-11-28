@@ -925,7 +925,6 @@
         <section id="ranking-section" class="hidden">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 10px;">
                 <h2 class="section-title" style="margin-bottom: 0;">🏆 Ranking</h2>
-                <button id="btnBaixarRanking" class="btn" style="background: #10b981; color: white;">📄 Baixar PDF</button>
             </div>
             
             <div style="display: flex; gap: 15px; align-items: flex-end; margin-bottom: 25px; flex-wrap: wrap;">
@@ -943,9 +942,10 @@
                         <option value="prata">🥈 Pontos Prata</option>
                     </select>
                 </div>
-                <div id="menuAcoesRanking" class="menu-acoes hidden" style="margin-left: 0;">
+                <div id="menuAcoesRanking" class="menu-acoes" style="margin-left: 0;">
                     <button id="btnMenuAcoesRanking" type="button" class="btn btn-outline menu-acoes-btn" style="height: 48px;" aria-haspopup="true" aria-expanded="false" onclick="toggleMenuAcoes(event, 'menuAcoesRanking')">Ações <span class="seta">▾</span></button>
                     <div class="menu-acoes-lista" role="menu">
+                        <button id="btnBaixarRanking" type="button" role="menuitem" class="acao-item"><span class="ai">📄</span><span>Baixar PDF</span></button>
                         <button id="btnGerenciarRankings" type="button" role="menuitem" class="acao-item hidden"><span class="ai">⚙</span><span>Gerenciar categorias</span></button>
                         <button id="btnUnificarRanking" type="button" role="menuitem" class="acao-item hidden" title="Juntar jogadores repetidos"><span class="ai">🧹</span><span>Duplicados</span></button>
                         <button id="btnBackupJson" type="button" role="menuitem" class="acao-item hidden" title="Baixar uma cópia de segurança de todos os dados"><span class="ai">💾</span><span>Backup</span></button>
@@ -1100,7 +1100,7 @@
     </div>
     <!-- Versão Clicável para Atualizar -->
 <div id="appVersionBadge" onclick="verificarAtualizacaoApp()" style="position: fixed; bottom: 12px; right: 12px; background: rgba(31, 41, 55, 0.85); backdrop-filter: blur(4px); color: #9ca3af; padding: 5px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; z-index: 1000; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1);" title="Toque para verificar atualizações">
-    v69 🔄
+    v70 🔄
 </div>
     </footer>
 
@@ -1659,7 +1659,7 @@
             } catch (e) { console.log("Não foi possível atualizar o resumo do histórico:", e); window.h2hJogosCache = null; }
         }
 
-        const APP_VERSION = "v69";
+        const APP_VERSION = "v70";
         let isLogged = false;
         let torneioAbertoId = null; 
         let torneioAbertoData = null; 
@@ -1776,7 +1776,7 @@
                 // Atualiza o botão de visualização dos inscritos (se ele existir na tela)
                 if (btnMostrar) { btnMostrar.textContent = "👥 Ver Lista de Inscritos"; }
             }
-            { const mr = document.getElementById('menuAcoesRanking'); if (mr) { mr.classList.toggle('hidden', btnGerenciar.classList.contains('hidden')); if (mr.classList.contains('hidden') && window.fecharMenuAcoes) window.fecharMenuAcoes(); } }
+            { const mr = document.getElementById('menuAcoesRanking'); if (mr && window.fecharMenuAcoes) window.fecharMenuAcoes(); }
         }
 
         setTimeout(() => { if (/Carregando campeonatos/.test(tournamentsContainer.textContent || '') && window.__diagBanner) window.__diagBanner('⚠️ Os campeonatos não carregaram. Verifique a internet da TV. Se continuar, abra direto: ' + new URL('telao.html', location.href).href + '\nNavegador: ' + navigator.userAgent); }, 15000);
@@ -4302,14 +4302,14 @@ tipoFiltroRanking.addEventListener('change', () => {
         // --- FUNÇÃO PARA GERAR O PDF DO RANKING ---
         document.getElementById('btnBaixarRanking').addEventListener('click', () => {
             const btn = document.getElementById('btnBaixarRanking');
-            btn.textContent = "⏳ Gerando PDF...";
+            const _btnPdfHtml = btn.innerHTML; btn.innerHTML = '<span class="ai">⏳</span><span>Gerando PDF...</span>';
             const cartao = document.getElementById('cartaoRanking');
             const cabecalho = document.getElementById('cabecalhoExportacao');
             const titulo = document.getElementById('tituloExportacao');
             
             let cat = (document.getElementById('filtroVisualRanking').options[document.getElementById('filtroVisualRanking').selectedIndex] || {}).text;
             let tipo = (document.getElementById('tipoFiltroRanking').options[document.getElementById('tipoFiltroRanking').selectedIndex] || {}).text;
-            if (!cat) { alert("Selecione um ranking primeiro."); btn.textContent = "📄 Baixar PDF"; return; }
+            if (!cat) { alert("Selecione um ranking primeiro."); btn.innerHTML = _btnPdfHtml; return; }
             
             titulo.textContent = `🏆 ${cat} - ${tipo}`;
             cabecalho.style.display = 'block';
@@ -4330,13 +4330,13 @@ tipoFiltroRanking.addEventListener('change', () => {
             html2pdf().set(opt).from(cartao).save().then(() => {
                 cabecalho.style.display = 'none';
                 if(isLogged) document.querySelectorAll('.col-acao-admin').forEach(el => el.style.display = '');
-                btn.innerHTML = "📄 Baixar PDF";
+                btn.innerHTML = _btnPdfHtml;
             }).catch(err => {
                 console.error(err);
                 alert("Erro ao gerar PDF.");
                 cabecalho.style.display = 'none';
                 if(isLogged) document.querySelectorAll('.col-acao-admin').forEach(el => el.style.display = '');
-                btn.innerHTML = "📄 Baixar PDF";
+                btn.innerHTML = _btnPdfHtml;
             });
         });
 
@@ -5224,7 +5224,7 @@ if (window.rankingJogadoresCache) {
         window.fecharMenuAcoes = function() {
             document.querySelectorAll('.menu-acoes').forEach(m => { m.classList.remove('aberto'); const b = m.querySelector('.menu-acoes-btn'); if (b) b.setAttribute('aria-expanded', 'false'); });
         };
-        document.addEventListener('click', (e) => { if (!e.target.closest('.menu-acoes') || (e.target.closest('.acao-item') && !e.target.closest('#btnExportarExcel'))) fecharMenuAcoes(); });
+        document.addEventListener('click', (e) => { if (!e.target.closest('.menu-acoes') || (e.target.closest('.acao-item') && !e.target.closest('#btnExportarExcel, #btnBaixarRanking'))) fecharMenuAcoes(); });
         document.addEventListener('keydown', (e) => { if (e.key === 'Escape') fecharMenuAcoes(); });
         window.abrirTelao = function() {
             if (!torneioAbertoId) return;
