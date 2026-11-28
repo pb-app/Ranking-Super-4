@@ -1073,7 +1073,7 @@
     </div>
     <!-- Versão Clicável para Atualizar -->
 <div id="appVersionBadge" onclick="verificarAtualizacaoApp()" style="position: fixed; bottom: 12px; right: 12px; background: rgba(31, 41, 55, 0.85); backdrop-filter: blur(4px); color: #9ca3af; padding: 5px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; z-index: 1000; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1);" title="Toque para verificar atualizações">
-    v55 🔄
+    v56 🔄
 </div>
     </footer>
 
@@ -1521,7 +1521,7 @@
             } catch (e) { console.log("Não foi possível atualizar o resumo do histórico:", e); window.h2hJogosCache = null; }
         }
 
-        const APP_VERSION = "v55";
+        const APP_VERSION = "v56";
         let isLogged = false;
         let torneioAbertoId = null; 
         let torneioAbertoData = null; 
@@ -2225,19 +2225,21 @@ window.jogosSalvos = novosJogosSalvos;
                 return { bruta: bruta.trim(), j1, j2, seed };
             }
 
-            function sugerir(nome, rank) {
+            // Candidatos do ranking para um nome digitado: iguais (ignorando acento/caixa/espaço) + nomes mais completos
+            // que contêm o digitado (ex.: "Vavá" -> "Vavá Souza") + um parecido por digitação (Fabinho x Fabio).
+            function candidatos(nome, rank) {
                 const k = chaveNomeJogador(nome); if (!k) return null;
-                const exato = rank.find(r => r.k === k); if (exato) return { r: exato, tipo: 'exato' };
                 const sem = k.replace(/ /g, '');
-                const igualSemEsp = rank.find(r => r.k.replace(/ /g, '') === sem); if (igualSemEsp) return { r: igualSemEsp, tipo: 'exato' };
+                const exatos = rank.filter(r => r.k === k || r.k.replace(/ /g, '') === sem);
                 const toks = k.split(' ');
-                const subconj = rank.filter(r => { const rt = r.k.split(' '); return toks.every(t => rt.includes(t)); });
-                if (subconj.length === 1) return { r: subconj[0], tipo: 'parecido' };
+                const maiores = rank.filter(r => !exatos.includes(r) && toks.every(t => r.k.split(' ').includes(t)))
+                    .sort((x, y) => (y.pontos || 0) - (x.pontos || 0));
+                if (exatos.length || maiores.length) return { opcoes: [...exatos, ...maiores], revisar: maiores.length > 0 };
                 const lim = k.length >= 9 ? 2 : (k.length >= 5 ? 1 : 0);
                 if (lim) {
                     let melhor = null, md = 99;
                     rank.forEach(r => { const d = lev(k, r.k); if (d < md) { md = d; melhor = r; } });
-                    if (melhor && md <= lim) return { r: melhor, tipo: 'parecido' };
+                    if (melhor && md <= lim) return { opcoes: [melhor], revisar: true };
                 }
                 return null;
             }
@@ -2245,7 +2247,7 @@ window.jogosSalvos = novosJogosSalvos;
             async function analisar() {
                 const individual = $('nomeJogador2').classList.contains('hidden');
                 let rank = [];
-                try { rank = (await obterRankingCompleto(torneioAbertoData.ranking, 600000)).map(d => ({ nome: d.nome, k: chaveNomeJogador(d.nome) })); } catch (e) { console.log(e); }
+                try { rank = (await obterRankingCompleto(torneioAbertoData.ranking, 600000)).map(d => ({ nome: d.nome, k: chaveNomeJogador(d.nome), pontos: Number(d.pontos) || 0 })); } catch (e) { console.log(e); }
                 const jaNoTorneio = new Set();
                 inscritosAtuais.forEach(i => { jaNoTorneio.add(chaveNomeJogador(i.jogador1)); if (i.jogador2) jaNoTorneio.add(chaveNomeJogador(i.jogador2)); });
                 const vistos = new Set();
@@ -2253,11 +2255,10 @@ window.jogosSalvos = novosJogosSalvos;
                 $('impTexto').value.split(/\r?\n/).forEach(b => {
                     const l = lerLinha(b, individual); if (!l) return;
                     const jogadores = [l.j1].concat(l.j2 ? [l.j2] : []).map(n => {
-                        const sg = sugerir(n, rank);
-                        let nomeFinal = n, estado = 'novo', sugestao = null;
-                        if (sg && sg.tipo === 'exato') { nomeFinal = sg.r.nome; estado = 'ok'; }
-                        else if (sg) { nomeFinal = sg.r.nome; estado = 'revisar'; sugestao = sg.r.nome; }
-                        return { digitado: n, nomeFinal, estado, sugestao, usar: true };
+                        const c = candidatos(n, rank);
+                        const j = { digitado: n, opcoes: c ? c.opcoes.map(r => r.nome) : [], escolha: c ? 0 : -1, estado: !c ? 'novo' : (c.revisar ? 'revisar' : 'ok') };
+                        j.nomeFinal = j.escolha >= 0 ? j.opcoes[j.escolha] : n;
+                        return j;
                     });
                     let skip = '';
                     for (const j of jogadores) { const k = chaveNomeJogador(j.nomeFinal); if (jaNoTorneio.has(k)) { skip = 'já inscrito neste torneio'; break; } if (vistos.has(k)) { skip = 'repetido na lista'; break; } }
@@ -2299,13 +2300,13 @@ window.jogosSalvos = novosJogosSalvos;
                     });
                     if (l.skip) html += `<span class="imp-tag imp-skip" style="margin-left:0">⛔ ${esc(l.skip)}</span>`;
                     meio.innerHTML = html;
-                    // escolha para nomes "parecidos"
+                    // nomes para conferir: escolher entre os candidatos do ranking ou "outra pessoa"
                     l.jogadores.forEach((j) => {
-                        if (!j.sugestao) return;
+                        if (j.estado !== 'revisar') return;
                         const sel = document.createElement('select');
-                        sel.innerHTML = `<option value="s">É "${esc(j.sugestao)}" (ranking)</option><option value="n">Outra pessoa: "${esc(j.digitado)}" (novo)</option>`;
-                        sel.value = j.usar ? 's' : 'n';
-                        sel.addEventListener('change', () => { j.usar = sel.value === 's'; j.nomeFinal = j.usar ? j.sugestao : j.digitado; recalcularSkips(); desenhar(); });
+                        sel.innerHTML = j.opcoes.map((o, i) => `<option value="${i}">É "${esc(o)}" (ranking)</option>`).join('') + `<option value="-1">Outra pessoa: "${esc(j.digitado)}" (novo)</option>`;
+                        sel.value = String(j.escolha);
+                        sel.addEventListener('change', () => { j.escolha = parseInt(sel.value, 10); j.nomeFinal = j.escolha >= 0 ? j.opcoes[j.escolha] : j.digitado; recalcularSkips(); desenhar(); });
                         meio.appendChild(sel);
                     });
                     const dir = document.createElement('select'); dir.title = 'Cabeça de chave';
@@ -2318,10 +2319,10 @@ window.jogosSalvos = novosJogosSalvos;
 
             function atualizarResumo() {
                 const inc = linhas.filter(l => l.incluir);
-                const novos = inc.reduce((a, l) => a + l.jogadores.filter(j => j.estado === 'novo' || (j.estado === 'revisar' && !j.usar)).length, 0);
-                const rev = inc.reduce((a, l) => a + l.jogadores.filter(j => j.estado === 'revisar' && j.usar).length, 0);
+                const novos = inc.reduce((acc, l) => acc + l.jogadores.filter(j => j.escolha < 0).length, 0);
+                const rev = inc.reduce((acc, l) => acc + l.jogadores.filter(j => j.estado === 'revisar').length, 0);
                 const ign = linhas.filter(l => l.skip).length;
-                $('impResumo').innerHTML = `<strong>${inc.length}</strong> para inscrever · ${novos} jogador(es) novo(s) no ranking · ${rev} usando nome sugerido do ranking · ${ign} ignorado(s)`;
+                $('impResumo').innerHTML = `<strong>${inc.length}</strong> para inscrever · ${novos} novo(s) no ranking · <strong>${rev} para conferir ⚠️</strong> · ${ign} ignorado(s)`;
                 const b = $('impConfirmar'); b.disabled = !inc.length; b.textContent = inc.length ? `Inscrever ${inc.length}` : 'Nada para inscrever';
             }
 
