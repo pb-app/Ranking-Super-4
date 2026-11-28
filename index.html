@@ -1076,7 +1076,7 @@
     </div>
     <!-- Versão Clicável para Atualizar -->
 <div id="appVersionBadge" onclick="verificarAtualizacaoApp()" style="position: fixed; bottom: 12px; right: 12px; background: rgba(31, 41, 55, 0.85); backdrop-filter: blur(4px); color: #9ca3af; padding: 5px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; z-index: 1000; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1);" title="Toque para verificar atualizações">
-    v60 🔄
+    v61 🔄
 </div>
     </footer>
 
@@ -1524,7 +1524,7 @@
             } catch (e) { console.log("Não foi possível atualizar o resumo do histórico:", e); window.h2hJogosCache = null; }
         }
 
-        const APP_VERSION = "v60";
+        const APP_VERSION = "v61";
         let isLogged = false;
         let torneioAbertoId = null; 
         let torneioAbertoData = null; 
@@ -2239,7 +2239,16 @@ window.jogosSalvos = novosJogosSalvos;
                 const maiores = rank.filter(r => !exatos.includes(r) && toks.every(t => r.k.split(' ').includes(t)))
                     .sort((x, y) => (y.pontos || 0) - (x.pontos || 0));
                 // nome/sobrenome com pequena diferença de digitação (ex.: "Baldoino" -> "Matheus Balduino")
-                const tokOk = (t, rt) => rt.some(x => x === t || (t.length >= 5 && x.length >= 5 && lev(t, x) <= 1));
+                // diminutivo/aumentativo: Paulinho/Paulão/Paulo, Fabiozinho/Fabião/Fábio (as chaves já vêm sem acento)
+                const SUF = ['zinho', 'zinha', 'inho', 'inha', 'zito', 'zita', 'ito', 'ita', 'zao', 'zona', 'ona', 'ao'];
+                const semVogal = (x) => x.replace(/[aeiou]$/, '');
+                const nucleo = (x) => { for (const f of SUF) { if (x.length - f.length >= 3 && x.endsWith(f)) { const c = x.slice(0, -f.length); return [c, semVogal(c)]; } } return []; };
+                const apelidoIgual = (a, b) => {
+                    if ((a.endsWith('a') && b.endsWith('o')) || (a.endsWith('o') && b.endsWith('a'))) return false; // Paula x Paulinho: gêneros diferentes
+                    const na = nucleo(a), nb = nucleo(b), pa = [a, semVogal(a)], pb = [b, semVogal(b)];
+                    return na.some(x => pb.includes(x)) || nb.some(x => pa.includes(x)) || na.some(x => nb.includes(x));
+                };
+                const tokOk = (t, rt) => rt.some(x => x === t || (t.length >= 5 && x.length >= 5 && lev(t, x) <= 1) || apelidoIgual(t, x));
                 const proximos = rank.filter(r => !exatos.includes(r) && !maiores.includes(r) && toks.every(t => tokOk(t, r.k.split(' '))))
                     .sort((x, y) => (y.pontos || 0) - (x.pontos || 0));
                 if (exatos.length || maiores.length || proximos.length) return { opcoes: [...exatos, ...maiores, ...proximos], revisar: maiores.length > 0 || proximos.length > 0 };
