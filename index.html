@@ -946,6 +946,7 @@
                 <div style="display: flex; gap: 10px;">
                     <button id="btnGerenciarRankings" class="btn btn-outline hidden" style="height: 48px; padding: 0 15px;">⚙ Gerenciar</button>
                     <button id="btnUnificarRanking" class="btn btn-outline hidden" style="height: 48px; padding: 0 15px;" title="Juntar jogadores repetidos">🧹 Duplicados</button>
+                    <button id="btnBackupJson" class="btn btn-outline hidden" style="height: 48px; padding: 0 15px;" title="Baixar uma cópia de segurança de todos os dados">💾 Backup</button>
                     <button id="btnZerarRanking" class="btn hidden" style="height: 48px; padding: 0 15px; background: #fef2f2 !important; color: #ef4444 !important; border: 1px solid #fecaca !important; box-shadow: none;">⚠️ Zerar</button>
                 </div>
             </div>
@@ -1096,7 +1097,7 @@
     </div>
     <!-- Versão Clicável para Atualizar -->
 <div id="appVersionBadge" onclick="verificarAtualizacaoApp()" style="position: fixed; bottom: 12px; right: 12px; background: rgba(31, 41, 55, 0.85); backdrop-filter: blur(4px); color: #9ca3af; padding: 5px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; z-index: 1000; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1);" title="Toque para verificar atualizações">
-    v67 🔄
+    v68 🔄
 </div>
     </footer>
 
@@ -1565,6 +1566,45 @@
         };
         document.getElementById('btnUnificarRanking').addEventListener('click', () => window.unificarDuplicadosRanking());
 
+        // v68: backup completo em JSON (campeonatos + inscritos + jogos, rankings + jogadores, categorias, sistema). Só organizador.
+        window.baixarBackupJson = async function () {
+            if (!isLogged) return;
+            const btn = document.getElementById('btnBackupJson'), txt = btn.textContent;
+            const ok = await window.dialogo({ titulo: '💾 Baixar backup', msg: 'Vai ler todos os dados do banco uma vez (campeonatos, jogos, ranking e fotos) e baixar um arquivo .json no seu aparelho. Pode levar alguns segundos e contar como leituras do Firebase.', ok: 'Baixar' });
+            if (!ok) return;
+            btn.disabled = true;
+            const conv = (v) => {
+                if (v === null || typeof v !== 'object') return v;
+                if (typeof v.toDate === 'function') return { __timestamp: v.toDate().toISOString() };
+                if (Array.isArray(v)) return v.map(conv);
+                const o = {}; for (const k of Object.keys(v)) o[k] = conv(v[k]); return o;
+            };
+            try {
+                const out = { app: 'Confra & Play', versao: APP_VERSION, geradoEm: new Date().toISOString(), colecoes: {} };
+                let total = 0;
+                const ler = async (nome, consulta) => {
+                    btn.textContent = '⏳ ' + nome + '…';
+                    const snap = await getDocs(consulta); const lista = [];
+                    snap.forEach(d => lista.push({ caminho: d.ref.path, dados: conv(d.data()) }));
+                    out.colecoes[nome] = lista; total += lista.length;
+                };
+                await ler('campeonatos', collection(db, 'campeonatos'));
+                await ler('inscritos', collectionGroup(db, 'inscritos'));
+                await ler('jogos', collectionGroup(db, 'jogos'));
+                await ler('categoriasRanking', collection(db, 'categoriasRanking'));
+                await ler('jogadoresRanking', collectionGroup(db, 'jogadores'));
+                await ler('sistema', collection(db, 'sistema'));
+                const blob = new Blob([JSON.stringify(out)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob), a = document.createElement('a');
+                const d = new Date(), p = (n) => String(n).padStart(2, '0');
+                a.href = url; a.download = `backup-confra-play-${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}.json`;
+                document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 10000);
+                window.toast(`Backup gerado: ${total} documentos (${(blob.size / 1024 / 1024).toFixed(1)} MB).`, 'ok');
+            } catch (e) { console.log(e); window.toast('Não consegui gerar o backup: ' + (e && e.message ? e.message : e), 'erro'); }
+            btn.textContent = txt; btn.disabled = false;
+        };
+        document.getElementById('btnBackupJson').addEventListener('click', () => window.baixarBackupJson());
+
 
         // 3) Histórico compacto dos jogos (medalhas e H2H): 1 a 3 documentos em vez de ler todos os jogos
         const HIST_LOTE = 1500;
@@ -1616,7 +1656,7 @@
             } catch (e) { console.log("Não foi possível atualizar o resumo do histórico:", e); window.h2hJogosCache = null; }
         }
 
-        const APP_VERSION = "v67";
+        const APP_VERSION = "v68";
         let isLogged = false;
         let torneioAbertoId = null; 
         let torneioAbertoData = null; 
@@ -1704,7 +1744,7 @@
             const colsAcao = document.querySelectorAll('.col-acao-admin');
             const btnsZerar = document.getElementById('btnZerarRanking');
             const btnGerenciar = document.getElementById('btnGerenciarRankings');
-            const btnUnif = document.getElementById('btnUnificarRanking');
+            const btnUnif = document.getElementById('btnUnificarRanking'); const btnBk = document.getElementById('btnBackupJson');
             const btnMostrar = document.getElementById('btnMostrarInscritos');
 
             if (isLogged) {
@@ -1717,18 +1757,18 @@
                 if(!document.getElementById('ranking-section').classList.contains('hidden')){
                     btnsZerar.classList.remove('hidden');
                     btnGerenciar.classList.remove('hidden');
-                    btnUnif.classList.remove('hidden');
+                    btnUnif.classList.remove('hidden'); btnBk.classList.remove('hidden');
                 } else {
                     btnsZerar.classList.add('hidden');
                     btnGerenciar.classList.add('hidden');
-                    btnUnif.classList.add('hidden');
+                    btnUnif.classList.add('hidden'); btnBk.classList.add('hidden');
                 }
             } else {
                 btnLogin.classList.remove('hidden'); userMenu.classList.add('hidden'); createSection.style.display = 'none';
                 colsAcao.forEach(col => col.classList.add('hidden'));
                 btnsZerar.classList.add('hidden');
                 btnGerenciar.classList.add('hidden');
-                btnUnif.classList.add('hidden');
+                btnUnif.classList.add('hidden'); btnBk.classList.add('hidden');
                 
                 // Atualiza o botão de visualização dos inscritos (se ele existir na tela)
                 if (btnMostrar) { btnMostrar.textContent = "👥 Ver Lista de Inscritos"; }
