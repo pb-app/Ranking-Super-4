@@ -136,6 +136,8 @@
         .imp-linha select { font-size: 0.8rem; padding: 3px 4px; max-width: 220px; background: var(--white); color: var(--dark); border: 1px solid var(--border); border-radius: 6px; }
         .imp-tag { font-size: 0.72rem; font-weight: 700; padding: 1px 7px; border-radius: 999px; margin-left: 6px; white-space: nowrap; }
         .imp-ok { background: #d1fae5; color: #065f46; } .imp-novo { background: #dbeafe; color: #1e40af; } .imp-rev { background: #fef3c7; color: #92400e; } .imp-skip { background: #fee2e2; color: #991b1b; }
+        .imp-nome { font: inherit; font-weight: 700; color: var(--dark); background: transparent; border: 1px solid transparent; border-bottom: 1px dashed var(--border); border-radius: 6px; padding: 1px 4px; max-width: 100%; box-sizing: content-box; }
+        .imp-nome:hover, .imp-nome:focus { border-color: var(--border); background: var(--white); outline: none; }
         .imp-sub { display: block; color: var(--gray); font-size: 0.78rem; }
         @keyframes flashSalvo { 0% { box-shadow: 0 0 0 0 rgba(16,185,129,.75), inset 0 0 0 2px #10b981; } 100% { box-shadow: 0 0 0 16px rgba(16,185,129,0), inset 0 0 0 2px rgba(16,185,129,0); } }
         .flash-salvo { animation: flashSalvo .9s ease-out; }
@@ -559,6 +561,7 @@
             </div>
             <div id="impPasso2" class="hidden">
                 <div id="impResumo" style="font-size: 0.9rem; margin-bottom: 10px; color: var(--dark);"></div>
+                <div style="font-size: 0.78rem; color: var(--gray); margin: -4px 0 8px;">Dica: clique em um nome para corrigi-lo ou acrescentar o sobrenome (Enter confirma).</div>
                 <div id="impLista" style="border: 1px solid var(--border); border-radius: 10px; max-height: 46dvh; overflow-y: auto;"></div>
                 <div style="display: flex; gap: 8px; margin-top: 12px;">
                     <button type="button" id="impVoltar" class="btn btn-outline" style="flex: 1;">← Editar texto</button>
@@ -1073,7 +1076,7 @@
     </div>
     <!-- Versão Clicável para Atualizar -->
 <div id="appVersionBadge" onclick="verificarAtualizacaoApp()" style="position: fixed; bottom: 12px; right: 12px; background: rgba(31, 41, 55, 0.85); backdrop-filter: blur(4px); color: #9ca3af; padding: 5px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; z-index: 1000; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1);" title="Toque para verificar atualizações">
-    v58 🔄
+    v61 🔄
 </div>
     </footer>
 
@@ -1521,7 +1524,7 @@
             } catch (e) { console.log("Não foi possível atualizar o resumo do histórico:", e); window.h2hJogosCache = null; }
         }
 
-        const APP_VERSION = "v58";
+        const APP_VERSION = "v61";
         let isLogged = false;
         let torneioAbertoId = null; 
         let torneioAbertoData = null; 
@@ -2236,7 +2239,16 @@ window.jogosSalvos = novosJogosSalvos;
                 const maiores = rank.filter(r => !exatos.includes(r) && toks.every(t => r.k.split(' ').includes(t)))
                     .sort((x, y) => (y.pontos || 0) - (x.pontos || 0));
                 // nome/sobrenome com pequena diferença de digitação (ex.: "Baldoino" -> "Matheus Balduino")
-                const tokOk = (t, rt) => rt.some(x => x === t || (t.length >= 5 && x.length >= 5 && lev(t, x) <= 1));
+                // diminutivo/aumentativo: Paulinho/Paulão/Paulo, Fabiozinho/Fabião/Fábio (as chaves já vêm sem acento)
+                const SUF = ['zinho', 'zinha', 'inho', 'inha', 'zito', 'zita', 'ito', 'ita', 'zao', 'zona', 'ona', 'ao'];
+                const semVogal = (x) => x.replace(/[aeiou]$/, '');
+                const nucleo = (x) => { for (const f of SUF) { if (x.length - f.length >= 3 && x.endsWith(f)) { const c = x.slice(0, -f.length); return [c, semVogal(c)]; } } return []; };
+                const apelidoIgual = (a, b) => {
+                    if ((a.endsWith('a') && b.endsWith('o')) || (a.endsWith('o') && b.endsWith('a'))) return false; // Paula x Paulinho: gêneros diferentes
+                    const na = nucleo(a), nb = nucleo(b), pa = [a, semVogal(a)], pb = [b, semVogal(b)];
+                    return na.some(x => pb.includes(x)) || nb.some(x => pa.includes(x)) || na.some(x => nb.includes(x));
+                };
+                const tokOk = (t, rt) => rt.some(x => x === t || (t.length >= 5 && x.length >= 5 && lev(t, x) <= 1) || apelidoIgual(t, x));
                 const proximos = rank.filter(r => !exatos.includes(r) && !maiores.includes(r) && toks.every(t => tokOk(t, r.k.split(' '))))
                     .sort((x, y) => (y.pontos || 0) - (x.pontos || 0));
                 if (exatos.length || maiores.length || proximos.length) return { opcoes: [...exatos, ...maiores, ...proximos], revisar: maiores.length > 0 || proximos.length > 0 };
@@ -2266,27 +2278,44 @@ window.jogosSalvos = novosJogosSalvos;
                         j.nomeFinal = j.escolha >= 0 ? j.opcoes[j.escolha] : n;
                         return j;
                     });
-                    let skip = '';
-                    for (const j of jogadores) { const k = chaveNomeJogador(j.nomeFinal); if (jaNoTorneio.has(k)) { skip = 'já inscrito neste torneio'; break; } if (vistos.has(k)) { skip = 'repetido na lista'; break; } }
-                    if (!skip && jogadores.length === 2 && chaveNomeJogador(jogadores[0].nomeFinal) === chaveNomeJogador(jogadores[1].nomeFinal)) skip = 'mesmo jogador nas duas vagas';
-                    if (!skip) jogadores.forEach(j => vistos.add(chaveNomeJogador(j.nomeFinal)));
-                    linhas.push({ ...l, jogadores, skip, incluir: !skip, _eraSkip: !!skip });
+                    linhas.push({ ...l, jogadores, skip: '', incluir: true, _eraSkip: false });
                 });
+                avaliar(true);
                 desenhar();
             }
 
-            function recalcularSkips() { // reavalia repetidos depois que o usuário troca sugestão/nome
+            // Avalia a lista em ordem: nome repetido na lista -> sugere o próximo jogador do ranking com esse nome (homônimo);
+            // já inscrito no torneio / sem alternativa -> ignorado.
+            function avaliar(inicial) {
                 const jaNoTorneio = new Set();
                 inscritosAtuais.forEach(i => { jaNoTorneio.add(chaveNomeJogador(i.jogador1)); if (i.jogador2) jaNoTorneio.add(chaveNomeJogador(i.jogador2)); });
                 const vistos = new Set();
                 linhas.forEach(l => {
+                    const usados = [];
+                    l.jogadores.forEach(j => {
+                        j.auto = false;
+                        if (!j.fixo && j.opcoes.length) j.escolha = 0;
+                        const livre = (nome) => { const k = chaveNomeJogador(nome); return !vistos.has(k) && !usados.includes(k); };
+                        if (!j.fixo && j.opcoes.length > 1 && !livre(j.opcoes[j.escolha])) {
+                            const alt = j.opcoes.findIndex(o => livre(o) && !jaNoTorneio.has(chaveNomeJogador(o)));
+                            if (alt >= 0) { j.escolha = alt; j.auto = true; }
+                        }
+                        j.nomeFinal = j.escolha >= 0 ? j.opcoes[j.escolha] : j.digitado;
+                        usados.push(chaveNomeJogador(j.nomeFinal));
+                    });
                     let skip = '';
                     for (const j of l.jogadores) { const k = chaveNomeJogador(j.nomeFinal); if (jaNoTorneio.has(k)) { skip = 'já inscrito neste torneio'; break; } if (vistos.has(k)) { skip = 'repetido na lista'; break; } }
-                    l.skip = skip; if (skip) l.incluir = false;
-                    else { if (l._eraSkip) l.incluir = true; l.jogadores.forEach(j => vistos.add(chaveNomeJogador(j.nomeFinal))); }
+                    if (!skip && l.jogadores.length === 2 && chaveNomeJogador(l.jogadores[0].nomeFinal) === chaveNomeJogador(l.jogadores[1].nomeFinal)) skip = 'mesmo jogador nas duas vagas';
+                    l.skip = skip;
+                    if (skip) l.incluir = false;
+                    else {
+                        if (l._eraSkip || inicial) l.incluir = !l.jogadores.some(j => j.auto); // homônimo sugerido: começa desmarcado
+                        l.jogadores.forEach(j => vistos.add(chaveNomeJogador(j.nomeFinal)));
+                    }
                     l._eraSkip = !!skip;
                 });
             }
+            const recalcularSkips = () => avaliar(false);
 
             function desenhar() {
                 $('impPasso1').classList.add('hidden'); $('impPasso2').classList.remove('hidden');
@@ -2297,22 +2326,38 @@ window.jogosSalvos = novosJogosSalvos;
                     const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = l.incluir; cb.disabled = !!l.skip;
                     cb.addEventListener('change', () => { l.incluir = cb.checked; atualizarResumo(); div.classList.toggle('imp-ignorado', !l.incluir); });
                     const meio = document.createElement('div');
-                    let html = '';
                     l.jogadores.forEach((j, ji) => {
                         const tag = l.skip ? '' : ({ ok: '<span class="imp-tag imp-ok">✅ no ranking</span>', novo: '<span class="imp-tag imp-novo">🆕 novo</span>', revisar: '<span class="imp-tag imp-rev">⚠️ confira</span>' }[j.estado] || '');
-                        html += `<div>${ji ? '<span style="color:var(--gray)"> &amp; </span>' : ''}<strong>${esc(j.nomeFinal)}</strong>${tag}`;
-                        if (j.estado === 'ok' && j.nomeFinal !== j.digitado) html += `<span class="imp-sub">digitado: ${esc(j.digitado)}</span>`;
-                        html += '</div>';
+                        const d = document.createElement('div');
+                        if (ji) { const amp = document.createElement('span'); amp.style.color = 'var(--gray)'; amp.textContent = ' & '; d.appendChild(amp); }
+                        // nome editável: corrige/acrescenta sobrenome na hora (a busca no ranking é refeita)
+                        const inp = document.createElement('input'); inp.type = 'text'; inp.className = 'imp-nome'; inp.value = j.nomeFinal; inp.title = 'Clique para editar o nome'; inp.setAttribute('aria-label', 'Nome do jogador');
+                        inp.size = Math.max(8, Math.min(32, j.nomeFinal.length + 1));
+                        inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); inp.blur(); } });
+                        inp.addEventListener('change', () => {
+                            const v = inp.value.replace(/\s+/g, ' ').trim();
+                            if (!v || v === j.nomeFinal) { inp.value = j.nomeFinal; return; }
+                            const c = candidatos(v, rankAtual);
+                            j.digitado = v; j.opcoes = c ? c.opcoes.map(r => r.nome) : []; j.escolha = c ? 0 : -1;
+                            j.estado = !c ? 'novo' : (c.revisar ? 'revisar' : 'ok'); j.fixo = false; j.manual = false; j.auto = false;
+                            j.nomeFinal = j.escolha >= 0 ? j.opcoes[0] : v;
+                            avaliar(false); desenhar();
+                        });
+                        d.appendChild(inp);
+                        let extra = tag;
+                        if (j.estado === 'ok' && j.nomeFinal !== j.digitado) extra += `<span class="imp-sub">digitado: ${esc(j.digitado)}</span>`;
+                        if (j.auto) extra += `<span class="imp-sub" style="color:#92400e;">⚠️ nome repetido na lista: sugerido outro jogador do ranking. Marque a caixa se for outra pessoa.</span>`;
+                        d.insertAdjacentHTML('beforeend', extra);
+                        meio.appendChild(d);
                     });
-                    if (l.skip) html += `<span class="imp-tag imp-skip" style="margin-left:0">⛔ ${esc(l.skip)}</span>`;
-                    meio.innerHTML = html;
+                    if (l.skip) meio.insertAdjacentHTML('beforeend', `<span class="imp-tag imp-skip" style="margin-left:0">⛔ ${esc(l.skip)}</span>`);
                     // nomes para conferir: escolher entre os candidatos do ranking ou "outra pessoa"
                     l.jogadores.forEach((j) => {
                         if (j.estado !== 'revisar') return;
                         const sel = document.createElement('select');
                         sel.innerHTML = j.opcoes.map((o, i) => `<option value="${i}">É "${esc(o)}" (ranking)</option>`).join('') + `<option value="-1">Outra pessoa: "${esc(j.digitado)}" (novo)</option>`;
                         sel.value = String(j.escolha);
-                        sel.addEventListener('change', () => { j.escolha = parseInt(sel.value, 10); j.nomeFinal = j.escolha >= 0 ? j.opcoes[j.escolha] : j.digitado; recalcularSkips(); desenhar(); });
+                        sel.addEventListener('change', () => { j.fixo = true; j.escolha = parseInt(sel.value, 10); j.nomeFinal = j.escolha >= 0 ? j.opcoes[j.escolha] : j.digitado; recalcularSkips(); desenhar(); });
                         meio.appendChild(sel);
                     });
                     // nomes "novos": permite apontar manualmente quem é no ranking (caso a busca automática não ache)
@@ -2322,7 +2367,7 @@ window.jogosSalvos = novosJogosSalvos;
                         sel.innerHTML = '<option value="">🆕 Novo (como digitado)</option>' + rankAtual.map((r, i) => `<option value="${i}">🔎 É "${esc(r.nome)}"</option>`).join('');
                         sel.addEventListener('change', () => {
                             if (sel.value === '') return;
-                            const r = rankAtual[parseInt(sel.value, 10)]; j.nomeFinal = r.nome; j.estado = 'ok'; j.manual = true; j.escolha = 0; j.opcoes = [r.nome];
+                            const r = rankAtual[parseInt(sel.value, 10)]; j.nomeFinal = r.nome; j.estado = 'ok'; j.manual = true; j.fixo = true; j.escolha = 0; j.opcoes = [r.nome];
                             recalcularSkips(); desenhar();
                         });
                         meio.appendChild(sel);
