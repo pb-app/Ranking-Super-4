@@ -1073,7 +1073,7 @@
     </div>
     <!-- Versão Clicável para Atualizar -->
 <div id="appVersionBadge" onclick="verificarAtualizacaoApp()" style="position: fixed; bottom: 12px; right: 12px; background: rgba(31, 41, 55, 0.85); backdrop-filter: blur(4px); color: #9ca3af; padding: 5px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; z-index: 1000; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1);" title="Toque para verificar atualizações">
-    v58 🔄
+    v59 🔄
 </div>
     </footer>
 
@@ -1521,7 +1521,7 @@
             } catch (e) { console.log("Não foi possível atualizar o resumo do histórico:", e); window.h2hJogosCache = null; }
         }
 
-        const APP_VERSION = "v58";
+        const APP_VERSION = "v59";
         let isLogged = false;
         let torneioAbertoId = null; 
         let torneioAbertoData = null; 
@@ -2266,27 +2266,44 @@ window.jogosSalvos = novosJogosSalvos;
                         j.nomeFinal = j.escolha >= 0 ? j.opcoes[j.escolha] : n;
                         return j;
                     });
-                    let skip = '';
-                    for (const j of jogadores) { const k = chaveNomeJogador(j.nomeFinal); if (jaNoTorneio.has(k)) { skip = 'já inscrito neste torneio'; break; } if (vistos.has(k)) { skip = 'repetido na lista'; break; } }
-                    if (!skip && jogadores.length === 2 && chaveNomeJogador(jogadores[0].nomeFinal) === chaveNomeJogador(jogadores[1].nomeFinal)) skip = 'mesmo jogador nas duas vagas';
-                    if (!skip) jogadores.forEach(j => vistos.add(chaveNomeJogador(j.nomeFinal)));
-                    linhas.push({ ...l, jogadores, skip, incluir: !skip, _eraSkip: !!skip });
+                    linhas.push({ ...l, jogadores, skip: '', incluir: true, _eraSkip: false });
                 });
+                avaliar(true);
                 desenhar();
             }
 
-            function recalcularSkips() { // reavalia repetidos depois que o usuário troca sugestão/nome
+            // Avalia a lista em ordem: nome repetido na lista -> sugere o próximo jogador do ranking com esse nome (homônimo);
+            // já inscrito no torneio / sem alternativa -> ignorado.
+            function avaliar(inicial) {
                 const jaNoTorneio = new Set();
                 inscritosAtuais.forEach(i => { jaNoTorneio.add(chaveNomeJogador(i.jogador1)); if (i.jogador2) jaNoTorneio.add(chaveNomeJogador(i.jogador2)); });
                 const vistos = new Set();
                 linhas.forEach(l => {
+                    const usados = [];
+                    l.jogadores.forEach(j => {
+                        j.auto = false;
+                        if (!j.fixo && j.opcoes.length) j.escolha = 0;
+                        const livre = (nome) => { const k = chaveNomeJogador(nome); return !vistos.has(k) && !usados.includes(k); };
+                        if (!j.fixo && j.opcoes.length > 1 && !livre(j.opcoes[j.escolha])) {
+                            const alt = j.opcoes.findIndex(o => livre(o) && !jaNoTorneio.has(chaveNomeJogador(o)));
+                            if (alt >= 0) { j.escolha = alt; j.auto = true; }
+                        }
+                        j.nomeFinal = j.escolha >= 0 ? j.opcoes[j.escolha] : j.digitado;
+                        usados.push(chaveNomeJogador(j.nomeFinal));
+                    });
                     let skip = '';
                     for (const j of l.jogadores) { const k = chaveNomeJogador(j.nomeFinal); if (jaNoTorneio.has(k)) { skip = 'já inscrito neste torneio'; break; } if (vistos.has(k)) { skip = 'repetido na lista'; break; } }
-                    l.skip = skip; if (skip) l.incluir = false;
-                    else { if (l._eraSkip) l.incluir = true; l.jogadores.forEach(j => vistos.add(chaveNomeJogador(j.nomeFinal))); }
+                    if (!skip && l.jogadores.length === 2 && chaveNomeJogador(l.jogadores[0].nomeFinal) === chaveNomeJogador(l.jogadores[1].nomeFinal)) skip = 'mesmo jogador nas duas vagas';
+                    l.skip = skip;
+                    if (skip) l.incluir = false;
+                    else {
+                        if (l._eraSkip || inicial) l.incluir = !l.jogadores.some(j => j.auto); // homônimo sugerido: começa desmarcado
+                        l.jogadores.forEach(j => vistos.add(chaveNomeJogador(j.nomeFinal)));
+                    }
                     l._eraSkip = !!skip;
                 });
             }
+            const recalcularSkips = () => avaliar(false);
 
             function desenhar() {
                 $('impPasso1').classList.add('hidden'); $('impPasso2').classList.remove('hidden');
@@ -2302,6 +2319,7 @@ window.jogosSalvos = novosJogosSalvos;
                         const tag = l.skip ? '' : ({ ok: '<span class="imp-tag imp-ok">✅ no ranking</span>', novo: '<span class="imp-tag imp-novo">🆕 novo</span>', revisar: '<span class="imp-tag imp-rev">⚠️ confira</span>' }[j.estado] || '');
                         html += `<div>${ji ? '<span style="color:var(--gray)"> &amp; </span>' : ''}<strong>${esc(j.nomeFinal)}</strong>${tag}`;
                         if (j.estado === 'ok' && j.nomeFinal !== j.digitado) html += `<span class="imp-sub">digitado: ${esc(j.digitado)}</span>`;
+                        if (j.auto) html += `<span class="imp-sub" style="color:#92400e;">⚠️ nome repetido na lista: sugerido outro jogador do ranking. Marque a caixa se for outra pessoa.</span>`;
                         html += '</div>';
                     });
                     if (l.skip) html += `<span class="imp-tag imp-skip" style="margin-left:0">⛔ ${esc(l.skip)}</span>`;
@@ -2312,7 +2330,7 @@ window.jogosSalvos = novosJogosSalvos;
                         const sel = document.createElement('select');
                         sel.innerHTML = j.opcoes.map((o, i) => `<option value="${i}">É "${esc(o)}" (ranking)</option>`).join('') + `<option value="-1">Outra pessoa: "${esc(j.digitado)}" (novo)</option>`;
                         sel.value = String(j.escolha);
-                        sel.addEventListener('change', () => { j.escolha = parseInt(sel.value, 10); j.nomeFinal = j.escolha >= 0 ? j.opcoes[j.escolha] : j.digitado; recalcularSkips(); desenhar(); });
+                        sel.addEventListener('change', () => { j.fixo = true; j.escolha = parseInt(sel.value, 10); j.nomeFinal = j.escolha >= 0 ? j.opcoes[j.escolha] : j.digitado; recalcularSkips(); desenhar(); });
                         meio.appendChild(sel);
                     });
                     // nomes "novos": permite apontar manualmente quem é no ranking (caso a busca automática não ache)
@@ -2322,7 +2340,7 @@ window.jogosSalvos = novosJogosSalvos;
                         sel.innerHTML = '<option value="">🆕 Novo (como digitado)</option>' + rankAtual.map((r, i) => `<option value="${i}">🔎 É "${esc(r.nome)}"</option>`).join('');
                         sel.addEventListener('change', () => {
                             if (sel.value === '') return;
-                            const r = rankAtual[parseInt(sel.value, 10)]; j.nomeFinal = r.nome; j.estado = 'ok'; j.manual = true; j.escolha = 0; j.opcoes = [r.nome];
+                            const r = rankAtual[parseInt(sel.value, 10)]; j.nomeFinal = r.nome; j.estado = 'ok'; j.manual = true; j.fixo = true; j.escolha = 0; j.opcoes = [r.nome];
                             recalcularSkips(); desenhar();
                         });
                         meio.appendChild(sel);
