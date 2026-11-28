@@ -139,6 +139,18 @@
         .imp-nome { font: inherit; font-weight: 700; color: var(--dark); background: transparent; border: 1px solid transparent; border-bottom: 1px dashed var(--border); border-radius: 6px; padding: 1px 4px; max-width: 100%; box-sizing: content-box; }
         .imp-nome:hover, .imp-nome:focus { border-color: var(--border); background: var(--white); outline: none; }
         .imp-sub { display: block; color: var(--gray); font-size: 0.78rem; }
+        .avatar { display: inline-flex; align-items: center; justify-content: center; width: var(--sz, 36px); height: var(--sz, 36px); border-radius: 50%; overflow: hidden; flex: 0 0 auto; background: var(--av-bg, #6366f1); color: #fff; font-weight: 800; font-size: calc(var(--sz, 36px) * .38); line-height: 1; letter-spacing: .5px; user-select: none; }
+        .avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .avatar.ring-1 { box-shadow: 0 0 0 2px var(--white), 0 0 0 4px #f59e0b; } .avatar.ring-2 { box-shadow: 0 0 0 2px var(--white), 0 0 0 4px #94a3b8; } .avatar.ring-3 { box-shadow: 0 0 0 2px var(--white), 0 0 0 4px #b45309; }
+        .perfil-avatar { display: flex; justify-content: center; margin: 4px 0 10px; }
+        .perfil-avatar .avatar { box-shadow: 0 4px 14px rgba(0,0,0,.18); }
+        .perfil-avatar .avatar.ring-1 { box-shadow: 0 0 0 3px var(--white), 0 0 0 6px #f59e0b, 0 6px 16px rgba(245,158,11,.4); } .perfil-avatar .avatar.ring-2 { box-shadow: 0 0 0 3px var(--white), 0 0 0 6px #94a3b8, 0 6px 16px rgba(100,116,139,.35); } .perfil-avatar .avatar.ring-3 { box-shadow: 0 0 0 3px var(--white), 0 0 0 6px #b45309, 0 6px 16px rgba(180,83,9,.35); }
+        @media (max-height: 760px), (max-width: 480px) { .perfil-avatar { margin: 2px 0 8px; } .perfil-avatar .avatar { --sz: 64px !important; } }
+        @media (max-height: 640px) { .perfil-avatar .avatar { --sz: 48px !important; } }
+        .av-btn { position: relative; display: inline-flex; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+        .av-cam { position: absolute; right: -4px; bottom: -4px; width: 28px; height: 28px; border-radius: 50%; background: var(--white); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: .85rem; font-style: normal; box-shadow: 0 2px 6px rgba(0,0,0,.2); }
+        @media (max-height: 760px), (max-width: 480px) { .av-cam { width: 24px; height: 24px; font-size: .75rem; right: -6px; bottom: -6px; } }
+        .rk-nome { display: inline-flex; align-items: center; gap: 10px; }
         @keyframes flashSalvo { 0% { box-shadow: 0 0 0 0 rgba(16,185,129,.75), inset 0 0 0 2px #10b981; } 100% { box-shadow: 0 0 0 16px rgba(16,185,129,0), inset 0 0 0 2px rgba(16,185,129,0); } }
         .flash-salvo { animation: flashSalvo .9s ease-out; }
         .match-box.resolvido, .bracket-match.resolvido { border-left: 4px solid #10b981; background: #f0fdf4; }
@@ -573,7 +585,7 @@
 
     <div id="modalPerfilJogador" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; display: flex; justify-content: center; align-items: center;">
         <div class="perfil-card" style="background: var(--white); padding: 2.5rem; border-radius: 16px; width: 90%; max-width: 400px; text-align: center; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
-            <div class="perfil-emoji" style="font-size: 3.5rem; margin-bottom: 10px;"></div>
+            <div id="perfilAvatar" class="perfil-avatar"></div>
             <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px;">
                 <button type="button" id="btnPerfilAnterior" class="perfil-seta" aria-label="Jogador anterior" title="Anterior (←)">&#8249;</button>
                 <h2 id="perfilNome" style="color: var(--dark); margin: 0; flex: 1; font-size: 1.6rem; font-weight: 800; word-break: break-word;">Nome do Jogador</h2>
@@ -663,6 +675,14 @@
             <form id="formEditPlayer">
                 <input type="hidden" id="editPlayerId">
                 <input type="hidden" id="editPlayerCategoria">
+                <input type="hidden" id="editFoto"><input type="hidden" id="editFotoMudou">
+                <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 1.2rem;">
+                    <div id="editFotoPreview"></div>
+                    <div style="display: flex; flex-direction: column; gap: 6px; align-items: flex-start;">
+                        <label class="btn btn-outline" style="cursor: pointer; margin: 0; padding: 8px 12px; font-size: .85rem;">📷 Escolher / tirar foto<input type="file" id="editFotoArquivo" accept="image/*" style="display: none;"></label>
+                        <button type="button" id="btnRemoverFoto" class="btn btn-outline" style="padding: 6px 12px; font-size: .8rem;">Remover foto</button>
+                    </div>
+                </div>
                 
                 <div class="form-group" style="margin-bottom: 1.5rem;">
                     <label style="color: var(--blue-link);">Nome do Jogador</label>
@@ -1076,7 +1096,7 @@
     </div>
     <!-- Versão Clicável para Atualizar -->
 <div id="appVersionBadge" onclick="verificarAtualizacaoApp()" style="position: fixed; bottom: 12px; right: 12px; background: rgba(31, 41, 55, 0.85); backdrop-filter: blur(4px); color: #9ca3af; padding: 5px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; z-index: 1000; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1);" title="Toque para verificar atualizações">
-    v62 🔄
+    v67 🔄
 </div>
     </footer>
 
@@ -1437,6 +1457,77 @@
         const chaveNomeJogador = (n) => String(n || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/['´`]/g, '').replace(/\s+/g, ' ').trim().toLowerCase();
         const idJogadorRanking = (n) => chaveNomeJogador(n).replace(/\s+/g, '_');
         window.chaveNomeJogador = chaveNomeJogador;
+
+        // ===== v63: fotos dos jogadores (guardadas no próprio documento do ranking, campo "foto" = JPEG pequeno em base64) =====
+        window.avatarHTML = function (nome, foto, tam, pos) {
+            const partes = String(nome || '?').trim().split(/\s+/).filter(Boolean);
+            const ini = ((partes[0] || '?')[0] + (partes.length > 1 ? partes[partes.length - 1][0] : '')).toUpperCase();
+            const cores = ['#6366f1', '#0ea5e9', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6'];
+            let h = 0; for (const ch of chaveNomeJogador(nome)) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+            const ring = pos >= 1 && pos <= 3 ? ' ring-' + pos : '';
+            const inner = foto ? `<img src="${esc(foto)}" alt="" decoding="async">` : esc(ini);
+            return `<span class="avatar${ring}" style="--sz:${tam}px; --av-bg:${cores[h % cores.length]}">${inner}</span>`;
+        };
+        window.buscarJogadorRanking = function (nome) {
+            const sel = document.getElementById('filtroVisualRanking');
+            const rn = sel && (sel.options[sel.selectedIndex] || {}).text;
+            const daLista = ((window.rankingDadosCache || {})[rn] || []).find(j => j.nome === nome) || null;
+            const doTorneio = (window.rankingJogadoresCache || {})[nome] || null;
+            return window.perfilNav ? (daLista || doTorneio) : (doTorneio || daLista);
+        };
+        // v64: abre o ajuste da foto (arrastar para posicionar, zoom por controle/roda/pinça) e devolve o JPEG 160px em base64 (ou null se cancelar)
+        window.processarFotoJogador = async function (arquivo) {
+            let bmp;
+            try { bmp = await createImageBitmap(arquivo, { imageOrientation: 'from-image' }); }
+            catch (e) {
+                bmp = await new Promise((ok, erro) => { const im = new Image(); im.onload = () => ok(im); im.onerror = () => erro(new Error('Imagem inválida')); im.src = URL.createObjectURL(arquivo); });
+            }
+            const w = bmp.width || bmp.naturalWidth, hgt = bmp.height || bmp.naturalHeight;
+            const V = Math.min(280, Math.floor(window.innerWidth - 80));
+            const coverS = V / Math.min(w, hgt), minS = Math.min(V / Math.max(w, hgt), coverS), maxS = coverS * 4;
+            let s = coverS, cx = w / 2, cy = Math.min(hgt - Math.min(w, hgt) / 2, Math.min(w, hgt) / 2 + (hgt - Math.min(w, hgt)) * 0.3);
+            if (Math.max(w, hgt) / Math.min(w, hgt) > 1.5) { s = minS; cx = w / 2; cy = hgt / 2; } // prints/imagens muito compridas: começa mostrando a imagem inteira
+            return new Promise((resolve) => {
+                const fundo = document.createElement('div'); fundo.className = 'dlg-fundo';
+                fundo.innerHTML = `<div class="dlg" style="text-align:center;"><h4 style="margin:0 0 4px;">Ajustar foto</h4>
+                    <p style="margin:0 0 12px; font-size:.85rem; color:var(--gray);">Arraste para posicionar e use o zoom. O que ficar dentro do círculo será a foto.</p>
+                    <div id="cropBox" style="position:relative; width:${V}px; height:${V}px; margin:0 auto 12px; touch-action:none; cursor:grab; border-radius:12px; overflow:hidden; background:#fff;">
+                        <canvas id="cropCv" width="${V}" height="${V}" style="display:block; width:${V}px; height:${V}px;"></canvas>
+                        <div style="position:absolute; inset:0; pointer-events:none; background:radial-gradient(circle at center, transparent calc(50% - 1px), rgba(15,23,42,.6) 50%);"></div>
+                        <div style="position:absolute; inset:0; pointer-events:none; border-radius:50%; box-shadow:inset 0 0 0 2px rgba(255,255,255,.9);"></div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:10px; margin:0 4px 14px;"><span>🔍</span><input type="range" id="cropZoom" min="0" max="1000" value="${Math.round(Math.log(s / minS) / Math.log(maxS / minS) * 1000)}" style="flex:1;"></div>
+                    <div class="dlg-acoes"><button type="button" id="cropCancel">Cancelar</button><button type="button" class="dlg-ok" id="cropOk">Usar foto</button></div></div>`;
+                document.body.appendChild(fundo);
+                const box = fundo.querySelector('#cropBox'), cv = fundo.querySelector('#cropCv'), zoom = fundo.querySelector('#cropZoom');
+                const desenhar = (ctx, tam) => { const k = tam / V; ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, tam, tam); ctx.imageSmoothingQuality = 'high'; ctx.drawImage(bmp, tam / 2 - cx * s * k, tam / 2 - cy * s * k, w * s * k, hgt * s * k); };
+                const render = () => { cx = Math.max(0, Math.min(w, cx)); cy = Math.max(0, Math.min(hgt, cy)); desenhar(cv.getContext('2d'), V); };
+                const setZoom = (novo) => { s = Math.max(minS, Math.min(maxS, novo)); zoom.value = Math.round(Math.log(s / minS) / Math.log(maxS / minS) * 1000); render(); };
+                zoom.addEventListener('input', () => { s = minS * Math.pow(maxS / minS, zoom.value / 1000); render(); });
+                box.addEventListener('wheel', (e) => { e.preventDefault(); setZoom(s * (e.deltaY < 0 ? 1.08 : 1 / 1.08)); }, { passive: false });
+                const ptrs = new Map(); let dist0 = 0, s0 = 0;
+                box.addEventListener('pointerdown', (e) => { box.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY }); box.style.cursor = 'grabbing'; if (ptrs.size === 2) { const [p, q] = [...ptrs.values()]; dist0 = Math.hypot(p.x - q.x, p.y - q.y); s0 = s; } });
+                box.addEventListener('pointermove', (e) => {
+                    const p = ptrs.get(e.pointerId); if (!p) return;
+                    if (ptrs.size === 1) { cx -= (e.clientX - p.x) / s; cy -= (e.clientY - p.y) / s; p.x = e.clientX; p.y = e.clientY; render(); }
+                    else { p.x = e.clientX; p.y = e.clientY; const [a, b] = [...ptrs.values()]; if (dist0) setZoom(s0 * Math.hypot(a.x - b.x, a.y - b.y) / dist0); }
+                });
+                const solta = (e) => { ptrs.delete(e.pointerId); box.style.cursor = 'grab'; dist0 = 0; };
+                box.addEventListener('pointerup', solta); box.addEventListener('pointercancel', solta);
+                const fechar = (r) => { fundo.remove(); document.removeEventListener('keydown', tecla, true); resolve(r); };
+                const gerar = () => {
+                    const out = document.createElement('canvas'); out.width = out.height = 160; desenhar(out.getContext('2d'), 160);
+                    let q = 0.8, url = out.toDataURL('image/jpeg', q);
+                    while (url.length > 45000 && q > 0.4) { q -= 0.1; url = out.toDataURL('image/jpeg', q); }
+                    return url;
+                };
+                const tecla = (e) => { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); fechar(null); } else if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); fechar(gerar()); } };
+                document.addEventListener('keydown', tecla, true);
+                fundo.querySelector('#cropCancel').addEventListener('click', () => fechar(null));
+                fundo.querySelector('#cropOk').addEventListener('click', () => fechar(gerar()));
+                render();
+            });
+        };
         window.unificarDuplicadosRanking = async function () {
             const sel = document.getElementById('filtroVisualRanking');
             const rankingNome = (sel.options[sel.selectedIndex] || {}).text;
@@ -1464,6 +1555,7 @@
                     const upd = {}; campos.forEach(c => { upd[c] = soma(g, c); });
                     const hp = [].concat(...g.map(x => x.historicoPontos || [])).slice(-3); if (hp.length) upd.historicoPontos = hp;
                     const ht = [].concat(...g.map(x => x.historicoTorneios || [])).slice(-3); if (ht.length) upd.historicoTorneios = ht;
+                    if (!prim.foto) { const cf = g.find(x => x.foto); if (cf) upd.foto = cf.foto; }
                     await updateDoc(doc(db, "rankings", rankingNome, "jogadores", prim.id), upd);
                     for (const r of resto) await deleteDoc(doc(db, "rankings", rankingNome, "jogadores", r.id));
                 }
@@ -1524,7 +1616,7 @@
             } catch (e) { console.log("Não foi possível atualizar o resumo do histórico:", e); window.h2hJogosCache = null; }
         }
 
-        const APP_VERSION = "v62";
+        const APP_VERSION = "v67";
         let isLogged = false;
         let torneioAbertoId = null; 
         let torneioAbertoData = null; 
@@ -4135,12 +4227,12 @@ let tB_display = tB_data.includes('&')
                 
                 let titulos = jog.titulos || 0; let vitorias = jog.vitorias || 0; let jogos = jog.jogos || 0;
                 let hideAdmin = isLogged ? "" : "hidden";
-                window.rankingExibido.push({ nome: jog.nome, pontos: ptsToShow || 0, torneios: jog.torneios || 0, titulos, vitorias, jogos });
+                window.rankingExibido.push({ nome: jog.nome, pos: posicaoExibida, pontos: ptsToShow || 0, torneios: jog.torneios || 0, titulos, vitorias, jogos });
 
                 html += `<tr class="${posicaoExibida <= 3 ? 'rk-top rk-' + posicaoExibida : ''}">
                     <td style="font-size: 1.1rem; font-weight:600;">${icone}</td>
                     <td style="text-align:left;">
-                        <a href="#" onclick="abrirPerfilRanking(${index})" style="color: var(--dark); text-decoration: none; font-weight: 600;">${esc(jog.nome)}</a>
+                        <a href="#" class="rk-nome" onclick="abrirPerfilRanking(${index})" style="color: var(--dark); text-decoration: none; font-weight: 600;">${window.avatarHTML(jog.nome, jog.foto, 34, 0)}<span>${esc(jog.nome)}</span></a>
                     </td>
                     <td style="color: ${corPts}; font-size: 1.1rem;"><strong>${ptsToShow}</strong></td>
                     <td style="color: var(--gray);">${jog.torneios || 0}</td>
@@ -4211,8 +4303,40 @@ tipoFiltroRanking.addEventListener('change', () => {
             document.getElementById('editVitorias').value = vitorias; document.getElementById('editJogos').value = jogos;
             document.getElementById('editTitulosOuro').value = (titulosOuro === null || titulosOuro === undefined) ? '' : titulosOuro;
             document.getElementById('editTitulosPrata').value = (titulosPrata === null || titulosPrata === undefined) ? '' : titulosPrata;
+            { const pj = ((window.rankingDadosCache || {})[document.getElementById('editPlayerCategoria').value] || []).find(j => j.id === id);
+              document.getElementById('editFoto').value = (pj && pj.foto) || ''; document.getElementById('editFotoMudou').value = ''; document.getElementById('editFotoArquivo').value = ''; window.atualizarPreviewFoto(); }
             document.getElementById('modalEditPlayer').classList.remove('hidden');
         };
+        // v65: toque na foto do perfil — organizador troca a foto; visitante vê como enviar a foto pelo WhatsApp
+        window.CONTATOS_FOTO = [{ nome: 'Ageu', tel: '5519993433701' }, { nome: 'Bruninho', tel: '5519992721906' }, { nome: 'Gabriela', tel: '5519997112090' }, { nome: 'Milena', tel: '5519991678386' }];
+        window.cliqueFotoPerfil = async function () {
+            const nome = document.getElementById('perfilAvatar').dataset.nome; if (!nome) return;
+            if (isLogged) {
+                const rn = filtroRanking.options[filtroRanking.selectedIndex] && filtroRanking.options[filtroRanking.selectedIndex].text;
+                const pj = ((window.rankingDadosCache || {})[rn] || []).find(j => j.nome === nome);
+                if (!pj || !pj.id) { window.toast('Para trocar a foto, abra o jogador pela aba Ranking.', 'erro'); return; }
+                document.getElementById('modalPerfilJogador').classList.add('hidden');
+                window.abrirModalEditarJogador(pj.id, pj.nome, pj.pontos || 0, pj.pontosOuro || 0, pj.pontosPrata || 0, pj.torneios || 0, pj.titulos || 0, pj.vitorias || 0, pj.jogos || 0, pj.titulosOuro === undefined ? null : (pj.titulosOuro || 0), pj.titulosPrata === undefined ? null : (pj.titulosPrata || 0));
+                return;
+            }
+            const texto = encodeURIComponent(`Oi! Quero colocar minha foto no ranking do Confra & Play. Meu nome: ${nome}`);
+            const r = await window.dialogo({ titulo: '📷 Quer sua foto aqui?', msg: 'Mande sua foto (de preferência do rosto) pelo WhatsApp para um dos organizadores que a gente coloca no ranking.',
+                botoes: window.CONTATOS_FOTO.map(c => ({ txt: '💬 Falar com ' + c.nome, val: c.tel })), cancelar: 'Fechar' });
+            if (r) window.open(`https://wa.me/${r}?text=${texto}`, '_blank', 'noopener');
+        };
+        document.getElementById('perfilAvatar').addEventListener('click', () => window.cliqueFotoPerfil());
+        document.getElementById('perfilAvatar').addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); window.cliqueFotoPerfil(); } });
+        window.atualizarPreviewFoto = function () {
+            document.getElementById('editFotoPreview').innerHTML = window.avatarHTML(document.getElementById('editNomeInput').value || '?', document.getElementById('editFoto').value, 84, 0);
+            document.getElementById('btnRemoverFoto').style.display = document.getElementById('editFoto').value ? '' : 'none';
+        };
+        document.getElementById('editFotoArquivo').addEventListener('change', async (e) => {
+            const f = e.target.files && e.target.files[0]; if (!f) return;
+            try { const r = await window.processarFotoJogador(f); if (r) { document.getElementById('editFoto').value = r; document.getElementById('editFotoMudou').value = '1'; window.atualizarPreviewFoto(); } e.target.value = ''; }
+            catch (err) { window.toast('Não foi possível ler essa imagem. Tente outra foto.', 'erro'); }
+        });
+        document.getElementById('btnRemoverFoto').addEventListener('click', () => { document.getElementById('editFoto').value = ''; document.getElementById('editFotoMudou').value = '1'; window.atualizarPreviewFoto(); });
+        document.getElementById('editNomeInput').addEventListener('input', () => { if (!document.getElementById('editFoto').value) window.atualizarPreviewFoto(); });
 
         document.getElementById('formEditPlayer').addEventListener('submit', async (e) => {
             e.preventDefault(); const id = document.getElementById('editPlayerId').value; const categoria = document.getElementById('editPlayerCategoria').value; const btn = e.target.querySelector('button[type="submit"]');
@@ -4222,6 +4346,7 @@ tipoFiltroRanking.addEventListener('change', () => {
                 const _extra = {};
                 if (_tOuro !== '') _extra.titulosOuro = Math.max(0, parseInt(_tOuro) || 0);
                 if (_tPrata !== '') _extra.titulosPrata = Math.max(0, parseInt(_tPrata) || 0);
+                if (document.getElementById('editFotoMudou').value === '1') _extra.foto = document.getElementById('editFoto').value; // '' remove a foto
                 await updateDoc(doc(db, "rankings", categoria, "jogadores", id), { ..._extra,
                     nome: document.getElementById('editNomeInput').value.trim(),
                     pontos: parseInt(document.getElementById('editPtsGeral').value)||0, 
@@ -4503,6 +4628,9 @@ tipoFiltroRanking.addEventListener('change', () => {
             const tokPerfil = window._perfilTok = (window._perfilTok || 0) + 1;
             window.atualizarSetasPerfil();
             let derrotas = jogos - vitorias; let aproveitamento = jogos > 0 ? Math.round((vitorias / jogos) * 100) : 0;
+            { const nav = window.perfilNav, it = nav && nav.lista && nav.lista[nav.i], pj = window.buscarJogadorRanking(nome);
+              const av = document.getElementById('perfilAvatar'); av.dataset.nome = nome;
+              av.innerHTML = `<span class="av-btn" role="button" tabindex="0" title="Foto do jogador">${window.avatarHTML(nome, pj && pj.foto, 88, it && it.nome === nome ? it.pos : 0)}<i class="av-cam">📷</i></span>`; }
             document.getElementById('perfilNome').textContent = nome; document.getElementById('perfilPontos').textContent = pontos; document.getElementById('perfilTorneios').textContent = torneios;
             document.getElementById('perfilTitulos').textContent = titulos; document.getElementById('perfilVitorias').textContent = vitorias; document.getElementById('perfilDerrotas').textContent = derrotas; document.getElementById('perfilAproveitamento').textContent = aproveitamento + '%';
 
