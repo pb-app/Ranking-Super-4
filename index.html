@@ -925,7 +925,6 @@
         <section id="ranking-section" class="hidden">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 10px;">
                 <h2 class="section-title" style="margin-bottom: 0;">🏆 Ranking</h2>
-                <button id="btnBaixarRanking" class="btn" style="background: #10b981; color: white;">📄 Baixar PDF</button>
             </div>
             
             <div style="display: flex; gap: 15px; align-items: flex-end; margin-bottom: 25px; flex-wrap: wrap;">
@@ -943,11 +942,15 @@
                         <option value="prata">🥈 Pontos Prata</option>
                     </select>
                 </div>
-                <div style="display: flex; gap: 10px;">
-                    <button id="btnGerenciarRankings" class="btn btn-outline hidden" style="height: 48px; padding: 0 15px;">⚙ Gerenciar</button>
-                    <button id="btnUnificarRanking" class="btn btn-outline hidden" style="height: 48px; padding: 0 15px;" title="Juntar jogadores repetidos">🧹 Duplicados</button>
-                    <button id="btnBackupJson" class="btn btn-outline hidden" style="height: 48px; padding: 0 15px;" title="Baixar uma cópia de segurança de todos os dados">💾 Backup</button>
-                    <button id="btnZerarRanking" class="btn hidden" style="height: 48px; padding: 0 15px; background: #fef2f2 !important; color: #ef4444 !important; border: 1px solid #fecaca !important; box-shadow: none;">⚠️ Zerar</button>
+                <div id="menuAcoesRanking" class="menu-acoes" style="margin-left: 0;">
+                    <button id="btnMenuAcoesRanking" type="button" class="btn btn-outline menu-acoes-btn" style="height: 48px;" aria-haspopup="true" aria-expanded="false" onclick="toggleMenuAcoes(event, 'menuAcoesRanking')">Ações <span class="seta">▾</span></button>
+                    <div class="menu-acoes-lista" role="menu">
+                        <button id="btnBaixarRanking" type="button" role="menuitem" class="acao-item"><span class="ai">📄</span><span>Baixar PDF</span></button>
+                        <button id="btnGerenciarRankings" type="button" role="menuitem" class="acao-item hidden"><span class="ai">⚙</span><span>Gerenciar categorias</span></button>
+                        <button id="btnUnificarRanking" type="button" role="menuitem" class="acao-item hidden" title="Juntar jogadores repetidos"><span class="ai">🧹</span><span>Duplicados</span></button>
+                        <button id="btnBackupJson" type="button" role="menuitem" class="acao-item hidden" title="Baixar uma cópia de segurança de todos os dados"><span class="ai">💾</span><span>Backup</span></button>
+                        <button id="btnZerarRanking" type="button" role="menuitem" class="acao-item perigo hidden"><span class="ai">⚠️</span><span>Zerar ranking</span></button>
+                    </div>
                 </div>
             </div>
             
@@ -1097,7 +1100,7 @@
     </div>
     <!-- Versão Clicável para Atualizar -->
 <div id="appVersionBadge" onclick="verificarAtualizacaoApp()" style="position: fixed; bottom: 12px; right: 12px; background: rgba(31, 41, 55, 0.85); backdrop-filter: blur(4px); color: #9ca3af; padding: 5px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; z-index: 1000; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1);" title="Toque para verificar atualizações">
-    v68 🔄
+    v70 🔄
 </div>
     </footer>
 
@@ -1569,7 +1572,7 @@
         // v68: backup completo em JSON (campeonatos + inscritos + jogos, rankings + jogadores, categorias, sistema). Só organizador.
         window.baixarBackupJson = async function () {
             if (!isLogged) return;
-            const btn = document.getElementById('btnBackupJson'), txt = btn.textContent;
+            const btn = document.getElementById('btnBackupJson'), txt = btn.innerHTML;
             const ok = await window.dialogo({ titulo: '💾 Baixar backup', msg: 'Vai ler todos os dados do banco uma vez (campeonatos, jogos, ranking e fotos) e baixar um arquivo .json no seu aparelho. Pode levar alguns segundos e contar como leituras do Firebase.', ok: 'Baixar' });
             if (!ok) return;
             btn.disabled = true;
@@ -1583,7 +1586,7 @@
                 const out = { app: 'Confra & Play', versao: APP_VERSION, geradoEm: new Date().toISOString(), colecoes: {} };
                 let total = 0;
                 const ler = async (nome, consulta) => {
-                    btn.textContent = '⏳ ' + nome + '…';
+                    btn.innerHTML = '<span class="ai">⏳</span><span>' + esc(nome) + '…</span>';
                     const snap = await getDocs(consulta); const lista = [];
                     snap.forEach(d => lista.push({ caminho: d.ref.path, dados: conv(d.data()) }));
                     out.colecoes[nome] = lista; total += lista.length;
@@ -1601,7 +1604,7 @@
                 document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 10000);
                 window.toast(`Backup gerado: ${total} documentos (${(blob.size / 1024 / 1024).toFixed(1)} MB).`, 'ok');
             } catch (e) { console.log(e); window.toast('Não consegui gerar o backup: ' + (e && e.message ? e.message : e), 'erro'); }
-            btn.textContent = txt; btn.disabled = false;
+            btn.innerHTML = txt; btn.disabled = false;
         };
         document.getElementById('btnBackupJson').addEventListener('click', () => window.baixarBackupJson());
 
@@ -1656,7 +1659,7 @@
             } catch (e) { console.log("Não foi possível atualizar o resumo do histórico:", e); window.h2hJogosCache = null; }
         }
 
-        const APP_VERSION = "v68";
+        const APP_VERSION = "v70";
         let isLogged = false;
         let torneioAbertoId = null; 
         let torneioAbertoData = null; 
@@ -1773,6 +1776,7 @@
                 // Atualiza o botão de visualização dos inscritos (se ele existir na tela)
                 if (btnMostrar) { btnMostrar.textContent = "👥 Ver Lista de Inscritos"; }
             }
+            { const mr = document.getElementById('menuAcoesRanking'); if (mr && window.fecharMenuAcoes) window.fecharMenuAcoes(); }
         }
 
         setTimeout(() => { if (/Carregando campeonatos/.test(tournamentsContainer.textContent || '') && window.__diagBanner) window.__diagBanner('⚠️ Os campeonatos não carregaram. Verifique a internet da TV. Se continuar, abra direto: ' + new URL('telao.html', location.href).href + '\nNavegador: ' + navigator.userAgent); }, 15000);
@@ -4298,14 +4302,14 @@ tipoFiltroRanking.addEventListener('change', () => {
         // --- FUNÇÃO PARA GERAR O PDF DO RANKING ---
         document.getElementById('btnBaixarRanking').addEventListener('click', () => {
             const btn = document.getElementById('btnBaixarRanking');
-            btn.textContent = "⏳ Gerando PDF...";
+            const _btnPdfHtml = btn.innerHTML; btn.innerHTML = '<span class="ai">⏳</span><span>Gerando PDF...</span>';
             const cartao = document.getElementById('cartaoRanking');
             const cabecalho = document.getElementById('cabecalhoExportacao');
             const titulo = document.getElementById('tituloExportacao');
             
             let cat = (document.getElementById('filtroVisualRanking').options[document.getElementById('filtroVisualRanking').selectedIndex] || {}).text;
             let tipo = (document.getElementById('tipoFiltroRanking').options[document.getElementById('tipoFiltroRanking').selectedIndex] || {}).text;
-            if (!cat) { alert("Selecione um ranking primeiro."); btn.textContent = "📄 Baixar PDF"; return; }
+            if (!cat) { alert("Selecione um ranking primeiro."); btn.innerHTML = _btnPdfHtml; return; }
             
             titulo.textContent = `🏆 ${cat} - ${tipo}`;
             cabecalho.style.display = 'block';
@@ -4326,13 +4330,13 @@ tipoFiltroRanking.addEventListener('change', () => {
             html2pdf().set(opt).from(cartao).save().then(() => {
                 cabecalho.style.display = 'none';
                 if(isLogged) document.querySelectorAll('.col-acao-admin').forEach(el => el.style.display = '');
-                btn.innerHTML = "📄 Baixar PDF";
+                btn.innerHTML = _btnPdfHtml;
             }).catch(err => {
                 console.error(err);
                 alert("Erro ao gerar PDF.");
                 cabecalho.style.display = 'none';
                 if(isLogged) document.querySelectorAll('.col-acao-admin').forEach(el => el.style.display = '');
-                btn.innerHTML = "📄 Baixar PDF";
+                btn.innerHTML = _btnPdfHtml;
             });
         });
 
@@ -4437,8 +4441,8 @@ tipoFiltroRanking.addEventListener('change', () => {
             if (!await confirmar(`Tem certeza que deseja ${msg} da categoria ${rankingNome}? Esta ação não tem volta!`, {perigo:true})) return;
 
             fecharModalZerar();
-            const btn = document.getElementById('btnZerarRanking'); 
-            btn.textContent = "A limpar..."; btn.disabled = true;
+            const btn = document.getElementById('btnZerarRanking'), btnHtml = btn.innerHTML; 
+            btn.innerHTML = '<span class="ai">⏳</span><span>A limpar...</span>'; btn.disabled = true;
 
             try {
                 const snap = await getDocs(collection(db, "rankings", rankingNome, "jogadores")); 
@@ -4460,7 +4464,7 @@ tipoFiltroRanking.addEventListener('change', () => {
             } catch (err) { 
                 alert("Erro ao zerar: " + err.message); 
             } finally { 
-                btn.innerHTML = "⚠️ Zerar"; btn.disabled = false; 
+                btn.innerHTML = btnHtml; btn.disabled = false; 
             }
         };
 
@@ -5211,16 +5215,16 @@ if (window.rankingJogadoresCache) {
         }
 
         // --- FUNÇÃO PARA EXPORTAR O TORNEIO EM PDF ---
-        window.toggleMenuAcoes = function(e) {
+        window.toggleMenuAcoes = function(e, id) {
             if (e) e.stopPropagation();
-            const m = document.getElementById('menuAcoes'); const aberto = m.classList.toggle('aberto');
-            document.getElementById('btnMenuAcoes').setAttribute('aria-expanded', aberto ? 'true' : 'false');
+            const m = document.getElementById(id || 'menuAcoes'); if (!m) return;
+            const antes = m.classList.contains('aberto'); fecharMenuAcoes();
+            if (!antes) { m.classList.add('aberto'); m.querySelector('.menu-acoes-btn').setAttribute('aria-expanded', 'true'); }
         };
         window.fecharMenuAcoes = function() {
-            const m = document.getElementById('menuAcoes'); if (!m) return;
-            m.classList.remove('aberto'); document.getElementById('btnMenuAcoes').setAttribute('aria-expanded', 'false');
+            document.querySelectorAll('.menu-acoes').forEach(m => { m.classList.remove('aberto'); const b = m.querySelector('.menu-acoes-btn'); if (b) b.setAttribute('aria-expanded', 'false'); });
         };
-        document.addEventListener('click', (e) => { if (!e.target.closest('#menuAcoes') || (e.target.closest('.acao-item') && !e.target.closest('#btnExportarExcel'))) fecharMenuAcoes(); });
+        document.addEventListener('click', (e) => { if (!e.target.closest('.menu-acoes') || (e.target.closest('.acao-item') && !e.target.closest('#btnExportarExcel, #btnBaixarRanking'))) fecharMenuAcoes(); });
         document.addEventListener('keydown', (e) => { if (e.key === 'Escape') fecharMenuAcoes(); });
         window.abrirTelao = function() {
             if (!torneioAbertoId) return;
