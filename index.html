@@ -1093,7 +1093,7 @@
     </div>
     <!-- Versão Clicável para Atualizar -->
 <div id="appVersionBadge" onclick="verificarAtualizacaoApp()" style="position: fixed; bottom: 12px; right: 12px; background: rgba(31, 41, 55, 0.85); backdrop-filter: blur(4px); color: #9ca3af; padding: 5px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; z-index: 1000; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1);" title="Toque para verificar atualizações">
-    v63 🔄
+    v64 🔄
 </div>
     </footer>
 
@@ -1472,21 +1472,58 @@
             const doTorneio = (window.rankingJogadoresCache || {})[nome] || null;
             return window.perfilNav ? (daLista || doTorneio) : (doTorneio || daLista);
         };
-        // recorta em quadrado (levemente para cima, onde costuma estar o rosto), reduz para 160px e comprime
+        // v64: abre o ajuste da foto (arrastar para posicionar, zoom por controle/roda/pinça) e devolve o JPEG 160px em base64 (ou null se cancelar)
         window.processarFotoJogador = async function (arquivo) {
             let bmp;
             try { bmp = await createImageBitmap(arquivo, { imageOrientation: 'from-image' }); }
             catch (e) {
                 bmp = await new Promise((ok, erro) => { const im = new Image(); im.onload = () => ok(im); im.onerror = () => erro(new Error('Imagem inválida')); im.src = URL.createObjectURL(arquivo); });
             }
-            const w = bmp.width || bmp.naturalWidth, hgt = bmp.height || bmp.naturalHeight, lado = Math.min(w, hgt);
-            const sx = (w - lado) / 2, sy = (hgt - lado) * 0.3;
-            const cv = document.createElement('canvas'); cv.width = cv.height = 160;
-            const cx = cv.getContext('2d'); cx.fillStyle = '#fff'; cx.fillRect(0, 0, 160, 160);
-            cx.imageSmoothingQuality = 'high'; cx.drawImage(bmp, sx, sy, lado, lado, 0, 0, 160, 160);
-            let q = 0.8, url = cv.toDataURL('image/jpeg', q);
-            while (url.length > 45000 && q > 0.4) { q -= 0.1; url = cv.toDataURL('image/jpeg', q); }
-            return url;
+            const w = bmp.width || bmp.naturalWidth, hgt = bmp.height || bmp.naturalHeight;
+            const V = Math.min(280, Math.floor(window.innerWidth - 80));
+            const coverS = V / Math.min(w, hgt), minS = Math.min(V / Math.max(w, hgt), coverS), maxS = coverS * 4;
+            let s = coverS, cx = w / 2, cy = Math.min(hgt - Math.min(w, hgt) / 2, Math.min(w, hgt) / 2 + (hgt - Math.min(w, hgt)) * 0.3);
+            if (Math.max(w, hgt) / Math.min(w, hgt) > 1.5) { s = minS; cx = w / 2; cy = hgt / 2; } // prints/imagens muito compridas: começa mostrando a imagem inteira
+            return new Promise((resolve) => {
+                const fundo = document.createElement('div'); fundo.className = 'dlg-fundo';
+                fundo.innerHTML = `<div class="dlg" style="text-align:center;"><h4 style="margin:0 0 4px;">Ajustar foto</h4>
+                    <p style="margin:0 0 12px; font-size:.85rem; color:var(--gray);">Arraste para posicionar e use o zoom. O que ficar dentro do círculo será a foto.</p>
+                    <div id="cropBox" style="position:relative; width:${V}px; height:${V}px; margin:0 auto 12px; touch-action:none; cursor:grab; border-radius:12px; overflow:hidden; background:#fff;">
+                        <canvas id="cropCv" width="${V}" height="${V}" style="display:block; width:${V}px; height:${V}px;"></canvas>
+                        <div style="position:absolute; inset:0; pointer-events:none; background:radial-gradient(circle at center, transparent calc(50% - 1px), rgba(15,23,42,.6) 50%);"></div>
+                        <div style="position:absolute; inset:0; pointer-events:none; border-radius:50%; box-shadow:inset 0 0 0 2px rgba(255,255,255,.9);"></div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:10px; margin:0 4px 14px;"><span>🔍</span><input type="range" id="cropZoom" min="0" max="1000" value="${Math.round(Math.log(s / minS) / Math.log(maxS / minS) * 1000)}" style="flex:1;"></div>
+                    <div class="dlg-acoes"><button type="button" id="cropCancel">Cancelar</button><button type="button" class="dlg-ok" id="cropOk">Usar foto</button></div></div>`;
+                document.body.appendChild(fundo);
+                const box = fundo.querySelector('#cropBox'), cv = fundo.querySelector('#cropCv'), zoom = fundo.querySelector('#cropZoom');
+                const desenhar = (ctx, tam) => { const k = tam / V; ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, tam, tam); ctx.imageSmoothingQuality = 'high'; ctx.drawImage(bmp, tam / 2 - cx * s * k, tam / 2 - cy * s * k, w * s * k, hgt * s * k); };
+                const render = () => { cx = Math.max(0, Math.min(w, cx)); cy = Math.max(0, Math.min(hgt, cy)); desenhar(cv.getContext('2d'), V); };
+                const setZoom = (novo) => { s = Math.max(minS, Math.min(maxS, novo)); zoom.value = Math.round(Math.log(s / minS) / Math.log(maxS / minS) * 1000); render(); };
+                zoom.addEventListener('input', () => { s = minS * Math.pow(maxS / minS, zoom.value / 1000); render(); });
+                box.addEventListener('wheel', (e) => { e.preventDefault(); setZoom(s * (e.deltaY < 0 ? 1.08 : 1 / 1.08)); }, { passive: false });
+                const ptrs = new Map(); let dist0 = 0, s0 = 0;
+                box.addEventListener('pointerdown', (e) => { box.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY }); box.style.cursor = 'grabbing'; if (ptrs.size === 2) { const [p, q] = [...ptrs.values()]; dist0 = Math.hypot(p.x - q.x, p.y - q.y); s0 = s; } });
+                box.addEventListener('pointermove', (e) => {
+                    const p = ptrs.get(e.pointerId); if (!p) return;
+                    if (ptrs.size === 1) { cx -= (e.clientX - p.x) / s; cy -= (e.clientY - p.y) / s; p.x = e.clientX; p.y = e.clientY; render(); }
+                    else { p.x = e.clientX; p.y = e.clientY; const [a, b] = [...ptrs.values()]; if (dist0) setZoom(s0 * Math.hypot(a.x - b.x, a.y - b.y) / dist0); }
+                });
+                const solta = (e) => { ptrs.delete(e.pointerId); box.style.cursor = 'grab'; dist0 = 0; };
+                box.addEventListener('pointerup', solta); box.addEventListener('pointercancel', solta);
+                const fechar = (r) => { fundo.remove(); document.removeEventListener('keydown', tecla, true); resolve(r); };
+                const gerar = () => {
+                    const out = document.createElement('canvas'); out.width = out.height = 160; desenhar(out.getContext('2d'), 160);
+                    let q = 0.8, url = out.toDataURL('image/jpeg', q);
+                    while (url.length > 45000 && q > 0.4) { q -= 0.1; url = out.toDataURL('image/jpeg', q); }
+                    return url;
+                };
+                const tecla = (e) => { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); fechar(null); } else if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); fechar(gerar()); } };
+                document.addEventListener('keydown', tecla, true);
+                fundo.querySelector('#cropCancel').addEventListener('click', () => fechar(null));
+                fundo.querySelector('#cropOk').addEventListener('click', () => fechar(gerar()));
+                render();
+            });
         };
         window.unificarDuplicadosRanking = async function () {
             const sel = document.getElementById('filtroVisualRanking');
@@ -1576,7 +1613,7 @@
             } catch (e) { console.log("Não foi possível atualizar o resumo do histórico:", e); window.h2hJogosCache = null; }
         }
 
-        const APP_VERSION = "v63";
+        const APP_VERSION = "v64";
         let isLogged = false;
         let torneioAbertoId = null; 
         let torneioAbertoData = null; 
@@ -4273,7 +4310,7 @@ tipoFiltroRanking.addEventListener('change', () => {
         };
         document.getElementById('editFotoArquivo').addEventListener('change', async (e) => {
             const f = e.target.files && e.target.files[0]; if (!f) return;
-            try { document.getElementById('editFoto').value = await window.processarFotoJogador(f); document.getElementById('editFotoMudou').value = '1'; window.atualizarPreviewFoto(); }
+            try { const r = await window.processarFotoJogador(f); if (r) { document.getElementById('editFoto').value = r; document.getElementById('editFotoMudou').value = '1'; window.atualizarPreviewFoto(); } e.target.value = ''; }
             catch (err) { window.toast('Não foi possível ler essa imagem. Tente outra foto.', 'erro'); }
         });
         document.getElementById('btnRemoverFoto').addEventListener('click', () => { document.getElementById('editFoto').value = ''; document.getElementById('editFotoMudou').value = '1'; window.atualizarPreviewFoto(); });
