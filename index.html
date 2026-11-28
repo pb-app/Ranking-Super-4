@@ -1096,7 +1096,7 @@
     </div>
     <!-- Versão Clicável para Atualizar -->
 <div id="appVersionBadge" onclick="verificarAtualizacaoApp()" style="position: fixed; bottom: 12px; right: 12px; background: rgba(31, 41, 55, 0.85); backdrop-filter: blur(4px); color: #9ca3af; padding: 5px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; z-index: 1000; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1);" title="Toque para verificar atualizações">
-    v66 🔄
+    v67 🔄
 </div>
     </footer>
 
@@ -1616,7 +1616,7 @@
             } catch (e) { console.log("Não foi possível atualizar o resumo do histórico:", e); window.h2hJogosCache = null; }
         }
 
-        const APP_VERSION = "v66";
+        const APP_VERSION = "v67";
         let isLogged = false;
         let torneioAbertoId = null; 
         let torneioAbertoData = null; 
@@ -4308,7 +4308,7 @@ tipoFiltroRanking.addEventListener('change', () => {
             document.getElementById('modalEditPlayer').classList.remove('hidden');
         };
         // v65: toque na foto do perfil — organizador troca a foto; visitante vê como enviar a foto pelo WhatsApp
-        window.CONTATOS_FOTO = [{ nome: 'Ageu', tel: '5519993433701' }, { nome: 'Bruninho', tel: '5519992721906' }, { nome: 'Gabriela', tel: '5519997112090' }];
+        window.CONTATOS_FOTO = [{ nome: 'Ageu', tel: '5519993433701' }, { nome: 'Bruninho', tel: '5519992721906' }, { nome: 'Gabriela', tel: '5519997112090' }, { nome: 'Milena', tel: '5519991678386' }];
         window.cliqueFotoPerfil = async function () {
             const nome = document.getElementById('perfilAvatar').dataset.nome; if (!nome) return;
             if (isLogged) {
