@@ -136,6 +136,8 @@
         .imp-linha select { font-size: 0.8rem; padding: 3px 4px; max-width: 220px; background: var(--white); color: var(--dark); border: 1px solid var(--border); border-radius: 6px; }
         .imp-tag { font-size: 0.72rem; font-weight: 700; padding: 1px 7px; border-radius: 999px; margin-left: 6px; white-space: nowrap; }
         .imp-ok { background: #d1fae5; color: #065f46; } .imp-novo { background: #dbeafe; color: #1e40af; } .imp-rev { background: #fef3c7; color: #92400e; } .imp-skip { background: #fee2e2; color: #991b1b; }
+        .imp-nome { font: inherit; font-weight: 700; color: var(--dark); background: transparent; border: 1px solid transparent; border-bottom: 1px dashed var(--border); border-radius: 6px; padding: 1px 4px; max-width: 100%; box-sizing: content-box; }
+        .imp-nome:hover, .imp-nome:focus { border-color: var(--border); background: var(--white); outline: none; }
         .imp-sub { display: block; color: var(--gray); font-size: 0.78rem; }
         @keyframes flashSalvo { 0% { box-shadow: 0 0 0 0 rgba(16,185,129,.75), inset 0 0 0 2px #10b981; } 100% { box-shadow: 0 0 0 16px rgba(16,185,129,0), inset 0 0 0 2px rgba(16,185,129,0); } }
         .flash-salvo { animation: flashSalvo .9s ease-out; }
@@ -559,6 +561,7 @@
             </div>
             <div id="impPasso2" class="hidden">
                 <div id="impResumo" style="font-size: 0.9rem; margin-bottom: 10px; color: var(--dark);"></div>
+                <div style="font-size: 0.78rem; color: var(--gray); margin: -4px 0 8px;">Dica: clique em um nome para corrigi-lo ou acrescentar o sobrenome (Enter confirma).</div>
                 <div id="impLista" style="border: 1px solid var(--border); border-radius: 10px; max-height: 46dvh; overflow-y: auto;"></div>
                 <div style="display: flex; gap: 8px; margin-top: 12px;">
                     <button type="button" id="impVoltar" class="btn btn-outline" style="flex: 1;">← Editar texto</button>
@@ -1073,7 +1076,7 @@
     </div>
     <!-- Versão Clicável para Atualizar -->
 <div id="appVersionBadge" onclick="verificarAtualizacaoApp()" style="position: fixed; bottom: 12px; right: 12px; background: rgba(31, 41, 55, 0.85); backdrop-filter: blur(4px); color: #9ca3af; padding: 5px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; z-index: 1000; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1);" title="Toque para verificar atualizações">
-    v59 🔄
+    v60 🔄
 </div>
     </footer>
 
@@ -1521,7 +1524,7 @@
             } catch (e) { console.log("Não foi possível atualizar o resumo do histórico:", e); window.h2hJogosCache = null; }
         }
 
-        const APP_VERSION = "v59";
+        const APP_VERSION = "v60";
         let isLogged = false;
         let torneioAbertoId = null; 
         let torneioAbertoData = null; 
@@ -2314,16 +2317,31 @@ window.jogosSalvos = novosJogosSalvos;
                     const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = l.incluir; cb.disabled = !!l.skip;
                     cb.addEventListener('change', () => { l.incluir = cb.checked; atualizarResumo(); div.classList.toggle('imp-ignorado', !l.incluir); });
                     const meio = document.createElement('div');
-                    let html = '';
                     l.jogadores.forEach((j, ji) => {
                         const tag = l.skip ? '' : ({ ok: '<span class="imp-tag imp-ok">✅ no ranking</span>', novo: '<span class="imp-tag imp-novo">🆕 novo</span>', revisar: '<span class="imp-tag imp-rev">⚠️ confira</span>' }[j.estado] || '');
-                        html += `<div>${ji ? '<span style="color:var(--gray)"> &amp; </span>' : ''}<strong>${esc(j.nomeFinal)}</strong>${tag}`;
-                        if (j.estado === 'ok' && j.nomeFinal !== j.digitado) html += `<span class="imp-sub">digitado: ${esc(j.digitado)}</span>`;
-                        if (j.auto) html += `<span class="imp-sub" style="color:#92400e;">⚠️ nome repetido na lista: sugerido outro jogador do ranking. Marque a caixa se for outra pessoa.</span>`;
-                        html += '</div>';
+                        const d = document.createElement('div');
+                        if (ji) { const amp = document.createElement('span'); amp.style.color = 'var(--gray)'; amp.textContent = ' & '; d.appendChild(amp); }
+                        // nome editável: corrige/acrescenta sobrenome na hora (a busca no ranking é refeita)
+                        const inp = document.createElement('input'); inp.type = 'text'; inp.className = 'imp-nome'; inp.value = j.nomeFinal; inp.title = 'Clique para editar o nome'; inp.setAttribute('aria-label', 'Nome do jogador');
+                        inp.size = Math.max(8, Math.min(32, j.nomeFinal.length + 1));
+                        inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); inp.blur(); } });
+                        inp.addEventListener('change', () => {
+                            const v = inp.value.replace(/\s+/g, ' ').trim();
+                            if (!v || v === j.nomeFinal) { inp.value = j.nomeFinal; return; }
+                            const c = candidatos(v, rankAtual);
+                            j.digitado = v; j.opcoes = c ? c.opcoes.map(r => r.nome) : []; j.escolha = c ? 0 : -1;
+                            j.estado = !c ? 'novo' : (c.revisar ? 'revisar' : 'ok'); j.fixo = false; j.manual = false; j.auto = false;
+                            j.nomeFinal = j.escolha >= 0 ? j.opcoes[0] : v;
+                            avaliar(false); desenhar();
+                        });
+                        d.appendChild(inp);
+                        let extra = tag;
+                        if (j.estado === 'ok' && j.nomeFinal !== j.digitado) extra += `<span class="imp-sub">digitado: ${esc(j.digitado)}</span>`;
+                        if (j.auto) extra += `<span class="imp-sub" style="color:#92400e;">⚠️ nome repetido na lista: sugerido outro jogador do ranking. Marque a caixa se for outra pessoa.</span>`;
+                        d.insertAdjacentHTML('beforeend', extra);
+                        meio.appendChild(d);
                     });
-                    if (l.skip) html += `<span class="imp-tag imp-skip" style="margin-left:0">⛔ ${esc(l.skip)}</span>`;
-                    meio.innerHTML = html;
+                    if (l.skip) meio.insertAdjacentHTML('beforeend', `<span class="imp-tag imp-skip" style="margin-left:0">⛔ ${esc(l.skip)}</span>`);
                     // nomes para conferir: escolher entre os candidatos do ranking ou "outra pessoa"
                     l.jogadores.forEach((j) => {
                         if (j.estado !== 'revisar') return;
