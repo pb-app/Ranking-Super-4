@@ -1,5 +1,5 @@
-const CACHE_NAME = 'liga-bt-store-v70'; // Mude a versão sempre que atualizar!
-const CORE_FILES = ['./', './manifest.json', './icon-192.png', './icon-512.png'];
+const CACHE_NAME = 'liga-bt-store-v71'; // Mude a versão sempre que atualizar!
+const CORE_FILES = ['./', './manifest.json', './icon-192.png', './icon-512.png', './favicon.png', './icon-maskable-192.png', './icon-maskable-512.png'];
 
 // Instalação: guarda os ficheiros base (um falhar não derruba os outros)
 self.addEventListener('install', (e) => {
