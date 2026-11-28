@@ -541,7 +541,6 @@
     <!-- Perfil Viewer -->
     <div id="modalPerfilJogador" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; display: flex; justify-content: center; align-items: center;">
         <div class="perfil-card" style="background: var(--white); padding: 2.5rem; border-radius: 16px; width: 90%; max-width: 400px; text-align: center; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
-            <button type="button" id="btnFecharPerfilTop" style="position: absolute; top: 15px; right: 20px; background: transparent; border: none; font-size: 1.8rem; cursor: pointer; color: var(--gray); transition: 0.2s;">&times;</button>
             <div class="perfil-emoji" style="font-size: 3.5rem; margin-bottom: 10px;"></div>
             <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px;">
                 <button type="button" id="btnPerfilAnterior" class="perfil-seta" aria-label="Jogador anterior" title="Anterior (←)">&#8249;</button>
@@ -1044,7 +1043,7 @@
     </div>
     <!-- Versão Clicável para Atualizar -->
 <div id="appVersionBadge" onclick="verificarAtualizacaoApp()" style="position: fixed; bottom: 12px; right: 12px; background: rgba(31, 41, 55, 0.85); backdrop-filter: blur(4px); color: #9ca3af; padding: 5px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; z-index: 1000; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1);" title="Toque para verificar atualizações">
-    v53 🔄
+    v54 🔄
 </div>
     </footer>
 
@@ -1099,7 +1098,6 @@
             #modalPerfilJogador .perfil-acoes .btn { padding: 8px !important; gap: 3px !important; }
             #modalPerfilJogador .perfil-acoes .btn > span:first-child { font-size: 1.3rem !important; }
             #btnFecharPerfil { padding: 10px !important; }
-            #btnFecharPerfilTop { top: 6px !important; right: 12px !important; font-size: 1.6rem !important; }
         }
         @media (max-width: 480px), (max-height: 620px) {
             #modalPerfilJogador .perfil-stats { grid-template-columns: repeat(3, 1fr) !important; gap: 6px !important; }
@@ -1493,7 +1491,7 @@
             } catch (e) { console.log("Não foi possível atualizar o resumo do histórico:", e); window.h2hJogosCache = null; }
         }
 
-        const APP_VERSION = "v53";
+        const APP_VERSION = "v54";
         let isLogged = false;
         let torneioAbertoId = null; 
         let torneioAbertoData = null; 
@@ -4358,7 +4356,7 @@ if (window.rankingJogadoresCache) {
             }, { passive: true });
         })();
 
-        document.getElementById('btnFecharPerfil').addEventListener('click', () => modalPerfilJogador.classList.add('hidden')); document.getElementById('btnFecharPerfilTop').addEventListener('click', () => modalPerfilJogador.classList.add('hidden'));
+        document.getElementById('btnFecharPerfil').addEventListener('click', () => modalPerfilJogador.classList.add('hidden'));
 
         updateAuthUI();
 
