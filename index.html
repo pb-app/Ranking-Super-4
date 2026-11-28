@@ -1076,7 +1076,7 @@
     </div>
     <!-- Versão Clicável para Atualizar -->
 <div id="appVersionBadge" onclick="verificarAtualizacaoApp()" style="position: fixed; bottom: 12px; right: 12px; background: rgba(31, 41, 55, 0.85); backdrop-filter: blur(4px); color: #9ca3af; padding: 5px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; z-index: 1000; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1);" title="Toque para verificar atualizações">
-    v61 🔄
+    v62 🔄
 </div>
     </footer>
 
@@ -1340,7 +1340,7 @@
                     o.botoes.forEach((bt, k) => { const b = mk(bt.txt, 'dlg-ok', () => fim(bt.val)); if (!k) primeiro = b; });
                     mk(o.cancelar || 'Cancelar', '', () => fim(null));
                 } else {
-                    mk(o.cancelar || 'Cancelar', '', () => fim(cancelVal));
+                    if (!o.semCancelar) mk(o.cancelar || 'Cancelar', '', () => fim(cancelVal));
                     primeiro = mk(o.ok || (o.input ? 'Salvar' : 'Confirmar'), 'dlg-ok', () => fim(o.input ? inp.value : true));
                 }
                 function tecla(e) {
@@ -1524,7 +1524,7 @@
             } catch (e) { console.log("Não foi possível atualizar o resumo do histórico:", e); window.h2hJogosCache = null; }
         }
 
-        const APP_VERSION = "v61";
+        const APP_VERSION = "v62";
         let isLogged = false;
         let torneioAbertoId = null; 
         let torneioAbertoData = null; 
@@ -2609,6 +2609,36 @@ window.jogosSalvos = novosJogosSalvos;
             });
             
             let htmlTab = `<table class="standings-table"><thead><tr><th style="text-align:left; padding-left:15px;">Jogador(a)</th><th style="width:40px;">J</th><th style="width:40px;">V</th><th style="width:40px;">SS</th><th style="width:40px;">SG</th><th style="width:60px;">Posição</th></tr></thead><tbody>`;
+            // "ver infos": explica por que cada jogador/dupla está nessa posição (critérios de desempate do grupo)
+            const sinal = (n) => (n > 0 ? '+' + n : String(n));
+            const nomeBonito = (n) => n.split('&').map(x => x.trim()).join(' & ');
+            const primeiraDiferenca = (a, b) => (b.v !== a.v ? 'v' : (b.ss !== a.ss ? 'ss' : (b.sg !== a.sg ? 'sg' : (getPontosRanking(a.nome) !== getPontosRanking(b.nome) ? 'pts' : 'sorteio'))));
+            const frase = (c, a, b, la, lb) => ({
+                v: `mais vitórias (${la}: ${a.v} × ${lb}: ${b.v})`,
+                ss: `empate em vitórias (${a.v}); decidido pelo saldo de sets (${la}: ${sinal(a.ss)} × ${lb}: ${sinal(b.ss)})`,
+                sg: `empate em vitórias e saldo de sets; decidido pelo saldo de games (${la}: ${sinal(a.sg)} × ${lb}: ${sinal(b.sg)})`,
+                pts: `empate em vitórias, sets e games; decidido pela pontuação no Ranking Geral (${la}: ${getPontosRanking(a.nome)} × ${lb}: ${getPontosRanking(b.nome)} pts)`,
+                sorteio: `empate em todos os critérios, inclusive no Ranking Geral; a posição foi definida por sorteio`
+            }[c]);
+            tabelaContainer.__infos = classif.map((t, i) => {
+                const pts = getPontosRanking(t.nome);
+                let msg = `${t.j} jogo(s) · ${t.v} vitória(s) · saldo de sets ${sinal(t.ss)} · saldo de games ${sinal(t.sg)}` + (pts ? ` · ${pts} pts no Ranking Geral` : '') + '\n\n';
+                if (classif.length < 2) msg += 'Único na tabela.';
+                else if (classif.every(x => x.j === 0)) msg += 'Ainda não há jogos concluídos neste grupo; a ordem é provisória.';
+                else if (i === 0) msg += `Líder do grupo, à frente de ${nomeBonito(classif[1].nome)}: ${frase(primeiraDiferenca(t, classif[1]), t, classif[1], 'este', '2º')}.`;
+                else msg += `Fica atrás de ${nomeBonito(classif[i - 1].nome)} (${i}º): ${frase(primeiraDiferenca(classif[i - 1], t), classif[i - 1], t, 'acima', 'este')}.`;
+                msg += '\n\nCritérios, em ordem: vitórias → saldo de sets → saldo de games → pontos no Ranking Geral → sorteio.';
+                return { titulo: `${i + 1}º · ${nomeBonito(t.nome)}`, msg };
+            });
+            if (!tabelaContainer.__viLigado) {
+                tabelaContainer.__viLigado = true;
+                tabelaContainer.addEventListener('click', (ev) => {
+                    const a = ev.target.closest('a.ver-infos'); if (!a) return;
+                    ev.preventDefault();
+                    const info = (tabelaContainer.__infos || [])[parseInt(a.dataset.pos, 10)];
+                    if (info) window.dialogo({ titulo: info.titulo, msg: info.msg, ok: 'Entendi', semCancelar: true });
+                });
+            }
             classif.forEach((t, i) => {
                 let posText = `${i+1}º`;
                 let nomeParts = t.nome.split('&'); 
@@ -2626,7 +2656,7 @@ window.jogosSalvos = novosJogosSalvos;
                     <td><strong style="color:var(--dark);">${t.v}</strong></td>
                     <td style="color:var(--gray);">${t.ss}</td>
                     <td style="color:var(--gray);">${t.sg}</td>
-                    <td style="font-weight:600; color:var(--dark); text-align:center;">${posText}<br><a href="#" style="font-size:0.75rem; color:var(--blue-link); text-decoration:none; font-weight:400;">ver infos</a></td>
+                    <td style="font-weight:600; color:var(--dark); text-align:center;">${posText}<br><a href="#" class="ver-infos" data-pos="${i}" style="font-size:0.75rem; color:var(--blue-link); text-decoration:none; font-weight:400;">ver infos</a></td>
                 </tr>`;
             });
             htmlTab += `</tbody></table><p style="text-align:center; padding: 10px; margin:0; font-size:0.85rem; color:var(--gray); font-style:italic;">Ver detalhes dos jogos acima</p>`;
