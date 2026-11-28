@@ -147,6 +147,9 @@
         .perfil-avatar .avatar.ring-1 { box-shadow: 0 0 0 3px var(--white), 0 0 0 6px #f59e0b, 0 6px 16px rgba(245,158,11,.4); } .perfil-avatar .avatar.ring-2 { box-shadow: 0 0 0 3px var(--white), 0 0 0 6px #94a3b8, 0 6px 16px rgba(100,116,139,.35); } .perfil-avatar .avatar.ring-3 { box-shadow: 0 0 0 3px var(--white), 0 0 0 6px #b45309, 0 6px 16px rgba(180,83,9,.35); }
         @media (max-height: 760px), (max-width: 480px) { .perfil-avatar { margin: 2px 0 8px; } .perfil-avatar .avatar { --sz: 64px !important; } }
         @media (max-height: 640px) { .perfil-avatar .avatar { --sz: 48px !important; } }
+        .av-btn { position: relative; display: inline-flex; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+        .av-cam { position: absolute; right: -4px; bottom: -4px; width: 28px; height: 28px; border-radius: 50%; background: var(--white); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: .85rem; font-style: normal; box-shadow: 0 2px 6px rgba(0,0,0,.2); }
+        @media (max-height: 760px), (max-width: 480px) { .av-cam { width: 24px; height: 24px; font-size: .75rem; right: -6px; bottom: -6px; } }
         .rk-nome { display: inline-flex; align-items: center; gap: 10px; }
         @keyframes flashSalvo { 0% { box-shadow: 0 0 0 0 rgba(16,185,129,.75), inset 0 0 0 2px #10b981; } 100% { box-shadow: 0 0 0 16px rgba(16,185,129,0), inset 0 0 0 2px rgba(16,185,129,0); } }
         .flash-salvo { animation: flashSalvo .9s ease-out; }
@@ -1093,7 +1096,7 @@
     </div>
     <!-- Versão Clicável para Atualizar -->
 <div id="appVersionBadge" onclick="verificarAtualizacaoApp()" style="position: fixed; bottom: 12px; right: 12px; background: rgba(31, 41, 55, 0.85); backdrop-filter: blur(4px); color: #9ca3af; padding: 5px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; z-index: 1000; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1);" title="Toque para verificar atualizações">
-    v64 🔄
+    v65 🔄
 </div>
     </footer>
 
@@ -1613,7 +1616,7 @@
             } catch (e) { console.log("Não foi possível atualizar o resumo do histórico:", e); window.h2hJogosCache = null; }
         }
 
-        const APP_VERSION = "v64";
+        const APP_VERSION = "v65";
         let isLogged = false;
         let torneioAbertoId = null; 
         let torneioAbertoData = null; 
@@ -4304,6 +4307,25 @@ tipoFiltroRanking.addEventListener('change', () => {
               document.getElementById('editFoto').value = (pj && pj.foto) || ''; document.getElementById('editFotoMudou').value = ''; document.getElementById('editFotoArquivo').value = ''; window.atualizarPreviewFoto(); }
             document.getElementById('modalEditPlayer').classList.remove('hidden');
         };
+        // v65: toque na foto do perfil — organizador troca a foto; visitante vê como enviar a foto pelo WhatsApp
+        window.CONTATOS_FOTO = [{ nome: 'Ageu', tel: '5519993433701' }, { nome: 'Bruninho', tel: '5519992721906' }];
+        window.cliqueFotoPerfil = async function () {
+            const nome = document.getElementById('perfilAvatar').dataset.nome; if (!nome) return;
+            if (isLogged) {
+                const rn = filtroRanking.options[filtroRanking.selectedIndex] && filtroRanking.options[filtroRanking.selectedIndex].text;
+                const pj = ((window.rankingDadosCache || {})[rn] || []).find(j => j.nome === nome);
+                if (!pj || !pj.id) { window.toast('Para trocar a foto, abra o jogador pela aba Ranking.', 'erro'); return; }
+                document.getElementById('modalPerfilJogador').classList.add('hidden');
+                window.abrirModalEditarJogador(pj.id, pj.nome, pj.pontos || 0, pj.pontosOuro || 0, pj.pontosPrata || 0, pj.torneios || 0, pj.titulos || 0, pj.vitorias || 0, pj.jogos || 0, pj.titulosOuro === undefined ? null : (pj.titulosOuro || 0), pj.titulosPrata === undefined ? null : (pj.titulosPrata || 0));
+                return;
+            }
+            const texto = encodeURIComponent(`Oi! Quero colocar minha foto no ranking do Confra & Play. Meu nome: ${nome}`);
+            const r = await window.dialogo({ titulo: '📷 Quer sua foto aqui?', msg: 'Mande sua foto (de preferência do rosto) pelo WhatsApp para um dos organizadores que a gente coloca no ranking.',
+                botoes: window.CONTATOS_FOTO.map(c => ({ txt: '💬 Falar com ' + c.nome, val: c.tel })), cancelar: 'Fechar' });
+            if (r) window.open(`https://wa.me/${r}?text=${texto}`, '_blank', 'noopener');
+        };
+        document.getElementById('perfilAvatar').addEventListener('click', () => window.cliqueFotoPerfil());
+        document.getElementById('perfilAvatar').addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); window.cliqueFotoPerfil(); } });
         window.atualizarPreviewFoto = function () {
             document.getElementById('editFotoPreview').innerHTML = window.avatarHTML(document.getElementById('editNomeInput').value || '?', document.getElementById('editFoto').value, 84, 0);
             document.getElementById('btnRemoverFoto').style.display = document.getElementById('editFoto').value ? '' : 'none';
@@ -4607,7 +4629,8 @@ tipoFiltroRanking.addEventListener('change', () => {
             window.atualizarSetasPerfil();
             let derrotas = jogos - vitorias; let aproveitamento = jogos > 0 ? Math.round((vitorias / jogos) * 100) : 0;
             { const nav = window.perfilNav, it = nav && nav.lista && nav.lista[nav.i], pj = window.buscarJogadorRanking(nome);
-              document.getElementById('perfilAvatar').innerHTML = window.avatarHTML(nome, pj && pj.foto, 88, it && it.nome === nome ? it.pos : 0); }
+              const av = document.getElementById('perfilAvatar'); av.dataset.nome = nome;
+              av.innerHTML = `<span class="av-btn" role="button" tabindex="0" title="Foto do jogador">${window.avatarHTML(nome, pj && pj.foto, 88, it && it.nome === nome ? it.pos : 0)}<i class="av-cam">📷</i></span>`; }
             document.getElementById('perfilNome').textContent = nome; document.getElementById('perfilPontos').textContent = pontos; document.getElementById('perfilTorneios').textContent = torneios;
             document.getElementById('perfilTitulos').textContent = titulos; document.getElementById('perfilVitorias').textContent = vitorias; document.getElementById('perfilDerrotas').textContent = derrotas; document.getElementById('perfilAproveitamento').textContent = aproveitamento + '%';
 
